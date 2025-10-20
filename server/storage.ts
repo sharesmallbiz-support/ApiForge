@@ -95,53 +95,6 @@ export class MemStorage implements IStorage {
     };
     this.workspaces.set(workspace.id, workspace);
 
-    // Create sample environments with scoped variables
-    const devEnv: Environment = {
-      id: "env-dev",
-      name: "Development",
-      variables: [
-        { key: "baseUrl", value: "https://dev-api.example.com", enabled: true, scope: "global" },
-        { key: "apiKey", value: "dev-key-12345", enabled: true, scope: "global" },
-        { key: "timeout", value: "5000", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const testEnv: Environment = {
-      id: "env-test",
-      name: "Test",
-      variables: [
-        { key: "baseUrl", value: "https://test-api.example.com", enabled: true, scope: "global" },
-        { key: "apiKey", value: "test-key-67890", enabled: true, scope: "global" },
-        { key: "timeout", value: "3000", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const prodEnv: Environment = {
-      id: "env-prod",
-      name: "Production",
-      variables: [
-        { key: "baseUrl", value: "https://api.example.com", enabled: true, scope: "global" },
-        { key: "apiKey", value: "prod-key-abcde", enabled: true, scope: "global" },
-        { key: "timeout", value: "10000", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    this.environments.set(devEnv.id, devEnv);
-    this.environments.set(testEnv.id, testEnv);
-    this.environments.set(prodEnv.id, prodEnv);
-
     // Create Auth collection
     const authCollection: Collection = {
       id: "col-auth",
@@ -166,6 +119,71 @@ export class MemStorage implements IStorage {
     };
     this.collections.set(categoryCollection.id, categoryCollection);
 
+    // Create sample environments with scoped variables
+    const devEnv: Environment = {
+      id: "env-dev",
+      name: "Development",
+      variables: [
+        // Global variables
+        { key: "apiKey", value: "dev-key-12345", enabled: true, scope: "global" },
+        { key: "timeout", value: "5000", enabled: true, scope: "global" },
+        
+        // Workspace-scoped variables
+        { key: "tokenUrl", value: "https://dev-auth.example.com/oauth/token", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        
+        // Collection-scoped baseUrl for Category Management
+        { key: "baseUrl", value: "https://bsw-category.azurewebsites.net", enabled: true, scope: "collection", scopeId: categoryCollection.id },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    const testEnv: Environment = {
+      id: "env-test",
+      name: "Test",
+      variables: [
+        // Global variables
+        { key: "apiKey", value: "test-key-67890", enabled: true, scope: "global" },
+        { key: "timeout", value: "3000", enabled: true, scope: "global" },
+        
+        // Workspace-scoped variables
+        { key: "tokenUrl", value: "https://test-auth.example.com/oauth/token", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        
+        // Collection-scoped baseUrl for Category Management
+        { key: "baseUrl", value: "https://test-bsw-category.azurewebsites.net", enabled: true, scope: "collection", scopeId: categoryCollection.id },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    const prodEnv: Environment = {
+      id: "env-prod",
+      name: "Production",
+      variables: [
+        // Global variables
+        { key: "apiKey", value: "prod-key-abcde", enabled: true, scope: "global" },
+        { key: "timeout", value: "10000", enabled: true, scope: "global" },
+        
+        // Workspace-scoped variables
+        { key: "tokenUrl", value: "https://auth.example.com/oauth/token", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        
+        // Collection-scoped baseUrl for Category Management
+        { key: "baseUrl", value: "https://bsw-category.azurewebsites.net", enabled: true, scope: "collection", scopeId: categoryCollection.id },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    this.environments.set(devEnv.id, devEnv);
+    this.environments.set(testEnv.id, testEnv);
+    this.environments.set(prodEnv.id, prodEnv);
+
     // Create folders for Auth collection
     const authFolder: Folder = {
       id: "folder-auth",
@@ -187,9 +205,9 @@ export class MemStorage implements IStorage {
     // ===== AUTH COLLECTION REQUESTS =====
     const loginRequest: Request = {
       id: "req-login",
-      name: "Login",
+      name: "Get OAuth Token",
       method: "POST",
-      url: "{{baseUrl}}/auth/login",
+      url: "{{tokenUrl}}",
       folderId: authFolder.id,
       headers: [
         { key: "Content-Type", value: "application/json", enabled: true },
