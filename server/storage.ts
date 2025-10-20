@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
 import type {
+  Workspace,
+  InsertWorkspace,
   Collection,
   InsertCollection,
   Folder,
@@ -14,6 +16,13 @@ import type {
 } from "@shared/schema";
 
 export interface IStorage {
+  // Workspaces
+  getWorkspaces(): Promise<Workspace[]>;
+  getWorkspace(id: string): Promise<Workspace | undefined>;
+  createWorkspace(workspace: InsertWorkspace): Promise<Workspace>;
+  updateWorkspace(id: string, workspace: Partial<InsertWorkspace>): Promise<Workspace | undefined>;
+  deleteWorkspace(id: string): Promise<boolean>;
+
   // Collections
   getCollections(): Promise<Collection[]>;
   getCollection(id: string): Promise<Collection | undefined>;
@@ -53,6 +62,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private workspaces: Map<string, Workspace>;
   private collections: Map<string, Collection>;
   private folders: Map<string, Folder>;
   private requests: Map<string, Request>;
@@ -61,6 +71,7 @@ export class MemStorage implements IStorage {
   private executionResults: Map<string, ExecutionResult[]>;
 
   constructor() {
+    this.workspaces = new Map();
     this.collections = new Map();
     this.folders = new Map();
     this.requests = new Map();
@@ -73,13 +84,25 @@ export class MemStorage implements IStorage {
   }
 
   private initializeMockData() {
-    // Create sample environments
+    // Create sample workspace
+    const workspace: Workspace = {
+      id: "workspace-1",
+      name: "My Application",
+      description: "Main application workspace",
+      collections: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.workspaces.set(workspace.id, workspace);
+
+    // Create sample environments with scoped variables
     const devEnv: Environment = {
       id: "env-dev",
       name: "Development",
       variables: [
-        { key: "baseUrl", value: "https://dev-api.example.com", enabled: true },
-        { key: "apiKey", value: "dev-key-12345", enabled: true },
+        { key: "baseUrl", value: "https://dev-api.example.com", enabled: true, scope: "global" },
+        { key: "apiKey", value: "dev-key-12345", enabled: true, scope: "global" },
+        { key: "timeout", value: "5000", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -89,8 +112,9 @@ export class MemStorage implements IStorage {
       id: "env-test",
       name: "Test",
       variables: [
-        { key: "baseUrl", value: "https://test-api.example.com", enabled: true },
-        { key: "apiKey", value: "test-key-67890", enabled: true },
+        { key: "baseUrl", value: "https://test-api.example.com", enabled: true, scope: "global" },
+        { key: "apiKey", value: "test-key-67890", enabled: true, scope: "global" },
+        { key: "timeout", value: "3000", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -100,8 +124,9 @@ export class MemStorage implements IStorage {
       id: "env-prod",
       name: "Production",
       variables: [
-        { key: "baseUrl", value: "https://api.example.com", enabled: true },
-        { key: "apiKey", value: "prod-key-abcde", enabled: true },
+        { key: "baseUrl", value: "https://api.example.com", enabled: true, scope: "global" },
+        { key: "apiKey", value: "prod-key-abcde", enabled: true, scope: "global" },
+        { key: "timeout", value: "10000", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -116,6 +141,7 @@ export class MemStorage implements IStorage {
       id: "col-1",
       name: "User Management API",
       description: "API for managing users and authentication",
+      workspaceId: workspace.id,
       folders: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -202,6 +228,70 @@ if (response.token) {
     this.requests.set(loginRequest.id, loginRequest);
     this.requests.set(listUsersRequest.id, listUsersRequest);
     this.requests.set(createUserRequest.id, createUserRequest);
+  }
+
+  // Workspaces
+  async getWorkspaces(): Promise<Workspace[]> {
+    const workspaces = Array.from(this.workspaces.values());
+    return workspaces.map(ws => this.hydrateWorkspace(ws));
+  }
+
+  async getWorkspace(id: string): Promise<Workspace | undefined> {
+    const workspace = this.workspaces.get(id);
+    if (!workspace) return undefined;
+    return this.hydrateWorkspace(workspace);
+  }
+
+  private hydrateWorkspace(workspace: Workspace): Workspace {
+    const collections = Array.from(this.collections.values())
+      .filter(c => c.workspaceId === workspace.id)
+      .map(collection => this.hydrateCollection(collection));
+    
+    return {
+      ...workspace,
+      collections,
+    };
+  }
+
+  async createWorkspace(insertWorkspace: InsertWorkspace): Promise<Workspace> {
+    const workspace: Workspace = {
+      ...insertWorkspace,
+      id: randomUUID(),
+      collections: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.workspaces.set(workspace.id, workspace);
+    return workspace;
+  }
+
+  async updateWorkspace(id: string, update: Partial<InsertWorkspace>): Promise<Workspace | undefined> {
+    const workspace = this.workspaces.get(id);
+    if (!workspace) return undefined;
+    
+    const updated: Workspace = {
+      ...workspace,
+      ...update,
+      updatedAt: new Date().toISOString(),
+    };
+    this.workspaces.set(id, updated);
+    return updated;
+  }
+
+  async deleteWorkspace(id: string): Promise<boolean> {
+    const workspace = this.workspaces.get(id);
+    if (!workspace) return false;
+    
+    // Get all collections in this workspace
+    const collectionsToDelete = Array.from(this.collections.values())
+      .filter(c => c.workspaceId === id);
+    
+    // Delete each collection (which will cascade to folders and requests)
+    for (const collection of collectionsToDelete) {
+      await this.deleteCollection(collection.id);
+    }
+    
+    return this.workspaces.delete(id);
   }
 
   // Collections
