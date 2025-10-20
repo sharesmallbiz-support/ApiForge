@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase } from "lucide-react";
+import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
@@ -12,6 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CollectionItem } from "./CollectionItem";
 import { EnvironmentItem } from "./EnvironmentItem";
 import { ImportDialog } from "./ImportDialog";
@@ -33,6 +39,7 @@ export function AppSidebar({
   selectedEnvironmentId,
 }: AppSidebarProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("collections");
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   
   const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
     queryKey: ["/api/workspaces"],
@@ -44,14 +51,46 @@ export function AppSidebar({
 
   const workspaces = workspacesData?.workspaces || [];
   const environments = environmentsData?.environments || [];
+  
+  // Auto-select first workspace if none selected
+  const currentWorkspace = selectedWorkspaceId 
+    ? workspaces.find(w => w.id === selectedWorkspaceId) 
+    : workspaces[0];
+  
+  // Get collections for the current workspace
+  const collections = currentWorkspace?.collections || [];
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
-            {viewMode === "collections" ? "Collections" : "Environments"}
-          </h2>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="flex items-center gap-2 hover-elevate px-2 h-auto"
+                data-testid="button-workspace-selector"
+              >
+                <Briefcase className="h-5 w-5" />
+                <h2 className="text-lg font-semibold">
+                  {currentWorkspace?.name || "My Workspace"}
+                </h2>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {workspaces.map((workspace) => (
+                <DropdownMenuItem
+                  key={workspace.id}
+                  onClick={() => setSelectedWorkspaceId(workspace.id)}
+                  data-testid={`workspace-option-${workspace.id}`}
+                >
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  {workspace.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="ghost" size="icon" data-testid="button-settings">
             <Settings className="h-4 w-4" />
           </Button>
@@ -93,9 +132,9 @@ export function AppSidebar({
           <SidebarGroup>
             <SidebarGroupLabel className="mb-2">
               <div className="flex items-center justify-between w-full">
-                <span>My Workspaces</span>
+                <span>Collections</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-workspace">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
                     <Plus className="h-3 w-3" />
                   </Button>
                   <ImportDialog>
@@ -107,39 +146,29 @@ export function AppSidebar({
               </div>
             </SidebarGroupLabel>
             <SidebarGroupContent className="space-y-1">
-              {workspaces.map((workspace) => (
+              {collections.map((collection) => (
                 <CollectionItem
-                  key={workspace.id}
-                  name={workspace.name}
-                  type="workspace"
-                  hasChildren={workspace.collections.length > 0}
-                  icon={<Briefcase className="h-4 w-4" />}
+                  key={collection.id}
+                  name={collection.name}
+                  type="collection"
+                  hasChildren={collection.folders.length > 0}
                 >
-                  {workspace.collections.map((collection) => (
+                  {collection.folders.map((folder) => (
                     <CollectionItem
-                      key={collection.id}
-                      name={collection.name}
-                      type="collection"
-                      hasChildren={collection.folders.length > 0}
+                      key={folder.id}
+                      name={folder.name}
+                      type="folder"
+                      hasChildren={folder.requests.length > 0}
                     >
-                      {collection.folders.map((folder) => (
+                      {folder.requests.map((request) => (
                         <CollectionItem
-                          key={folder.id}
-                          name={folder.name}
-                          type="folder"
-                          hasChildren={folder.requests.length > 0}
-                        >
-                          {folder.requests.map((request) => (
-                            <CollectionItem
-                              key={request.id}
-                              name={request.name}
-                              type="request"
-                              method={request.method}
-                              isActive={selectedRequestId === request.id}
-                              onClick={() => onRequestSelect?.(request.id)}
-                            />
-                          ))}
-                        </CollectionItem>
+                          key={request.id}
+                          name={request.name}
+                          type="request"
+                          method={request.method}
+                          isActive={selectedRequestId === request.id}
+                          onClick={() => onRequestSelect?.(request.id)}
+                        />
                       ))}
                     </CollectionItem>
                   ))}

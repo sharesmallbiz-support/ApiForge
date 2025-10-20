@@ -14,7 +14,7 @@ interface Request {
 
 interface CollectionItemProps {
   name: string;
-  type: "workspace" | "folder" | "request";
+  type: "workspace" | "collection" | "folder" | "request";
   method?: HttpMethod;
   isActive?: boolean;
   onClick?: () => void;
@@ -40,7 +40,7 @@ export function CollectionItem({
     setIsExpanded(!isExpanded);
   };
 
-  const isContainer = type === "workspace" || type === "folder";
+  const isContainer = type === "workspace" || type === "collection" || type === "folder";
 
   return (
     <div className="w-full">
@@ -68,7 +68,7 @@ export function CollectionItem({
         )}
         {icon || (
           <>
-            {type === "folder" ? (
+            {type === "collection" || type === "folder" ? (
               <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             ) : type === "request" ? (
               <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
