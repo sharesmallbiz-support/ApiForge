@@ -13,6 +13,7 @@ import {
   openApiImportSchema,
 } from "@shared/schema";
 import { executeScript } from "./script-executor";
+import { substituteVariables } from "./environment-resolver";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Workspaces
@@ -253,6 +254,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Request not found" });
       }
 
+      // Get environment if specified and resolve variables first
+      const environmentId = req.body?.environmentId;
+      let environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
+
+      // Resolve environment variables in URL, headers, params, and body
+      const context = { requestId: req.params.id, environmentId };
+      const resolvedUrl = await substituteVariables(request.url, context, environment);
+      const resolvedHeaders = await Promise.all(
+        request.headers.map(async h => ({
+          ...h,
+          value: await substituteVariables(h.value, context, environment)
+        }))
+      );
+      const resolvedParams = await Promise.all(
+        request.params.map(async p => ({
+          ...p,
+          value: await substituteVariables(p.value, context, environment)
+        }))
+      );
+
+      // Resolve body content if present
+      let resolvedBody = request.body?.content || "";
+      if (resolvedBody) {
+        resolvedBody = await substituteVariables(resolvedBody, context, environment);
+      }
+
       // Mock execution - generate realistic response
       const startTime = Date.now();
       
@@ -302,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           mockBody = {
             id: randomUUID(),
-            ...JSON.parse(request.body?.content || "{}"),
+            ...JSON.parse(resolvedBody || "{}"),
             createdAt: new Date().toISOString(),
           };
         }
@@ -310,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status = 200;
         mockBody = {
           id: randomUUID(),
-          ...JSON.parse(request.body?.content || "{}"),
+          ...JSON.parse(resolvedBody || "{}"),
           updatedAt: new Date().toISOString(),
         };
       } else if (request.method === "DELETE") {
@@ -321,9 +348,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mockBody = { success: true };
       }
 
+      // Calculate response body size
       const bodyStr = mockBody ? JSON.stringify(mockBody) : "";
-      const size = new Blob([bodyStr]).size;
+      const size = Buffer.byteLength(bodyStr, "utf8");
 
+      // Convert headers array to record for result
+      const responseHeaders: Record<string, string> = { 
+        "Content-Type": "application/json",
+        "X-Resolved-Url": resolvedUrl,
+        "X-Resolved-Headers": JSON.stringify(resolvedHeaders.filter(h => h.enabled).map(h => ({ [h.key]: h.value }))),
+        "X-Resolved-Params": JSON.stringify(resolvedParams.filter(p => p.enabled).map(p => ({ [p.key]: p.value }))),
+      };
+
+      // Create execution result with resolved values
+      const result: ExecutionResult = {
+        id: randomUUID(),
+        requestId: request.id,
+        status,
+        statusText: status === 200 ? "OK" : status === 201 ? "Created" : status === 204 ? "No Content" : "Error",
+        headers: responseHeaders,
+        body: bodyStr,
+        time,
+        size,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Save result
+      await storage.saveExecutionResult(result);
+
+      // Execute post-request script if present
+      if (request.script && environment) {
+        const scriptResult = await executeScript(request.script, result, environment);
+        environment = scriptResult.environment;
+        
+        // Save updated environment
+        if (scriptResult.modified && environmentId) {
+          await storage.updateEnvironment(environmentId, {
+            variables: environment.variables,
+          });
+        }
+      }
+
+      // Include resolved request data for verification
+      res.json({ 
+        result,
+        resolvedRequest: {
+          url: resolvedUrl,
+          headers: resolvedHeaders.filter(h => h.enabled),
+          params: resolvedParams.filter(p => p.enabled),
+          body: resolvedBody,
+        }
+      });
+    } catch (error) {
+      console.error("Execution error:", error);
+      res.status(500).json({ error: "Failed to execute request" });
+    }
+  });
 
   // Environments
   app.get("/api/environments", async (req, res) => {

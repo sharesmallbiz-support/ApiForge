@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Environment, Workspace, Collection, EnvironmentVariableScope } from "@shared/schema";
+import type { Environment, Workspace, Collection, VariableScope } from "@shared/schema";
 
 interface EnvironmentEditorProps {
   environmentId: string;
@@ -18,9 +18,8 @@ interface Variable {
   key: string;
   value: string;
   enabled: boolean;
-  scope?: EnvironmentVariableScope;
-  workspaceId?: string;
-  collectionId?: string;
+  scope?: VariableScope;
+  scopeId?: string;
 }
 
 export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
@@ -82,17 +81,17 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
     setVariables(variables.filter((_, i) => i !== index));
   };
 
-  const updateVariable = (index: number, field: keyof Variable, value: string | boolean | EnvironmentVariableScope) => {
+  const updateVariable = (index: number, field: keyof Variable, value: string | boolean | VariableScope) => {
     const updated = [...variables];
     updated[index] = { ...updated[index], [field]: value };
     
-    // Clear workspace/collection IDs when scope changes
+    // Clear scopeId when scope changes to ensure user selects the correct workspace/collection
     if (field === "scope") {
       if (value === "global") {
-        delete updated[index].workspaceId;
-        delete updated[index].collectionId;
-      } else if (value === "workspace") {
-        delete updated[index].collectionId;
+        delete updated[index].scopeId;
+      } else {
+        // Clear scopeId when switching between workspace and collection to force reselection
+        delete updated[index].scopeId;
       }
     }
     
@@ -192,7 +191,7 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
                     />
                     <Select
                       value={variable.scope || "global"}
-                      onValueChange={(value) => updateVariable(index, "scope", value as EnvironmentVariableScope)}
+                      onValueChange={(value) => updateVariable(index, "scope", value as VariableScope)}
                     >
                       <SelectTrigger data-testid={`select-variable-scope-${index}`}>
                         <SelectValue />
@@ -216,8 +215,8 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
                     <div className="ml-12 grid grid-cols-[1fr_1fr_200px] gap-2">
                       <div></div>
                       <Select
-                        value={variable.workspaceId || ""}
-                        onValueChange={(value) => updateVariable(index, "workspaceId", value)}
+                        value={variable.scopeId || ""}
+                        onValueChange={(value) => updateVariable(index, "scopeId", value)}
                       >
                         <SelectTrigger data-testid={`select-workspace-${index}`}>
                           <SelectValue placeholder="Select workspace" />
@@ -237,8 +236,8 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
                     <div className="ml-12 grid grid-cols-[1fr_1fr_200px] gap-2">
                       <div></div>
                       <Select
-                        value={variable.collectionId || ""}
-                        onValueChange={(value) => updateVariable(index, "collectionId", value)}
+                        value={variable.scopeId || ""}
+                        onValueChange={(value) => updateVariable(index, "scopeId", value)}
                       >
                         <SelectTrigger data-testid={`select-collection-${index}`}>
                           <SelectValue placeholder="Select collection" />
