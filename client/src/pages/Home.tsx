@@ -72,7 +72,10 @@ export default function Home() {
             {selectedRequestId && requestData ? (
               <div className="grid grid-cols-2 h-full">
                 <div className="border-r">
-                  <RequestBuilder onSend={handleSend} />
+                  <RequestBuilder 
+                    request={requestData.request}
+                    onSend={handleSend} 
+                  />
                 </div>
                 <div className="bg-card">
                   {executionResult ? (

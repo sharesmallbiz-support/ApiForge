@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send } from "lucide-react";
 import { KeyValueTable } from "./KeyValueTable";
+import type { Request } from "@shared/schema";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestBuilderProps {
+  request?: Request;
   onSend?: () => void;
 }
 
-export function RequestBuilder({ onSend }: RequestBuilderProps) {
-  const [method, setMethod] = useState<HttpMethod>("GET");
-  const [url, setUrl] = useState("https://api.example.com/users");
+export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
+  const [method, setMethod] = useState<HttpMethod>(request?.method || "GET");
+  const [url, setUrl] = useState(request?.url || "");
+  const [body, setBody] = useState(request?.body?.content || "");
+
+  // Update form when request changes
+  useEffect(() => {
+    if (request) {
+      setMethod(request.method);
+      setUrl(request.url);
+      setBody(request.body?.content || "");
+    }
+  }, [request]);
 
   return (
     <div className="flex flex-col h-full">
@@ -81,6 +93,8 @@ export function RequestBuilder({ onSend }: RequestBuilderProps) {
             <textarea
               className="w-full min-h-[300px] p-3 rounded-md border bg-card text-card-foreground font-mono text-sm"
               placeholder='{\n  "key": "value"\n}'
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
               data-testid="textarea-body"
             />
           </div>
