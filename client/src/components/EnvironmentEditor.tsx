@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Environment } from "@shared/schema";
+import type { Environment, Workspace, Collection, EnvironmentVariableScope } from "@shared/schema";
 
 interface EnvironmentEditorProps {
   environmentId: string;
@@ -17,6 +18,9 @@ interface Variable {
   key: string;
   value: string;
   enabled: boolean;
+  scope?: EnvironmentVariableScope;
+  workspaceId?: string;
+  collectionId?: string;
 }
 
 export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
@@ -26,7 +30,17 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
     enabled: !!environmentId,
   });
 
+  const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
+    queryKey: ["/api/workspaces"],
+  });
+
+  const { data: collectionsData } = useQuery<{ collections: Collection[] }>({
+    queryKey: ["/api/collections"],
+  });
+
   const environment = data?.environment;
+  const workspaces = workspacesData?.workspaces || [];
+  const collections = collectionsData?.collections || [];
 
   const [variables, setVariables] = useState<Variable[]>([]);
 
@@ -61,16 +75,27 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
   });
 
   const addVariable = () => {
-    setVariables([...variables, { key: "", value: "", enabled: true }]);
+    setVariables([...variables, { key: "", value: "", enabled: true, scope: "global" }]);
   };
 
   const removeVariable = (index: number) => {
     setVariables(variables.filter((_, i) => i !== index));
   };
 
-  const updateVariable = (index: number, field: keyof Variable, value: string | boolean) => {
+  const updateVariable = (index: number, field: keyof Variable, value: string | boolean | EnvironmentVariableScope) => {
     const updated = [...variables];
     updated[index] = { ...updated[index], [field]: value };
+    
+    // Clear workspace/collection IDs when scope changes
+    if (field === "scope") {
+      if (value === "global") {
+        delete updated[index].workspaceId;
+        delete updated[index].collectionId;
+      } else if (value === "workspace") {
+        delete updated[index].collectionId;
+      }
+    }
+    
     setVariables(updated);
   };
 
@@ -124,10 +149,11 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
           </div>
 
           <div className="space-y-2">
-            <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-2 items-center pb-2 border-b text-sm font-medium text-muted-foreground">
+            <div className="grid grid-cols-[auto_1fr_1fr_200px_auto] gap-2 items-center pb-2 border-b text-sm font-medium text-muted-foreground">
               <div className="w-10"></div>
               <div>KEY</div>
               <div>VALUE</div>
+              <div>SCOPE</div>
               <div className="w-10"></div>
             </div>
 
@@ -138,40 +164,96 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
               </div>
             ) : (
               variables.map((variable, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-[auto_1fr_1fr_auto] gap-2 items-center"
-                  data-testid={`variable-row-${index}`}
-                >
-                  <Checkbox
-                    checked={variable.enabled}
-                    onCheckedChange={(checked) =>
-                      updateVariable(index, "enabled", checked === true)
-                    }
-                    data-testid={`checkbox-variable-${index}`}
-                  />
-                  <Input
-                    value={variable.key}
-                    onChange={(e) => updateVariable(index, "key", e.target.value)}
-                    placeholder="Key"
-                    className="font-mono text-sm"
-                    data-testid={`input-variable-key-${index}`}
-                  />
-                  <Input
-                    value={variable.value}
-                    onChange={(e) => updateVariable(index, "value", e.target.value)}
-                    placeholder="Value"
-                    className="font-mono text-sm"
-                    data-testid={`input-variable-value-${index}`}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeVariable(index)}
-                    data-testid={`button-delete-variable-${index}`}
+                <div key={index} className="space-y-2">
+                  <div
+                    className="grid grid-cols-[auto_1fr_1fr_200px_auto] gap-2 items-center"
+                    data-testid={`variable-row-${index}`}
                   >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                    <Checkbox
+                      checked={variable.enabled}
+                      onCheckedChange={(checked) =>
+                        updateVariable(index, "enabled", checked === true)
+                      }
+                      data-testid={`checkbox-variable-${index}`}
+                    />
+                    <Input
+                      value={variable.key}
+                      onChange={(e) => updateVariable(index, "key", e.target.value)}
+                      placeholder="Key"
+                      className="font-mono text-sm"
+                      data-testid={`input-variable-key-${index}`}
+                    />
+                    <Input
+                      value={variable.value}
+                      onChange={(e) => updateVariable(index, "value", e.target.value)}
+                      placeholder="Value"
+                      className="font-mono text-sm"
+                      data-testid={`input-variable-value-${index}`}
+                    />
+                    <Select
+                      value={variable.scope || "global"}
+                      onValueChange={(value) => updateVariable(index, "scope", value as EnvironmentVariableScope)}
+                    >
+                      <SelectTrigger data-testid={`select-variable-scope-${index}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="global">Global</SelectItem>
+                        <SelectItem value="workspace">Workspace</SelectItem>
+                        <SelectItem value="collection">Collection</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeVariable(index)}
+                      data-testid={`button-delete-variable-${index}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                  {variable.scope === "workspace" && (
+                    <div className="ml-12 grid grid-cols-[1fr_1fr_200px] gap-2">
+                      <div></div>
+                      <Select
+                        value={variable.workspaceId || ""}
+                        onValueChange={(value) => updateVariable(index, "workspaceId", value)}
+                      >
+                        <SelectTrigger data-testid={`select-workspace-${index}`}>
+                          <SelectValue placeholder="Select workspace" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workspaces.map((ws) => (
+                            <SelectItem key={ws.id} value={ws.id}>
+                              {ws.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div></div>
+                    </div>
+                  )}
+                  {variable.scope === "collection" && (
+                    <div className="ml-12 grid grid-cols-[1fr_1fr_200px] gap-2">
+                      <div></div>
+                      <Select
+                        value={variable.collectionId || ""}
+                        onValueChange={(value) => updateVariable(index, "collectionId", value)}
+                      >
+                        <SelectTrigger data-testid={`select-collection-${index}`}>
+                          <SelectValue placeholder="Select collection" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {collections.map((col) => (
+                            <SelectItem key={col.id} value={col.id}>
+                              {col.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div></div>
+                    </div>
+                  )}
                 </div>
               ))
             )}
