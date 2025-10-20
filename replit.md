@@ -5,10 +5,11 @@ A modern REST API testing platform inspired by Postman, built with React, TypeSc
 ## Overview
 
 This is a full-featured API testing tool that allows developers to:
-- Organize API requests in collections and folders
+- Organize API requests in workspaces, collections, and folders
 - Test HTTP endpoints with different methods (GET, POST, PUT, DELETE, PATCH)
-- Manage multiple environments (Dev, Test, Prod)
-- Execute API requests and view responses
+- Manage scoped environment variables (global, workspace, and collection levels)
+- Execute API requests with variable substitution and view responses
+- Post-request scripting for value extraction and environment updates
 - Support for OpenAPI JSON import (planned)
 - Multi-step workflow execution (planned)
 
@@ -17,15 +18,19 @@ This is a full-featured API testing tool that allows developers to:
 ✅ **Completed Features:**
 - Modern dark-mode UI with Postman-inspired design
 - Three-panel layout: Collections sidebar, Request builder, Response viewer
-- Complete data models for Collections, Folders, Requests, Environments, and Workflows
+- **Workspace Organization:** Application-level container above collections
+- **Scoped Environment Variables:** Global, workspace, and collection-level scoping with hierarchical resolution
+- Complete data models for Workspaces, Collections, Folders, Requests, Environments, and Workflows
 - Full CRUD API with in-memory storage (MemStorage)
-- Collection tree navigation with expandable folders
+- Hierarchical tree navigation: Workspaces → Collections → Folders → Requests
 - Request builder with method selector, URL input, headers, params, body, and auth tabs
-- Environment selector with variable support
-- Response viewer with status codes, timing, and formatted JSON
+- **Variable Substitution:** {{variableName}} syntax in URL, headers, params, and body
+- **Post-Request Scripting:** JavaScript execution with pm.environment.set() API
+- Environment editor with scope selection (global/workspace/collection)
+- Response viewer with status codes, timing, formatted JSON, and resolved values
 - Color-coded HTTP method badges (GET: green, POST: blue, PUT: amber, DELETE: red, PATCH: purple)
 - Cascade deletion for maintaining referential integrity
-- Basic validation to prevent orphaned entities
+- Validation to prevent orphaned entities and invalid scoping
 
 ## Project Architecture
 
@@ -35,11 +40,12 @@ This is a full-featured API testing tool that allows developers to:
   - `NotFound.tsx` - 404 page
 
 - **Components:**
-  - `AppSidebar.tsx` - Left sidebar with collections tree
-  - `CollectionItem.tsx` - Tree item for collections, folders, and requests
+  - `AppSidebar.tsx` - Left sidebar with workspaces → collections → folders → requests hierarchy
+  - `CollectionItem.tsx` - Tree item for workspaces, collections, folders, and requests
   - `RequestBuilder.tsx` - Center panel for building HTTP requests
-  - `ResponseViewer.tsx` - Right panel for viewing API responses
+  - `ResponseViewer.tsx` - Right panel for viewing API responses (includes resolved values)
   - `EnvironmentSelector.tsx` - Dropdown for switching environments
+  - `EnvironmentEditor.tsx` - Dialog for managing scoped environment variables
   - `HttpMethodBadge.tsx` - Color-coded HTTP method indicator
   - `StatusCodeBadge.tsx` - Color-coded status code indicator
   - `KeyValueTable.tsx` - Reusable table for headers/params
@@ -47,8 +53,10 @@ This is a full-featured API testing tool that allows developers to:
   - `ThemeToggle.tsx` - Dark/light mode switcher
 
 ### Backend (`server/`)
-- **Storage:** `storage.ts` - In-memory storage with MemStorage class
-- **Routes:** `routes.ts` - RESTful API endpoints
+- **Storage:** `storage.ts` - In-memory storage with MemStorage class and workspace support
+- **Routes:** `routes.ts` - RESTful API endpoints including workspace CRUD
+- **Environment Resolver:** `environment-resolver.ts` - Scoped variable resolution with hierarchical precedence
+- **Script Executor:** `script-executor.ts` - Post-request JavaScript execution engine
 - **API Design:** `API_DESIGN.md` - Complete API documentation
 
 ### Shared (`shared/`)
@@ -56,32 +64,49 @@ This is a full-featured API testing tool that allows developers to:
 
 ## Data Models
 
-1. **Collection** - Top-level container for API requests
+1. **Workspace** - Top-level application container
+   - Contains multiple collections
+   - Has name, description, timestamps
+   - Enables application-level organization
+
+2. **Collection** - Container for API requests within a workspace
+   - Belongs to one workspace
    - Contains multiple folders
    - Has name, description, timestamps
 
-2. **Folder** - Organizes requests within a collection
+3. **Folder** - Organizes requests within a collection
    - Belongs to one collection
    - Contains multiple requests
 
-3. **Request** - Individual API request
+4. **Request** - Individual API request
    - HTTP method, URL, headers, params, body, auth
    - Belongs to one folder
+   - Supports post-request scripts for environment updates
 
-4. **Environment** - Set of variables (Dev/Test/Prod)
+5. **Environment** - Set of variables with scoped visibility
+   - **Scoping Levels:** Global (all workspaces), Workspace (specific workspace), Collection (specific collection)
+   - **Variable Resolution:** Collection > Workspace > Global (hierarchical precedence)
    - Key-value pairs with enabled/disabled state
-   - Used for variable substitution in requests
+   - Used for {{variable}} substitution in requests
 
-5. **Workflow** - Multi-step request sequences (schema defined, not yet implemented)
+6. **Workflow** - Multi-step request sequences (schema defined, not yet implemented)
 
-6. **ExecutionResult** - Stored response from API execution
+7. **ExecutionResult** - Stored response from API execution
+   - Includes resolved URL, headers, params for verification
 
 ## API Endpoints
+
+### Workspaces
+- `GET /api/workspaces` - List all workspaces (with hydrated collections)
+- `GET /api/workspaces/:id` - Get single workspace
+- `POST /api/workspaces` - Create workspace
+- `PUT /api/workspaces/:id` - Update workspace
+- `DELETE /api/workspaces/:id` - Delete workspace (cascades to collections/folders/requests)
 
 ### Collections
 - `GET /api/collections` - List all collections (with hydrated folders/requests)
 - `GET /api/collections/:id` - Get single collection
-- `POST /api/collections` - Create collection
+- `POST /api/collections` - Create collection (requires workspaceId)
 - `PATCH /api/collections/:id` - Update collection
 - `DELETE /api/collections/:id` - Delete collection (cascades to folders/requests)
 
@@ -100,9 +125,21 @@ This is a full-featured API testing tool that allows developers to:
 ### Environments
 - `GET /api/environments` - List all environments
 - `GET /api/environments/:id` - Get environment
-- `POST /api/environments` - Create environment
+- `POST /api/environments` - Create environment with scope (global/workspace/collection)
 - `PATCH /api/environments/:id` - Update environment
 - `DELETE /api/environments/:id` - Delete environment
+
+### Variable Resolution
+The environment resolver implements hierarchical variable resolution:
+1. **Collection-scoped variables** (highest priority) - visible only to requests in that collection
+2. **Workspace-scoped variables** - visible to all collections in that workspace
+3. **Global variables** (lowest priority) - visible to all workspaces
+
+Variables are substituted using `{{variableName}}` syntax in:
+- Request URLs
+- Headers (keys and values)
+- Query parameters (keys and values)
+- Request body (JSON)
 
 ### Workflows (planned)
 - Full CRUD endpoints defined but not yet connected to UI
@@ -110,10 +147,11 @@ This is a full-featured API testing tool that allows developers to:
 ## Storage System
 
 The application uses in-memory storage (`MemStorage` class) with:
-- **Hydration:** Collections automatically include nested folders and requests
-- **Cascade Deletion:** Deleting a collection removes all folders, requests, and execution results
-- **Validation:** Prevents orphaned entities (requests without folders, folders without collections)
-- **Mock Data:** Initializes with sample "User Management API" collection
+- **Hierarchical Hydration:** Workspaces include collections; collections include folders and requests
+- **Cascade Deletion:** Deleting a workspace removes all collections, folders, requests, and execution results
+- **Validation:** Prevents orphaned entities and invalid scoping (e.g., collection-scoped env without collectionId)
+- **Mock Data:** Initializes with sample workspace containing "User Management API" collection
+- **Scoped Environment Resolution:** Variables resolved based on request context (collection → workspace → global)
 
 ## Design System
 
@@ -135,7 +173,18 @@ The application uses in-memory storage (`MemStorage` class) with:
 
 ## Recent Changes
 
-**October 20, 2025:**
+**October 20, 2025 (Latest):**
+- ✅ **Workspace Implementation:** Added Workspace entity as top-level container above collections
+- ✅ **Scoped Environment Variables:** Implemented three-level scoping (global/workspace/collection) with hierarchical resolution
+- ✅ **Variable Substitution:** Full {{variable}} support in URL, headers, params, and body
+- ✅ **Post-Request Scripts:** JavaScript execution with pm.environment.set() API for value extraction
+- ✅ **Environment Editor UI:** Scope selection with dynamic workspace/collection dropdowns
+- ✅ **Hierarchical Sidebar:** Workspaces → Collections → Folders → Requests navigation
+- ✅ **Resolved Values Display:** Response includes resolved URL, headers, params for verification
+- ✅ **Storage Layer Updates:** Workspace CRUD, scoped resolution, proper hydration
+- ✅ **API Routes:** Complete workspace endpoints, variable resolution in request execution
+
+**October 20, 2025 (Earlier):**
 - Implemented data hydration system for collections (folders and requests now properly nested)
 - Added cascade deletion for collections, folders, and requests
 - Added validation to prevent orphaned entities
@@ -145,14 +194,15 @@ The application uses in-memory storage (`MemStorage` class) with:
 
 ## Next Steps (Future Enhancements)
 
-1. **OpenAPI Import:** Complete the import dialog functionality to parse and create collections from OpenAPI JSON
-2. **Workflow Execution:** Implement multi-step request sequences with variable chaining
-3. **Request Execution:** Connect to actual HTTP endpoints (currently mock execution)
-4. **Environment Variables:** Implement {{variable}} substitution in requests
+1. **OpenAPI Import:** Complete the import dialog functionality to parse and create collections from OpenAPI JSON (requires workspaceId parameter fix)
+2. **Workflow Execution:** Implement multi-step request sequences with variable chaining between requests
+3. **Real HTTP Execution:** Connect to actual HTTP endpoints (currently mock execution for safety)
+4. **Query Params in URL:** Merge resolved params into final URL query string
 5. **Advanced Validation:** Cross-collection validation, workflow cleanup
-6. **Export/Save:** Allow exporting collections and environments as JSON files
+6. **Export/Save:** Allow exporting workspaces, collections, and environments as JSON files
 7. **History:** Track execution history for debugging
 8. **Versioning:** Support multiple versions of API collections
+9. **Enhanced UI:** Display resolved values directly in RequestBuilder (currently in response headers)
 
 ## Running the Application
 
