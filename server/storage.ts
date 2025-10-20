@@ -196,22 +196,39 @@ export class MemStorage implements IStorage {
     this.requests.set(loginRequest.id, loginRequest);
     this.requests.set(listUsersRequest.id, listUsersRequest);
     this.requests.set(createUserRequest.id, createUserRequest);
-
-    // Update folders with requests
-    authFolder.requests.push(loginRequest);
-    usersFolder.requests.push(listUsersRequest, createUserRequest);
-    
-    // Update collection with folders
-    collection.folders.push(authFolder, usersFolder);
   }
 
   // Collections
   async getCollections(): Promise<Collection[]> {
-    return Array.from(this.collections.values());
+    const collections = Array.from(this.collections.values());
+    return collections.map(col => this.hydrateCollection(col));
   }
 
   async getCollection(id: string): Promise<Collection | undefined> {
-    return this.collections.get(id);
+    const collection = this.collections.get(id);
+    if (!collection) return undefined;
+    return this.hydrateCollection(collection);
+  }
+
+  private hydrateCollection(collection: Collection): Collection {
+    const folders = Array.from(this.folders.values())
+      .filter(f => f.collectionId === collection.id)
+      .map(folder => this.hydrateFolder(folder));
+    
+    return {
+      ...collection,
+      folders,
+    };
+  }
+
+  private hydrateFolder(folder: Folder): Folder {
+    const requests = Array.from(this.requests.values())
+      .filter(r => r.folderId === folder.id);
+    
+    return {
+      ...folder,
+      requests,
+    };
   }
 
   async createCollection(insertCollection: InsertCollection): Promise<Collection> {
@@ -240,6 +257,27 @@ export class MemStorage implements IStorage {
   }
 
   async deleteCollection(id: string): Promise<boolean> {
+    const collection = this.collections.get(id);
+    if (!collection) return false;
+    
+    // Get all folders in this collection
+    const foldersToDelete = Array.from(this.folders.values())
+      .filter(f => f.collectionId === id);
+    
+    // Delete all requests in those folders
+    for (const folder of foldersToDelete) {
+      const requestsToDelete = Array.from(this.requests.values())
+        .filter(r => r.folderId === folder.id);
+      
+      // Delete execution results for each request
+      for (const request of requestsToDelete) {
+        this.executionResults.delete(request.id);
+        this.requests.delete(request.id);
+      }
+      
+      this.folders.delete(folder.id);
+    }
+    
     return this.collections.delete(id);
   }
 
@@ -249,6 +287,12 @@ export class MemStorage implements IStorage {
   }
 
   async createFolder(insertFolder: InsertFolder): Promise<Folder> {
+    // Validate collection exists
+    const collection = this.collections.get(insertFolder.collectionId);
+    if (!collection) {
+      throw new Error(`Collection ${insertFolder.collectionId} not found`);
+    }
+    
     const folder: Folder = {
       ...insertFolder,
       id: randomUUID(),
@@ -256,12 +300,8 @@ export class MemStorage implements IStorage {
     };
     this.folders.set(folder.id, folder);
     
-    // Update collection
-    const collection = this.collections.get(folder.collectionId);
-    if (collection) {
-      collection.folders.push(folder);
-      collection.updatedAt = new Date().toISOString();
-    }
+    // Update collection timestamp
+    collection.updatedAt = new Date().toISOString();
     
     return folder;
   }
@@ -282,13 +322,19 @@ export class MemStorage implements IStorage {
     const folder = this.folders.get(id);
     if (!folder) return false;
     
-    // Delete all requests in folder
-    folder.requests.forEach(req => this.requests.delete(req.id));
+    // Delete all requests in folder and their execution results
+    const requestsToDelete = Array.from(this.requests.values())
+      .filter(r => r.folderId === id);
     
-    // Remove from collection
+    for (const request of requestsToDelete) {
+      this.executionResults.delete(request.id);
+      this.requests.delete(request.id);
+    }
+    
+    // Update collection timestamp
     const collection = this.collections.get(folder.collectionId);
     if (collection) {
-      collection.folders = collection.folders.filter(f => f.id !== id);
+      collection.updatedAt = new Date().toISOString();
     }
     
     return this.folders.delete(id);
@@ -300,17 +346,17 @@ export class MemStorage implements IStorage {
   }
 
   async createRequest(insertRequest: InsertRequest): Promise<Request> {
+    // Validate folder exists
+    const folder = this.folders.get(insertRequest.folderId);
+    if (!folder) {
+      throw new Error(`Folder ${insertRequest.folderId} not found`);
+    }
+    
     const request: Request = {
       ...insertRequest,
       id: randomUUID(),
     };
     this.requests.set(request.id, request);
-    
-    // Update folder
-    const folder = this.folders.get(request.folderId);
-    if (folder) {
-      folder.requests.push(request);
-    }
     
     return request;
   }
@@ -328,15 +374,8 @@ export class MemStorage implements IStorage {
   }
 
   async deleteRequest(id: string): Promise<boolean> {
-    const request = this.requests.get(id);
-    if (!request) return false;
-    
-    // Remove from folder
-    const folder = this.folders.get(request.folderId);
-    if (folder) {
-      folder.requests = folder.requests.filter(r => r.id !== id);
-    }
-    
+    // Delete execution results for this request
+    this.executionResults.delete(id);
     return this.requests.delete(id);
   }
 
