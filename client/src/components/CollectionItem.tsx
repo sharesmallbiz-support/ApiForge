@@ -14,12 +14,13 @@ interface Request {
 
 interface CollectionItemProps {
   name: string;
-  type: "folder" | "request";
+  type: "workspace" | "folder" | "request";
   method?: HttpMethod;
   isActive?: boolean;
   onClick?: () => void;
   children?: React.ReactNode;
   hasChildren?: boolean;
+  icon?: React.ReactNode;
 }
 
 export function CollectionItem({
@@ -30,6 +31,7 @@ export function CollectionItem({
   onClick,
   children,
   hasChildren,
+  icon,
 }: CollectionItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -37,6 +39,8 @@ export function CollectionItem({
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
+
+  const isContainer = type === "workspace" || type === "folder";
 
   return (
     <div className="w-full">
@@ -47,7 +51,7 @@ export function CollectionItem({
         onClick={onClick}
         data-testid={`item-${type}-${name.toLowerCase().replace(/\s+/g, "-")}`}
       >
-        {type === "folder" && hasChildren && (
+        {isContainer && hasChildren && (
           <Button
             variant="ghost"
             size="icon"
@@ -62,17 +66,21 @@ export function CollectionItem({
             )}
           </Button>
         )}
-        {type === "folder" ? (
-          <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        ) : (
-          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        {icon || (
+          <>
+            {type === "folder" ? (
+              <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            ) : type === "request" ? (
+              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            ) : null}
+          </>
         )}
         {type === "request" && method && (
           <HttpMethodBadge method={method} className="flex-shrink-0" />
         )}
         <span className="text-sm truncate flex-1">{name}</span>
       </div>
-      {type === "folder" && isExpanded && children && (
+      {isContainer && isExpanded && children && (
         <div className="ml-4 mt-1 space-y-1">{children}</div>
       )}
     </div>

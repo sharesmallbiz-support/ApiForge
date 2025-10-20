@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe } from "lucide-react";
+import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionItem } from "./CollectionItem";
 import { EnvironmentItem } from "./EnvironmentItem";
 import { ImportDialog } from "./ImportDialog";
-import type { Collection, Environment } from "@shared/schema";
+import type { Workspace, Collection, Environment } from "@shared/schema";
 
 interface AppSidebarProps {
   onRequestSelect?: (requestId: string) => void;
@@ -34,15 +34,15 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("collections");
   
-  const { data: collectionsData } = useQuery<{ collections: Collection[] }>({
-    queryKey: ["/api/collections"],
+  const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
+    queryKey: ["/api/workspaces"],
   });
 
   const { data: environmentsData } = useQuery<{ environments: Environment[] }>({
     queryKey: ["/api/environments"],
   });
 
-  const collections = collectionsData?.collections || [];
+  const workspaces = workspacesData?.workspaces || [];
   const environments = environmentsData?.environments || [];
 
   return (
@@ -93,43 +93,53 @@ export function AppSidebar({
           <SidebarGroup>
             <SidebarGroupLabel className="mb-2">
               <div className="flex items-center justify-between w-full">
-                <span>My Collections</span>
+                <span>My Workspaces</span>
                 <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-workspace">
+                    <Plus className="h-3 w-3" />
+                  </Button>
                   <ImportDialog>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
-                      <Plus className="h-3 w-3" />
+                    <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-import">
+                      <FolderPlus className="h-3 w-3" />
                     </Button>
                   </ImportDialog>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-new-folder">
-                    <FolderPlus className="h-3 w-3" />
-                  </Button>
                 </div>
               </div>
             </SidebarGroupLabel>
             <SidebarGroupContent className="space-y-1">
-              {collections.map((collection) => (
+              {workspaces.map((workspace) => (
                 <CollectionItem
-                  key={collection.id}
-                  name={collection.name}
-                  type="folder"
-                  hasChildren={collection.folders.length > 0}
+                  key={workspace.id}
+                  name={workspace.name}
+                  type="workspace"
+                  hasChildren={workspace.collections.length > 0}
+                  icon={<Briefcase className="h-4 w-4" />}
                 >
-                  {collection.folders.map((folder) => (
+                  {workspace.collections.map((collection) => (
                     <CollectionItem
-                      key={folder.id}
-                      name={folder.name}
+                      key={collection.id}
+                      name={collection.name}
                       type="folder"
-                      hasChildren={folder.requests.length > 0}
+                      hasChildren={collection.folders.length > 0}
                     >
-                      {folder.requests.map((request) => (
+                      {collection.folders.map((folder) => (
                         <CollectionItem
-                          key={request.id}
-                          name={request.name}
-                          type="request"
-                          method={request.method}
-                          isActive={selectedRequestId === request.id}
-                          onClick={() => onRequestSelect?.(request.id)}
-                        />
+                          key={folder.id}
+                          name={folder.name}
+                          type="folder"
+                          hasChildren={folder.requests.length > 0}
+                        >
+                          {folder.requests.map((request) => (
+                            <CollectionItem
+                              key={request.id}
+                              name={request.name}
+                              type="request"
+                              method={request.method}
+                              isActive={selectedRequestId === request.id}
+                              onClick={() => onRequestSelect?.(request.id)}
+                            />
+                          ))}
+                        </CollectionItem>
                       ))}
                     </CollectionItem>
                   ))}
