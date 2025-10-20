@@ -41,6 +41,7 @@ export const requestSchema = z.object({
   params: z.array(keyValuePairSchema).default([]),
   body: requestBodySchema,
   auth: requestAuthSchema,
+  script: z.string().optional(),
 });
 
 export const insertRequestSchema = requestSchema.omit({ id: true });

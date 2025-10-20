@@ -18,6 +18,7 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
   const [method, setMethod] = useState<HttpMethod>(request?.method || "GET");
   const [url, setUrl] = useState(request?.url || "");
   const [body, setBody] = useState(request?.body?.content || "");
+  const [script, setScript] = useState(request?.script || "");
 
   // Update form when request changes
   useEffect(() => {
@@ -25,6 +26,7 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
       setMethod(request.method);
       setUrl(request.url);
       setBody(request.body?.content || "");
+      setScript(request.script || "");
     }
   }, [request]);
 
@@ -62,6 +64,7 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
           <TabsTrigger value="headers" data-testid="tab-headers">Headers</TabsTrigger>
           <TabsTrigger value="body" data-testid="tab-body">Body</TabsTrigger>
           <TabsTrigger value="auth" data-testid="tab-auth">Auth</TabsTrigger>
+          <TabsTrigger value="scripts" data-testid="tab-scripts">Scripts</TabsTrigger>
         </TabsList>
         
         <TabsContent value="params" className="flex-1 p-4 overflow-auto">
@@ -120,6 +123,43 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
                 className="font-mono text-sm"
                 data-testid="input-token"
               />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="scripts" className="flex-1 p-4 overflow-auto">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Post-Response Script</label>
+                <span className="text-xs text-muted-foreground">JavaScript to run after receiving the response</span>
+              </div>
+              <textarea
+                className="w-full min-h-[400px] p-3 rounded-md border bg-card text-card-foreground font-mono text-sm"
+                placeholder={`// Example: Extract token from response and save to environment
+const response = pm.response.json();
+if (response.token) {
+  pm.environment.set("token", response.token);
+  console.log("Token saved:", response.token);
+}
+
+// Available APIs:
+// - pm.response.json() - Get response body as JSON
+// - pm.response.text() - Get response body as text
+// - pm.response.status - Get status code
+// - pm.response.headers - Get response headers
+// - pm.environment.set(key, value) - Set environment variable
+// - pm.environment.get(key) - Get environment variable`}
+                value={script}
+                onChange={(e) => setScript(e.target.value)}
+                data-testid="textarea-script"
+              />
+            </div>
+            <div className="p-3 rounded-md bg-muted/50 border">
+              <p className="text-xs text-muted-foreground">
+                <strong>Tip:</strong> Use post-response scripts to extract data from API responses and save them as environment variables. 
+                This is useful for chaining requests together (e.g., save auth token from login, use in subsequent requests).
+              </p>
             </div>
           </div>
         </TabsContent>

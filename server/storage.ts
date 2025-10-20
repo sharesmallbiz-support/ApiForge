@@ -155,6 +155,12 @@ export class MemStorage implements IStorage {
         type: "json",
         content: JSON.stringify({ email: "user@example.com", password: "password123" }, null, 2),
       },
+      script: `// Extract token from response and save to environment
+const response = pm.response.json();
+if (response.token) {
+  pm.environment.set("token", response.token);
+  console.log("Token saved to environment:", response.token);
+}`,
     };
     
     const listUsersRequest: Request = {

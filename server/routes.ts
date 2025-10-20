@@ -11,6 +11,7 @@ import {
   insertWorkflowSchema,
   openApiImportSchema,
 } from "@shared/schema";
+import { executeScript } from "./script-executor";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Collections
@@ -265,29 +266,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bodyStr = mockBody ? JSON.stringify(mockBody) : "";
       const size = new Blob([bodyStr]).size;
 
-      const result: ExecutionResult = {
-        id: randomUUID(),
-        requestId: request.id,
-        status,
-        statusText: getStatusText(status),
-        headers: {
-          "content-type": "application/json",
-          "cache-control": "no-cache",
-          "date": new Date().toUTCString(),
-          "x-request-id": randomUUID(),
-        },
-        body: mockBody,
-        time,
-        size,
-        timestamp: new Date().toISOString(),
-      };
-
-      await storage.saveExecutionResult(result);
-      res.json({ result });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to execute request" });
-    }
-  });
 
   // Environments
   app.get("/api/environments", async (req, res) => {
