@@ -1,16 +1,39 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { EnvironmentSelector } from "@/components/EnvironmentSelector";
 import { RequestBuilder } from "@/components/RequestBuilder";
 import { ResponseViewer } from "@/components/ResponseViewer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
+import type { Request, ExecutionResult } from "@shared/schema";
 
 export default function Home() {
-  const [showResponse, setShowResponse] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+
+  const { data: requestData } = useQuery<{ request: Request }>({
+    queryKey: ["/api/requests", selectedRequestId],
+    enabled: !!selectedRequestId,
+  });
+
+  const executeMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedRequestId) throw new Error("No request selected");
+      const response = await apiRequest(
+        "POST",
+        `/api/requests/${selectedRequestId}/execute`,
+        { environmentId: selectedEnvironment || undefined }
+      );
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setExecutionResult(data.result);
+    },
+  });
 
   const style = {
     "--sidebar-width": "20rem",
@@ -18,14 +41,16 @@ export default function Home() {
   };
 
   const handleSend = () => {
-    console.log("Sending request...");
-    setShowResponse(true);
+    executeMutation.mutate();
   };
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <AppSidebar />
+        <AppSidebar 
+          onRequestSelect={setSelectedRequestId}
+          selectedRequestId={selectedRequestId || undefined}
+        />
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between p-3 border-b">
             <div className="flex items-center gap-2">
@@ -36,28 +61,46 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <EnvironmentSelector />
+              <EnvironmentSelector 
+                value={selectedEnvironment}
+                onChange={setSelectedEnvironment}
+              />
               <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 overflow-hidden">
-            <div className="grid grid-cols-2 h-full">
-              <div className="border-r">
-                <RequestBuilder onSend={handleSend} />
-              </div>
-              <div className="bg-card">
-                {showResponse ? (
-                  <ResponseViewer />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <div className="text-center space-y-2">
-                      <Play className="h-12 w-12 mx-auto opacity-50" />
-                      <p className="text-sm">Send a request to see the response</p>
+            {selectedRequestId && requestData ? (
+              <div className="grid grid-cols-2 h-full">
+                <div className="border-r">
+                  <RequestBuilder onSend={handleSend} />
+                </div>
+                <div className="bg-card">
+                  {executionResult ? (
+                    <ResponseViewer
+                      statusCode={executionResult.status}
+                      responseTime={executionResult.time}
+                      size={executionResult.size}
+                      body={JSON.stringify(executionResult.body, null, 2)}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      <div className="text-center space-y-2">
+                        <Play className="h-12 w-12 mx-auto opacity-50" />
+                        <p className="text-sm">Send a request to see the response</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="text-center space-y-2">
+                  <Play className="h-16 w-16 mx-auto opacity-30" />
+                  <p className="text-lg font-medium">Select a request to get started</p>
+                  <p className="text-sm">Choose a request from the collections sidebar</p>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </div>

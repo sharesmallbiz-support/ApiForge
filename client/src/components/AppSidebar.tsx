@@ -1,4 +1,5 @@
 import { Search, Plus, FolderPlus, Settings } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
   SidebarContent,
@@ -11,8 +12,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CollectionItem } from "./CollectionItem";
 import { ImportDialog } from "./ImportDialog";
+import type { Collection } from "@shared/schema";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onRequestSelect?: (requestId: string) => void;
+  selectedRequestId?: string;
+}
+
+export function AppSidebar({ onRequestSelect, selectedRequestId }: AppSidebarProps) {
+  const { data } = useQuery<{ collections: Collection[] }>({
+    queryKey: ["/api/collections"],
+  });
+
+  const collections = data?.collections || [];
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b">
@@ -49,73 +62,34 @@ export function AppSidebar() {
             </div>
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-1">
-            <CollectionItem
-              name="User Management API"
-              type="folder"
-              hasChildren={true}
-            >
+            {collections.map((collection) => (
               <CollectionItem
-                name="Authentication"
+                key={collection.id}
+                name={collection.name}
                 type="folder"
-                hasChildren={true}
+                hasChildren={collection.folders.length > 0}
               >
-                <CollectionItem
-                  name="Login"
-                  type="request"
-                  method="POST"
-                  onClick={() => console.log("Login clicked")}
-                />
-                <CollectionItem
-                  name="Logout"
-                  type="request"
-                  method="POST"
-                  onClick={() => console.log("Logout clicked")}
-                />
+                {collection.folders.map((folder) => (
+                  <CollectionItem
+                    key={folder.id}
+                    name={folder.name}
+                    type="folder"
+                    hasChildren={folder.requests.length > 0}
+                  >
+                    {folder.requests.map((request) => (
+                      <CollectionItem
+                        key={request.id}
+                        name={request.name}
+                        type="request"
+                        method={request.method}
+                        isActive={selectedRequestId === request.id}
+                        onClick={() => onRequestSelect?.(request.id)}
+                      />
+                    ))}
+                  </CollectionItem>
+                ))}
               </CollectionItem>
-              <CollectionItem
-                name="Users"
-                type="folder"
-                hasChildren={true}
-              >
-                <CollectionItem
-                  name="List Users"
-                  type="request"
-                  method="GET"
-                  isActive={true}
-                  onClick={() => console.log("List users clicked")}
-                />
-                <CollectionItem
-                  name="Create User"
-                  type="request"
-                  method="POST"
-                  onClick={() => console.log("Create user clicked")}
-                />
-                <CollectionItem
-                  name="Update User"
-                  type="request"
-                  method="PUT"
-                  onClick={() => console.log("Update user clicked")}
-                />
-                <CollectionItem
-                  name="Delete User"
-                  type="request"
-                  method="DELETE"
-                  onClick={() => console.log("Delete user clicked")}
-                />
-              </CollectionItem>
-            </CollectionItem>
-            <CollectionItem
-              name="E-commerce API"
-              type="folder"
-              hasChildren={true}
-            >
-              <CollectionItem
-                name="Get Products"
-                type="request"
-                method="GET"
-                onClick={() => console.log("Products clicked")}
-              />
-            </CollectionItem>
+            ))}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

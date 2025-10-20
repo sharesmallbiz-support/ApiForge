@@ -1,28 +1,27 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe } from "lucide-react";
+import type { Environment } from "@shared/schema";
 
-interface Environment {
-  id: string;
-  name: string;
-  baseUrl: string;
+interface EnvironmentSelectorProps {
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-const environments: Environment[] = [
-  { id: "dev", name: "Development", baseUrl: "https://dev-api.example.com" },
-  { id: "test", name: "Test", baseUrl: "https://test-api.example.com" },
-  { id: "prod", name: "Production", baseUrl: "https://api.example.com" },
-];
+export function EnvironmentSelector({ value, onChange }: EnvironmentSelectorProps) {
+  const { data } = useQuery<{ environments: Environment[] }>({
+    queryKey: ["/api/environments"],
+  });
 
-export function EnvironmentSelector() {
-  const [selected, setSelected] = useState("dev");
+  const environments = data?.environments || [];
+  const selectedEnv = value || (environments[0]?.id || "");
 
   return (
-    <Select value={selected} onValueChange={setSelected}>
+    <Select value={selectedEnv} onValueChange={onChange}>
       <SelectTrigger className="w-48" data-testid="select-environment">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4" />
-          <SelectValue />
+          <SelectValue placeholder="Select environment" />
         </div>
       </SelectTrigger>
       <SelectContent>
