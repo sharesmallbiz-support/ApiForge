@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import type { ExecutionResult } from "@shared/schema";
 import {
+  insertWorkspaceSchema,
   insertCollectionSchema,
   insertFolderSchema,
   insertRequestSchema,
@@ -14,6 +15,63 @@ import {
 import { executeScript } from "./script-executor";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Workspaces
+  app.get("/api/workspaces", async (req, res) => {
+    try {
+      const workspaces = await storage.getWorkspaces();
+      res.json({ workspaces });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch workspaces" });
+    }
+  });
+
+  app.post("/api/workspaces", async (req, res) => {
+    try {
+      const data = insertWorkspaceSchema.parse(req.body);
+      const workspace = await storage.createWorkspace(data);
+      res.status(201).json({ workspace });
+    } catch (error) {
+      res.status(400).json({ error: "Invalid workspace data" });
+    }
+  });
+
+  app.get("/api/workspaces/:id", async (req, res) => {
+    try {
+      const workspace = await storage.getWorkspace(req.params.id);
+      if (!workspace) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json({ workspace });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch workspace" });
+    }
+  });
+
+  app.put("/api/workspaces/:id", async (req, res) => {
+    try {
+      const data = insertWorkspaceSchema.partial().parse(req.body);
+      const workspace = await storage.updateWorkspace(req.params.id, data);
+      if (!workspace) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json({ workspace });
+    } catch (error) {
+      res.status(400).json({ error: "Invalid workspace data" });
+    }
+  });
+
+  app.delete("/api/workspaces/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteWorkspace(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete workspace" });
+    }
+  });
+
   // Collections
   app.get("/api/collections", async (req, res) => {
     try {
