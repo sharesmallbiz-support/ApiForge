@@ -66,6 +66,7 @@ export const collectionSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
+  workspaceId: z.string(),
   folders: z.array(folderSchema).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -80,11 +81,36 @@ export const insertCollectionSchema = collectionSchema.omit({
 export type Collection = z.infer<typeof collectionSchema>;
 export type InsertCollection = z.infer<typeof insertCollectionSchema>;
 
+// Workspace
+export const workspaceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  collections: z.array(collectionSchema).default([]),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const insertWorkspaceSchema = workspaceSchema.omit({ 
+  id: true, 
+  collections: true,
+  createdAt: true, 
+  updatedAt: true 
+});
+export type Workspace = z.infer<typeof workspaceSchema>;
+export type InsertWorkspace = z.infer<typeof insertWorkspaceSchema>;
+
+// Environment Variable Scope
+export const variableScopeSchema = z.enum(["global", "workspace", "collection"]);
+export type VariableScope = z.infer<typeof variableScopeSchema>;
+
 // Environment Variable
 export const environmentVariableSchema = z.object({
   key: z.string(),
   value: z.string(),
   enabled: z.boolean(),
+  scope: variableScopeSchema.default("global"),
+  scopeId: z.string().optional(), // workspaceId or collectionId depending on scope
 });
 export type EnvironmentVariable = z.infer<typeof environmentVariableSchema>;
 
