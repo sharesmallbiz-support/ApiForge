@@ -6,12 +6,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { EnvironmentSelector } from "@/components/EnvironmentSelector";
 import { RequestBuilder } from "@/components/RequestBuilder";
 import { ResponseViewer } from "@/components/ResponseViewer";
-import { Play } from "lucide-react";
+import { EnvironmentEditor } from "@/components/EnvironmentEditor";
+import { Play, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Request, ExecutionResult } from "@shared/schema";
 
 export default function Home() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [selectedEnvironmentForEdit, setSelectedEnvironmentForEdit] = useState<string | null>(null);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
 
@@ -44,12 +46,24 @@ export default function Home() {
     executeMutation.mutate();
   };
 
+  const handleRequestSelect = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setSelectedEnvironmentForEdit(null);
+  };
+
+  const handleEnvironmentSelect = (environmentId: string) => {
+    setSelectedEnvironmentForEdit(environmentId);
+    setSelectedRequestId(null);
+  };
+
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
         <AppSidebar 
-          onRequestSelect={setSelectedRequestId}
+          onRequestSelect={handleRequestSelect}
           selectedRequestId={selectedRequestId || undefined}
+          onEnvironmentSelect={handleEnvironmentSelect}
+          selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
         />
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between p-3 border-b">
@@ -69,7 +83,9 @@ export default function Home() {
             </div>
           </header>
           <main className="flex-1 overflow-hidden">
-            {selectedRequestId && requestData ? (
+            {selectedEnvironmentForEdit ? (
+              <EnvironmentEditor environmentId={selectedEnvironmentForEdit} />
+            ) : selectedRequestId && requestData ? (
               <div className="grid grid-cols-2 h-full">
                 <div className="border-r">
                   <RequestBuilder 
@@ -98,9 +114,12 @@ export default function Home() {
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 <div className="text-center space-y-2">
-                  <Play className="h-16 w-16 mx-auto opacity-30" />
-                  <p className="text-lg font-medium">Select a request to get started</p>
-                  <p className="text-sm">Choose a request from the collections sidebar</p>
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <Play className="h-16 w-16 opacity-30" />
+                    <Globe className="h-16 w-16 opacity-30" />
+                  </div>
+                  <p className="text-lg font-medium">Select a request or environment to get started</p>
+                  <p className="text-sm">Choose from the sidebar to begin</p>
                 </div>
               </div>
             )}

@@ -1,4 +1,5 @@
-import { Search, Plus, FolderPlus, Settings } from "lucide-react";
+import { useState } from "react";
+import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
@@ -10,88 +11,160 @@ import {
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionItem } from "./CollectionItem";
+import { EnvironmentItem } from "./EnvironmentItem";
 import { ImportDialog } from "./ImportDialog";
-import type { Collection } from "@shared/schema";
+import type { Collection, Environment } from "@shared/schema";
 
 interface AppSidebarProps {
   onRequestSelect?: (requestId: string) => void;
   selectedRequestId?: string;
+  onEnvironmentSelect?: (environmentId: string) => void;
+  selectedEnvironmentId?: string;
 }
 
-export function AppSidebar({ onRequestSelect, selectedRequestId }: AppSidebarProps) {
-  const { data } = useQuery<{ collections: Collection[] }>({
+type ViewMode = "collections" | "environments";
+
+export function AppSidebar({ 
+  onRequestSelect, 
+  selectedRequestId,
+  onEnvironmentSelect,
+  selectedEnvironmentId,
+}: AppSidebarProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>("collections");
+  
+  const { data: collectionsData } = useQuery<{ collections: Collection[] }>({
     queryKey: ["/api/collections"],
   });
 
-  const collections = data?.collections || [];
+  const { data: environmentsData } = useQuery<{ environments: Environment[] }>({
+    queryKey: ["/api/environments"],
+  });
+
+  const collections = collectionsData?.collections || [];
+  const environments = environmentsData?.environments || [];
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Collections</h2>
+          <h2 className="text-lg font-semibold">
+            {viewMode === "collections" ? "Collections" : "Environments"}
+          </h2>
           <Button variant="ghost" size="icon" data-testid="button-settings">
             <Settings className="h-4 w-4" />
           </Button>
         </div>
+        
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="mb-4">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger 
+              value="collections" 
+              className="gap-2"
+              data-testid="tab-collections"
+            >
+              <FolderOpen className="h-4 w-4" />
+              <span>Collections</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="environments" 
+              className="gap-2"
+              data-testid="tab-environments"
+            >
+              <Globe className="h-4 w-4" />
+              <span>Environments</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search collections..."
+            placeholder={viewMode === "collections" ? "Search collections..." : "Search environments..."}
             className="pl-9"
-            data-testid="input-search-collections"
+            data-testid="input-search"
           />
         </div>
       </SidebarHeader>
+      
       <SidebarContent className="p-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="mb-2">
-            <div className="flex items-center justify-between w-full">
-              <span>My Collections</span>
-              <div className="flex gap-1">
-                <ImportDialog>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Plus className="h-3 w-3" />
+        {viewMode === "collections" ? (
+          <SidebarGroup>
+            <SidebarGroupLabel className="mb-2">
+              <div className="flex items-center justify-between w-full">
+                <span>My Collections</span>
+                <div className="flex gap-1">
+                  <ImportDialog>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </ImportDialog>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-new-folder">
+                    <FolderPlus className="h-3 w-3" />
                   </Button>
-                </ImportDialog>
-                <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-new-folder">
-                  <FolderPlus className="h-3 w-3" />
+                </div>
+              </div>
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="space-y-1">
+              {collections.map((collection) => (
+                <CollectionItem
+                  key={collection.id}
+                  name={collection.name}
+                  type="folder"
+                  hasChildren={collection.folders.length > 0}
+                >
+                  {collection.folders.map((folder) => (
+                    <CollectionItem
+                      key={folder.id}
+                      name={folder.name}
+                      type="folder"
+                      hasChildren={folder.requests.length > 0}
+                    >
+                      {folder.requests.map((request) => (
+                        <CollectionItem
+                          key={request.id}
+                          name={request.name}
+                          type="request"
+                          method={request.method}
+                          isActive={selectedRequestId === request.id}
+                          onClick={() => onRequestSelect?.(request.id)}
+                        />
+                      ))}
+                    </CollectionItem>
+                  ))}
+                </CollectionItem>
+              ))}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : (
+          <SidebarGroup>
+            <SidebarGroupLabel className="mb-2">
+              <div className="flex items-center justify-between w-full">
+                <span>My Environments</span>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  data-testid="button-add-environment"
+                >
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
-            </div>
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="space-y-1">
-            {collections.map((collection) => (
-              <CollectionItem
-                key={collection.id}
-                name={collection.name}
-                type="folder"
-                hasChildren={collection.folders.length > 0}
-              >
-                {collection.folders.map((folder) => (
-                  <CollectionItem
-                    key={folder.id}
-                    name={folder.name}
-                    type="folder"
-                    hasChildren={folder.requests.length > 0}
-                  >
-                    {folder.requests.map((request) => (
-                      <CollectionItem
-                        key={request.id}
-                        name={request.name}
-                        type="request"
-                        method={request.method}
-                        isActive={selectedRequestId === request.id}
-                        onClick={() => onRequestSelect?.(request.id)}
-                      />
-                    ))}
-                  </CollectionItem>
-                ))}
-              </CollectionItem>
-            ))}
-          </SidebarGroupContent>
-        </SidebarGroup>
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="space-y-1">
+              {environments.map((environment) => (
+                <EnvironmentItem
+                  key={environment.id}
+                  id={environment.id}
+                  name={environment.name}
+                  isActive={selectedEnvironmentId === environment.id}
+                  onClick={() => onEnvironmentSelect?.(environment.id)}
+                />
+              ))}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
