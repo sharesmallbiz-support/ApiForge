@@ -119,7 +119,7 @@ export function AppSidebar({
                     <CollectionItem
                       key={collection.id}
                       name={collection.name}
-                      type="folder"
+                      type="collection"
                       hasChildren={collection.folders.length > 0}
                     >
                       {collection.folders.map((folder) => (
