@@ -87,7 +87,7 @@ export class MemStorage implements IStorage {
     // Create sample workspace
     const workspace: Workspace = {
       id: "workspace-1",
-      name: "My Application",
+      name: "My Workspace",
       description: "Main application workspace",
       collections: [],
       createdAt: new Date().toISOString(),
@@ -103,6 +103,8 @@ export class MemStorage implements IStorage {
         { key: "baseUrl", value: "https://dev-api.example.com", enabled: true, scope: "global" },
         { key: "apiKey", value: "dev-key-12345", enabled: true, scope: "global" },
         { key: "timeout", value: "5000", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -115,6 +117,8 @@ export class MemStorage implements IStorage {
         { key: "baseUrl", value: "https://test-api.example.com", enabled: true, scope: "global" },
         { key: "apiKey", value: "test-key-67890", enabled: true, scope: "global" },
         { key: "timeout", value: "3000", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -127,6 +131,8 @@ export class MemStorage implements IStorage {
         { key: "baseUrl", value: "https://api.example.com", enabled: true, scope: "global" },
         { key: "apiKey", value: "prod-key-abcde", enabled: true, scope: "global" },
         { key: "timeout", value: "10000", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "token", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
+        { key: "categoryId", value: "", enabled: true, scope: "workspace", scopeId: workspace.id },
       ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -136,37 +142,49 @@ export class MemStorage implements IStorage {
     this.environments.set(testEnv.id, testEnv);
     this.environments.set(prodEnv.id, prodEnv);
 
-    // Create sample collection
-    const collection: Collection = {
-      id: "col-1",
-      name: "User Management API",
-      description: "API for managing users and authentication",
+    // Create Auth collection
+    const authCollection: Collection = {
+      id: "col-auth",
+      name: "Authentication",
+      description: "User authentication endpoints",
       workspaceId: workspace.id,
       folders: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    this.collections.set(collection.id, collection);
+    this.collections.set(authCollection.id, authCollection);
 
-    // Create folders
+    // Create Category collection
+    const categoryCollection: Collection = {
+      id: "col-category",
+      name: "Category Management",
+      description: "CRUD operations for categories",
+      workspaceId: workspace.id,
+      folders: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.collections.set(categoryCollection.id, categoryCollection);
+
+    // Create folders for Auth collection
     const authFolder: Folder = {
       id: "folder-auth",
-      name: "Authentication",
-      collectionId: collection.id,
+      name: "Auth Endpoints",
+      collectionId: authCollection.id,
       requests: [],
     };
-    
-    const usersFolder: Folder = {
-      id: "folder-users",
-      name: "Users",
-      collectionId: collection.id,
-      requests: [],
-    };
-    
     this.folders.set(authFolder.id, authFolder);
-    this.folders.set(usersFolder.id, usersFolder);
+    
+    // Create folders for Category collection
+    const categoryFolder: Folder = {
+      id: "folder-category",
+      name: "Categories",
+      collectionId: categoryCollection.id,
+      requests: [],
+    };
+    this.folders.set(categoryFolder.id, categoryFolder);
 
-    // Create requests
+    // ===== AUTH COLLECTION REQUESTS =====
     const loginRequest: Request = {
       id: "req-login",
       name: "Login",
@@ -179,37 +197,53 @@ export class MemStorage implements IStorage {
       params: [],
       body: {
         type: "json",
-        content: JSON.stringify({ email: "user@example.com", password: "password123" }, null, 2),
+        content: JSON.stringify({ 
+          email: "user@example.com", 
+          password: "password123" 
+        }, null, 2),
       },
-      script: `// Extract token from response and save to environment
+      script: `// Extract token from response and save to workspace-scoped environment
 const response = pm.response.json();
 if (response.token) {
   pm.environment.set("token", response.token);
-  console.log("Token saved to environment:", response.token);
+  console.log("Token saved to workspace environment:", response.token);
 }`,
     };
     
-    const listUsersRequest: Request = {
-      id: "req-list-users",
-      name: "List Users",
+    // ===== CATEGORY COLLECTION REQUESTS =====
+    const listCategoriesRequest: Request = {
+      id: "req-list-categories",
+      name: "List Categories",
       method: "GET",
-      url: "{{baseUrl}}/users",
-      folderId: usersFolder.id,
+      url: "{{baseUrl}}/categories",
+      folderId: categoryFolder.id,
       headers: [
         { key: "Authorization", value: "Bearer {{token}}", enabled: true },
       ],
       params: [
-        { key: "page", value: "1", enabled: true },
-        { key: "limit", value: "10", enabled: true },
+        { key: "page", value: "1", enabled: false },
+        { key: "limit", value: "10", enabled: false },
       ],
     };
     
-    const createUserRequest: Request = {
-      id: "req-create-user",
-      name: "Create User",
+    const getCategoryRequest: Request = {
+      id: "req-get-category",
+      name: "Get Category by ID",
+      method: "GET",
+      url: "{{baseUrl}}/categories/{{categoryId}}",
+      folderId: categoryFolder.id,
+      headers: [
+        { key: "Authorization", value: "Bearer {{token}}", enabled: true },
+      ],
+      params: [],
+    };
+    
+    const createCategoryRequest: Request = {
+      id: "req-create-category",
+      name: "Create Category",
       method: "POST",
-      url: "{{baseUrl}}/users",
-      folderId: usersFolder.id,
+      url: "{{baseUrl}}/categories",
+      folderId: categoryFolder.id,
       headers: [
         { key: "Content-Type", value: "application/json", enabled: true },
         { key: "Authorization", value: "Bearer {{token}}", enabled: true },
@@ -218,16 +252,59 @@ if (response.token) {
       body: {
         type: "json",
         content: JSON.stringify({ 
-          name: "John Doe", 
-          email: "john@example.com", 
-          role: "user" 
+          name: "Technology",
+          description: "Tech-related items",
+          active: true
+        }, null, 2),
+      },
+      script: `// Save the created category ID for use in other requests
+const response = pm.response.json();
+if (response.id) {
+  pm.environment.set("categoryId", response.id);
+  console.log("Category ID saved:", response.id);
+}`,
+    };
+    
+    const updateCategoryRequest: Request = {
+      id: "req-update-category",
+      name: "Update Category",
+      method: "PUT",
+      url: "{{baseUrl}}/categories/{{categoryId}}",
+      folderId: categoryFolder.id,
+      headers: [
+        { key: "Content-Type", value: "application/json", enabled: true },
+        { key: "Authorization", value: "Bearer {{token}}", enabled: true },
+      ],
+      params: [],
+      body: {
+        type: "json",
+        content: JSON.stringify({ 
+          name: "Updated Technology",
+          description: "Updated description",
+          active: true
         }, null, 2),
       },
     };
     
+    const deleteCategoryRequest: Request = {
+      id: "req-delete-category",
+      name: "Delete Category",
+      method: "DELETE",
+      url: "{{baseUrl}}/categories/{{categoryId}}",
+      folderId: categoryFolder.id,
+      headers: [
+        { key: "Authorization", value: "Bearer {{token}}", enabled: true },
+      ],
+      params: [],
+    };
+    
+    // Add all requests to storage
     this.requests.set(loginRequest.id, loginRequest);
-    this.requests.set(listUsersRequest.id, listUsersRequest);
-    this.requests.set(createUserRequest.id, createUserRequest);
+    this.requests.set(listCategoriesRequest.id, listCategoriesRequest);
+    this.requests.set(getCategoryRequest.id, getCategoryRequest);
+    this.requests.set(createCategoryRequest.id, createCategoryRequest);
+    this.requests.set(updateCategoryRequest.id, updateCategoryRequest);
+    this.requests.set(deleteCategoryRequest.id, deleteCategoryRequest);
   }
 
   // Workspaces
