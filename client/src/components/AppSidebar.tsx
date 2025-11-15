@@ -21,6 +21,8 @@ import {
 import { CollectionItem } from "./CollectionItem";
 import { EnvironmentItem } from "./EnvironmentItem";
 import { ImportDialog } from "./ImportDialog";
+import { CreateCollectionDialog } from "./CreateCollectionDialog";
+import { CreateEnvironmentDialog } from "./CreateEnvironmentDialog";
 import type { Workspace, Collection, Environment } from "@shared/schema";
 
 interface AppSidebarProps {
@@ -134,9 +136,13 @@ export function AppSidebar({
               <div className="flex items-center justify-between w-full">
                 <span>Collections</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                  {currentWorkspace && (
+                    <CreateCollectionDialog workspaceId={currentWorkspace.id}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </CreateCollectionDialog>
+                  )}
                   <ImportDialog>
                     <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-import">
                       <FolderPlus className="h-3 w-3" />
@@ -181,14 +187,16 @@ export function AppSidebar({
             <SidebarGroupLabel className="mb-2">
               <div className="flex items-center justify-between w-full">
                 <span>My Environments</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6"
-                  data-testid="button-add-environment"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
+                <CreateEnvironmentDialog onEnvironmentCreated={onEnvironmentSelect}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    data-testid="button-add-environment"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </CreateEnvironmentDialog>
               </div>
             </SidebarGroupLabel>
             <SidebarGroupContent className="space-y-1">

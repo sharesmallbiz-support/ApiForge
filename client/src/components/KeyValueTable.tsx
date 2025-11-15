@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Plus } from "lucide-react";
 
 interface KeyValue {
-  id: string;
   key: string;
   value: string;
   enabled: boolean;
@@ -13,25 +12,31 @@ interface KeyValue {
 
 interface KeyValueTableProps {
   title?: string;
+  items?: KeyValue[];
+  onChange?: (items: KeyValue[]) => void;
   onAdd?: () => void;
 }
 
-export function KeyValueTable({ title, onAdd }: KeyValueTableProps) {
-  const [items, setItems] = useState<KeyValue[]>([
-    { id: "1", key: "", value: "", enabled: true },
+export function KeyValueTable({ title, items: controlledItems, onChange, onAdd }: KeyValueTableProps) {
+  const [internalItems, setInternalItems] = useState<KeyValue[]>([
+    { key: "", value: "", enabled: true },
   ]);
 
+  // Use controlled items if provided, otherwise use internal state
+  const items = controlledItems || internalItems;
+  const updateItems = onChange || setInternalItems;
+
   const addRow = () => {
-    setItems([...items, { id: Date.now().toString(), key: "", value: "", enabled: true }]);
+    updateItems([...items, { key: "", value: "", enabled: true }]);
     onAdd?.();
   };
 
-  const removeRow = (id: string) => {
-    setItems(items.filter((item) => item.id !== id));
+  const removeRow = (index: number) => {
+    updateItems(items.filter((_, i) => i !== index));
   };
 
-  const updateItem = (id: string, field: keyof KeyValue, value: string | boolean) => {
-    setItems(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+  const updateItem = (index: number, field: keyof KeyValue, value: string | boolean) => {
+    updateItems(items.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
   };
 
   return (
@@ -44,34 +49,34 @@ export function KeyValueTable({ title, onAdd }: KeyValueTableProps) {
           <div>VALUE</div>
           <div className="w-8"></div>
         </div>
-        {items.map((item) => (
-          <div key={item.id} className="grid grid-cols-[auto,1fr,1fr,auto] gap-2 items-center">
+        {items.map((item, index) => (
+          <div key={index} className="grid grid-cols-[auto,1fr,1fr,auto] gap-2 items-center">
             <Checkbox
               checked={item.enabled}
               onCheckedChange={(checked) =>
-                updateItem(item.id, "enabled", checked as boolean)
+                updateItem(index, "enabled", checked as boolean)
               }
-              data-testid={`checkbox-enable-${item.id}`}
+              data-testid={`checkbox-enable-${index}`}
             />
             <Input
               value={item.key}
-              onChange={(e) => updateItem(item.id, "key", e.target.value)}
+              onChange={(e) => updateItem(index, "key", e.target.value)}
               placeholder="Key"
               className="font-mono text-sm"
-              data-testid={`input-key-${item.id}`}
+              data-testid={`input-key-${index}`}
             />
             <Input
               value={item.value}
-              onChange={(e) => updateItem(item.id, "value", e.target.value)}
+              onChange={(e) => updateItem(index, "value", e.target.value)}
               placeholder="Value"
               className="font-mono text-sm"
-              data-testid={`input-value-${item.id}`}
+              data-testid={`input-value-${index}`}
             />
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => removeRow(item.id)}
-              data-testid={`button-delete-${item.id}`}
+              onClick={() => removeRow(index)}
+              data-testid={`button-delete-${index}`}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
