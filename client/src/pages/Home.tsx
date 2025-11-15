@@ -185,9 +185,10 @@ export default function Home() {
             ) : selectedRequestId && requestData ? (
               <div className="grid grid-cols-2 h-full">
                 <div className="border-r">
-                  <RequestBuilder 
+                  <RequestBuilder
                     request={requestData.request}
-                    onSend={handleSend} 
+                    onSend={handleSend}
+                    isExecuting={executeMutation.isPending}
                   />
                 </div>
                 <div className="bg-card">

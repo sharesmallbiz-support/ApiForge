@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Save } from "lucide-react";
 import { KeyValueTable } from "./KeyValueTable";
+import { useToast } from "@/hooks/use-toast";
 import type { Request, KeyValue } from "@shared/schema";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -13,9 +14,10 @@ type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 interface RequestBuilderProps {
   request?: Request;
   onSend?: () => void;
+  isExecuting?: boolean;
 }
 
-export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
+export function RequestBuilder({ request, onSend, isExecuting = false }: RequestBuilderProps) {
   const [method, setMethod] = useState<HttpMethod>(request?.method || "GET");
   const [url, setUrl] = useState(request?.url || "");
   const [headers, setHeaders] = useState<KeyValue[]>(request?.headers || []);
@@ -24,6 +26,7 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
   const [script, setScript] = useState(request?.script || "");
   const [hasChanges, setHasChanges] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const updateRequestMutation = useMutation({
     mutationFn: async (data: Partial<Request>) => {
@@ -39,6 +42,17 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
       setHasChanges(false);
+      toast({
+        title: "Request saved",
+        description: "Your changes have been saved successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to save request",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
     },
   });
 
@@ -111,9 +125,9 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
           <Save className="h-4 w-4 mr-2" />
           {updateRequestMutation.isPending ? "Saving..." : "Save"}
         </Button>
-        <Button onClick={onSend} data-testid="button-send">
+        <Button onClick={onSend} disabled={isExecuting} data-testid="button-send">
           <Send className="h-4 w-4 mr-2" />
-          Send
+          {isExecuting ? "Sending..." : "Send"}
         </Button>
       </div>
 
@@ -122,7 +136,7 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
           <TabsTrigger value="params" data-testid="tab-params">Params</TabsTrigger>
           <TabsTrigger value="headers" data-testid="tab-headers">Headers</TabsTrigger>
           <TabsTrigger value="body" data-testid="tab-body">Body</TabsTrigger>
-          <TabsTrigger value="auth" data-testid="tab-auth">Auth</TabsTrigger>
+          {/* <TabsTrigger value="auth" data-testid="tab-auth">Auth</TabsTrigger> */}
           <TabsTrigger value="scripts" data-testid="tab-scripts">Scripts</TabsTrigger>
         </TabsList>
         
@@ -165,7 +179,8 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
             />
           </div>
         </TabsContent>
-        
+
+        {/* Auth tab temporarily hidden until implementation is complete
         <TabsContent value="auth" className="flex-1 p-4 overflow-auto">
           <div className="space-y-4">
             <Select defaultValue="bearer">
@@ -189,7 +204,8 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
             </div>
           </div>
         </TabsContent>
-        
+        */}
+
         <TabsContent value="scripts" className="flex-1 p-4 overflow-auto">
           <div className="space-y-4">
             <div className="space-y-2">
