@@ -9,11 +9,13 @@ import { ResponseViewer } from "@/components/ResponseViewer";
 import { EnvironmentEditor } from "@/components/EnvironmentEditor";
 import { GettingStarted } from "@/components/GettingStarted";
 import { UserGuide } from "@/components/UserGuide";
+import { DebugPanel } from "@/components/DebugPanel";
 import { Play, Globe, HelpCircle, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { createSampleData } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
+import { useDebug } from "@/contexts/DebugContext";
 import type { Request, ExecutionResult, Workspace } from "@shared/schema";
 
 export default function Home() {
@@ -26,6 +28,7 @@ export default function Home() {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { addRequest, addResponse, addError } = useDebug();
 
   // Check if this is the first time user is opening the app
   useEffect(() => {
@@ -48,12 +51,73 @@ export default function Home() {
   const executeMutation = useMutation({
     mutationFn: async () => {
       if (!selectedRequestId) throw new Error("No request selected");
-      const response = await apiRequest(
-        "POST",
-        `/api/requests/${selectedRequestId}/execute`,
-        { environmentId: selectedEnvironment || undefined }
-      );
-      return response.json();
+
+      const startTime = performance.now();
+      const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      try {
+        // Capture request details
+        const req = requestData?.request;
+        if (req) {
+          addRequest({
+            id: requestId,
+            timestamp: new Date(),
+            method: req.method,
+            url: req.url,
+            headers: req.headers || {},
+            body: req.body,
+            environmentId: selectedEnvironment || undefined,
+          });
+        }
+
+        const response = await apiRequest(
+          "POST",
+          `/api/requests/${selectedRequestId}/execute`,
+          { environmentId: selectedEnvironment || undefined }
+        );
+
+        const duration = performance.now() - startTime;
+        const data = await response.json();
+
+        // Capture response
+        addResponse({
+          id: `res-${Date.now()}`,
+          requestId,
+          timestamp: new Date(),
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: data.result,
+          duration,
+        });
+
+        return data;
+      } catch (error) {
+        const duration = performance.now() - startTime;
+
+        // Capture error
+        addError({
+          id: `err-${Date.now()}`,
+          requestId,
+          timestamp: new Date(),
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+
+        // Also add a synthetic error response
+        addResponse({
+          id: `res-${Date.now()}`,
+          requestId,
+          timestamp: new Date(),
+          status: 0,
+          statusText: 'Network Error',
+          headers: {},
+          body: { error: error instanceof Error ? error.message : 'Unknown error' },
+          duration,
+        });
+
+        throw error;
+      }
     },
     onSuccess: (data) => {
       setExecutionResult(data.result);
@@ -270,6 +334,9 @@ export default function Home() {
         onCreateSample={handleCreateSampleCollection}
       />
       <UserGuide open={showUserGuide} onOpenChange={setShowUserGuide} />
+
+      {/* Debug Panel */}
+      <DebugPanel />
     </SidebarProvider>
   );
 }

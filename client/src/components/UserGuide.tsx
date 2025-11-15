@@ -112,6 +112,36 @@ export function UserGuide({ open, onOpenChange }: UserGuideProps) {
               </section>
 
               <section>
+                <h3 className="text-lg font-semibold mb-3">🔒 Your Data & Privacy</h3>
+                <div className="border-l-4 border-primary bg-primary/10 rounded-r-lg p-4 space-y-3 text-sm">
+                  <div>
+                    <h4 className="font-semibold mb-1">All Data Stored Locally</h4>
+                    <p className="text-muted-foreground">
+                      ApiForge stores all your collections, requests, and environments in your
+                      browser's localStorage. Nothing is sent to external servers except when
+                      you click "Send" to test an API.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Benefits</h4>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li>✅ Complete privacy - your API configs stay on your device</li>
+                      <li>✅ Works offline - create requests without internet</li>
+                      <li>✅ Instant saves - no network delays</li>
+                      <li>✅ No account required - start using immediately</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Backup Your Data</h4>
+                    <p className="text-muted-foreground">
+                      Export all your data as JSON from Settings. Import on any browser to
+                      restore. Regular exports are recommended before clearing browser data!
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
                 <h3 className="text-lg font-semibold mb-3">🎯 Try the Sample Collection</h3>
                 <p className="text-sm text-muted-foreground mb-2">
                   We've included sample requests to help you get started. Look for the
