@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { localStorageRequest } from "./local-storage-adapter";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -7,20 +8,38 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Routes that MUST use the server (HTTP execution, etc.)
+const SERVER_ONLY_ROUTES = [
+  "/api/requests/",
+  "/execute",
+  "/history",
+];
+
+function shouldUseServer(url: string): boolean {
+  return SERVER_ONLY_ROUTES.some(route => url.includes(route) && (url.includes("/execute") || url.includes("/history")));
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
-
-  await throwIfResNotOk(res);
-  return res;
+  // Use localStorage for CRUD operations, server for HTTP execution
+  if (shouldUseServer(url)) {
+    const res = await fetch(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
+    await throwIfResNotOk(res);
+    return res;
+  } else {
+    // Use localStorage
+    const res = await localStorageRequest(method, url, data);
+    await throwIfResNotOk(res);
+    return res;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -29,9 +48,17 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
-    });
+    const url = queryKey.join("/") as string;
+
+    // Use localStorage for data queries, server for execution/history
+    let res: Response;
+    if (shouldUseServer(url)) {
+      res = await fetch(url, {
+        credentials: "include",
+      });
+    } else {
+      res = await localStorageRequest("GET", url);
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;

@@ -7,6 +7,21 @@
 
 ---
 
+## 🔒 Local-First Storage
+
+**Your data stays in YOUR browser.** ApiForge stores all your collections, requests, and environments locally using browser localStorage. This means:
+
+- ✅ **Complete Privacy** - No data sent to external servers (except when testing APIs)
+- ✅ **Works Offline** - Create and edit requests without internet connection
+- ✅ **Instant Performance** - No network latency for loading/saving
+- ✅ **No Account Required** - Start using immediately, no sign-up
+- ✅ **Easy Backup** - Export all data as JSON with one click
+- ✅ **Free Forever** - No storage limits or premium tiers
+
+> **Note**: Only HTTP request execution uses the server. All your configurations stay in your browser!
+
+---
+
 ## ✨ Features
 
 - 🎯 **Full HTTP Support** - GET, POST, PUT, DELETE, PATCH and more
@@ -19,6 +34,7 @@
 - 📊 **Request History** - Track all your API calls with full details
 - 🔐 **Authentication** - Bearer tokens, Basic Auth, and API keys
 - ⚡ **Lightning Fast** - Built with React, TypeScript, and Vite
+- 💾 **Local-First** - All data stored in your browser using localStorage
 
 ---
 
@@ -291,8 +307,8 @@ The built-in sample collection uses **JSONPlaceholder** (a free fake REST API) t
 - **Frontend**: React 18, TypeScript, Vite, TailwindCSS
 - **UI Components**: shadcn/ui (Radix UI)
 - **State Management**: TanStack Query v5
-- **Backend**: Express.js, TypeScript
-- **Database**: SQLite with Drizzle ORM
+- **Storage**: Browser localStorage (local-first architecture)
+- **Backend**: Express.js, TypeScript (HTTP execution only)
 - **Validation**: Zod schemas
 - **Styling**: Tailwind CSS with dark mode
 
@@ -354,6 +370,26 @@ MIT License - feel free to use this in your projects!
 - Verify the URL is accessible
 - Ensure it's a valid OpenAPI 3.0 spec
 - Check browser console for detailed error
+
+**Q: Where is my data stored?**
+- All data is stored in your browser's localStorage
+- Nothing is sent to external servers except when executing HTTP requests
+- Data persists across browser sessions
+
+**Q: How do I backup my data?**
+- Use Settings → Export All Data
+- Save the JSON file to your computer
+- Import on any browser to restore your data
+
+**Q: Will I lose data if I clear my browser?**
+- Yes, clearing browser data will delete your collections
+- Always export your data before clearing browser storage
+- Consider exporting regularly for backup
+
+**Q: Can I use ApiForge on multiple computers?**
+- Yes! Export your data from one computer
+- Import it on another computer
+- Each browser maintains its own local copy
 
 ---
 

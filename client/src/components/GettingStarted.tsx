@@ -20,13 +20,23 @@ interface GettingStartedProps {
 const steps = [
   {
     title: "Welcome to ApiForge! 🚀",
-    description: "Your professional REST API testing tool",
+    description: "Your professional REST API testing tool with local-first storage",
     content: (
       <div className="space-y-4 text-sm">
         <p>
           ApiForge helps you test and debug REST APIs with ease. Think of it as Postman,
-          but built for speed and simplicity.
+          but built for speed, simplicity, and privacy.
         </p>
+        <div className="border-l-4 border-primary bg-primary/10 rounded-r-lg p-4 space-y-2">
+          <h4 className="font-semibold flex items-center gap-2">
+            🔒 Your Data Stays in Your Browser
+          </h4>
+          <p className="text-muted-foreground">
+            All your collections, requests, and environments are stored{" "}
+            <strong>locally in your browser</strong> using localStorage. No accounts,
+            no servers, no privacy concerns. Works offline and saves instantly!
+          </p>
+        </div>
         <div className="border rounded-lg p-4 space-y-2">
           <h4 className="font-semibold">What you can do:</h4>
           <ul className="space-y-1 ml-4">
@@ -35,6 +45,7 @@ const steps = [
             <li>✅ Use environment variables for different servers</li>
             <li>✅ Write post-response scripts to chain requests</li>
             <li>✅ Import APIs from OpenAPI specs or CURL commands</li>
+            <li>✅ Export/import all data as JSON for backup</li>
           </ul>
         </div>
       </div>
