@@ -120,6 +120,7 @@ export const environmentSchema = z.object({
   id: z.string(),
   name: z.string(),
   variables: z.array(environmentVariableSchema).default([]),
+  headers: z.array(keyValuePairSchema).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

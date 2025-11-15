@@ -284,7 +284,7 @@ if (response.id) {
       description: workspace.description,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
-    });
+    }).run();
 
     return workspace;
   }

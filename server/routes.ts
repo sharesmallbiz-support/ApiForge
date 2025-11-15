@@ -15,6 +15,7 @@ import {
 import { executeScript } from "./script-executor";
 import { substituteVariables } from "./environment-resolver";
 import { executeHttpRequest } from "./http-executor";
+import { fetchAndParseOpenAPI } from "./openapi-parser";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Workspaces
@@ -134,34 +135,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/collections/import", async (req, res) => {
     try {
       const data = openApiImportSchema.parse(req.body);
-      
-      // Mock OpenAPI import - create a sample collection
+
+      if (!data.url && !data.spec) {
+        return res.status(400).json({ error: "Either OpenAPI URL or spec data is required" });
+      }
+
+      // Parse OpenAPI spec
+      const parsedApi = await fetchAndParseOpenAPI(data.url, data.spec);
+
+      // Create collection with parsed data
       const collection = await storage.createCollection({
-        name: "Imported API Collection",
-        description: `Imported from ${data.url || "OpenAPI spec"}`,
+        name: parsedApi.title,
+        description: parsedApi.description,
         workspaceId: data.workspaceId,
       });
 
-      // Create a sample folder
-      const folder = await storage.createFolder({
-        name: "Endpoints",
-        collectionId: collection.id,
-      });
+      // Group requests by path prefix to organize into folders
+      const folderMap = new Map<string, string>();
 
-      // Create sample requests
-      await storage.createRequest({
-        name: "Sample GET Request",
-        method: "GET",
-        url: "{{baseUrl}}/endpoint",
-        folderId: folder.id,
-        headers: [],
-        params: [],
-      });
+      for (const request of parsedApi.requests) {
+        // Determine folder name from path (use first segment after /)
+        const pathSegments = request.path.split('/').filter(s => s);
+        const folderName = pathSegments[0] || "General";
+
+        // Get or create folder
+        let folderId = folderMap.get(folderName);
+        if (!folderId) {
+          const folder = await storage.createFolder({
+            name: folderName.charAt(0).toUpperCase() + folderName.slice(1),
+            collectionId: collection.id,
+          });
+          folderId = folder.id;
+          folderMap.set(folderName, folderId);
+        }
+
+        // Create request
+        await storage.createRequest({
+          name: request.name,
+          method: request.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+          url: `{{baseUrl}}${request.path}`,
+          folderId: folderId,
+          headers: request.headers,
+          params: request.params,
+          body: request.body ? {
+            type: request.body.type as "json" | "text" | "xml" | "form",
+            content: request.body.content,
+          } : undefined,
+        });
+      }
 
       const updatedCollection = await storage.getCollection(collection.id);
       res.status(201).json({ collection: updatedCollection });
     } catch (error) {
-      res.status(400).json({ error: "Invalid import data" });
+      console.error("OpenAPI import error:", error);
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Failed to import OpenAPI spec"
+      });
     }
   });
 
@@ -272,8 +301,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Resolve environment variables in URL, headers, params, and body
       const context = { requestId: req.params.id, environmentId };
       const resolvedUrl = await substituteVariables(request.url, context, environment);
+
+      // Merge environment headers with request headers (request headers take precedence)
+      const envHeaders = environment?.headers || [];
+      const mergedHeaders = [...envHeaders, ...request.headers];
+
       const resolvedHeaders = await Promise.all(
-        request.headers.map(async h => ({
+        mergedHeaders.map(async h => ({
           ...h,
           value: await substituteVariables(h.value, context, environment)
         }))
