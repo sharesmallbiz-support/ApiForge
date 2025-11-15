@@ -157,11 +157,13 @@ export function AppSidebar({
                       </Button>
                     </CreateCollectionDialog>
                   )}
-                  <ImportDialog>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-import">
-                      <FolderPlus className="h-3 w-3" />
-                    </Button>
-                  </ImportDialog>
+                  {currentWorkspace && (
+                    <ImportDialog workspaceId={currentWorkspace.id}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-import">
+                        <FolderPlus className="h-3 w-3" />
+                      </Button>
+                    </ImportDialog>
+                  )}
                 </div>
               </div>
             </SidebarGroupLabel>

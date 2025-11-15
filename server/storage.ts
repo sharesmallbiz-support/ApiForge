@@ -136,6 +136,7 @@ export class MemStorage implements IStorage {
         // Collection-scoped baseUrl for Category Management
         { key: "baseUrl", value: "https://bsw-category.azurewebsites.net", enabled: true, scope: "collection", scopeId: categoryCollection.id },
       ],
+      headers: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -176,6 +177,7 @@ export class MemStorage implements IStorage {
         // Collection-scoped baseUrl for Category Management
         { key: "baseUrl", value: "https://bsw-category.azurewebsites.net", enabled: true, scope: "collection", scopeId: categoryCollection.id },
       ],
+      headers: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -659,4 +661,6 @@ if (response.id) {
 
 import { SqliteStorage } from "./sqlite-storage";
 
-export const storage = new SqliteStorage();
+// Temporarily use MemStorage for testing
+export const storage = new MemStorage();
+// export const storage = new SqliteStorage();
