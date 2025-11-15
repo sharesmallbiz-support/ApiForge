@@ -17,12 +17,17 @@ import { Label } from "@/components/ui/label";
 interface CreateFolderDialogProps {
   collectionId: string;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateFolderDialog({ collectionId, children }: CreateFolderDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateFolderDialog({ collectionId, children, open: controlledOpen, onOpenChange }: CreateFolderDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   const createFolderMutation = useMutation({
     mutationFn: async (data: { name: string; collectionId: string }) => {

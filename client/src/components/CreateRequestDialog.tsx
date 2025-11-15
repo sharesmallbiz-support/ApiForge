@@ -24,15 +24,20 @@ import {
 interface CreateRequestDialogProps {
   folderId: string;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onRequestCreated?: (requestId: string) => void;
 }
 
-export function CreateRequestDialog({ folderId, children, onRequestCreated }: CreateRequestDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateRequestDialog({ folderId, children, open: controlledOpen, onOpenChange, onRequestCreated }: CreateRequestDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const [method, setMethod] = useState<string>("GET");
   const [url, setUrl] = useState("");
   const queryClient = useQueryClient();
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: { name: string; method: string; url: string; folderId: string }) => {

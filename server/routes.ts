@@ -249,6 +249,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/requests/:id/history", async (req, res) => {
+    try {
+      const results = await storage.getExecutionResults(req.params.id);
+      res.json({ results });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch execution history" });
+    }
+  });
+
   app.post("/api/requests/:id/execute", async (req, res) => {
     try {
       const request = await storage.getRequest(req.params.id);

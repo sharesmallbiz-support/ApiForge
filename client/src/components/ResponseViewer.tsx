@@ -3,12 +3,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusCodeBadge } from "./StatusCodeBadge";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Database } from "lucide-react";
+import { RequestHistory } from "./RequestHistory";
+import type { ExecutionResult } from "@shared/schema";
 
 interface ResponseViewerProps {
   statusCode?: number;
   responseTime?: number;
   size?: number;
   body?: string;
+  headers?: Record<string, string>;
+  requestId?: string;
+  onLoadHistory?: (result: ExecutionResult) => void;
 }
 
 export function ResponseViewer({
@@ -16,6 +21,13 @@ export function ResponseViewer({
   responseTime = 245,
   size = 1240,
   body = '{\n  "id": 1,\n  "name": "John Doe",\n  "email": "john@example.com",\n  "role": "admin"\n}',
+  headers = {
+    "content-type": "application/json",
+    "cache-control": "no-cache",
+    "date": new Date().toUTCString(),
+  },
+  requestId,
+  onLoadHistory,
 }: ResponseViewerProps) {
   const [selectedTab, setSelectedTab] = useState("body");
 
@@ -38,6 +50,7 @@ export function ResponseViewer({
           <TabsTrigger value="body" data-testid="tab-response-body">Body</TabsTrigger>
           <TabsTrigger value="headers" data-testid="tab-response-headers">Headers</TabsTrigger>
           <TabsTrigger value="cookies" data-testid="tab-response-cookies">Cookies</TabsTrigger>
+          <TabsTrigger value="history" data-testid="tab-response-history">History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="body" className="flex-1 p-4 overflow-auto">
@@ -48,17 +61,13 @@ export function ResponseViewer({
 
         <TabsContent value="headers" className="flex-1 p-4 overflow-auto">
           <div className="space-y-2">
-            {[
-              { key: "content-type", value: "application/json" },
-              { key: "cache-control", value: "no-cache" },
-              { key: "date", value: new Date().toUTCString() },
-            ].map((header) => (
+            {Object.entries(headers).map(([key, value]) => (
               <div
-                key={header.key}
+                key={key}
                 className="grid grid-cols-2 gap-4 p-3 rounded-md bg-card text-sm"
               >
-                <span className="font-mono font-semibold">{header.key}</span>
-                <span className="font-mono text-muted-foreground">{header.value}</span>
+                <span className="font-mono font-semibold">{key}</span>
+                <span className="font-mono text-muted-foreground">{value}</span>
               </div>
             ))}
           </div>
@@ -68,6 +77,10 @@ export function ResponseViewer({
           <div className="text-sm text-muted-foreground text-center py-8">
             No cookies in this response
           </div>
+        </TabsContent>
+
+        <TabsContent value="history" className="flex-1 overflow-hidden">
+          <RequestHistory requestId={requestId} onSelectHistory={onLoadHistory} />
         </TabsContent>
       </Tabs>
     </div>
