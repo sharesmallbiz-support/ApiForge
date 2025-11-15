@@ -133,6 +133,7 @@ export function AppSidebar({
           </TabsList>
         </Tabs>
 
+        {/* Search temporarily hidden until implementation is complete
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -141,6 +142,7 @@ export function AppSidebar({
             data-testid="input-search"
           />
         </div>
+        */}
       </SidebarHeader>
       
       <SidebarContent className="p-4">
