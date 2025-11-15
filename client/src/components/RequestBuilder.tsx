@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send } from "lucide-react";
+import { Send, Save } from "lucide-react";
 import { KeyValueTable } from "./KeyValueTable";
-import type { Request } from "@shared/schema";
+import type { Request, KeyValue } from "@shared/schema";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -17,18 +18,67 @@ interface RequestBuilderProps {
 export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
   const [method, setMethod] = useState<HttpMethod>(request?.method || "GET");
   const [url, setUrl] = useState(request?.url || "");
+  const [headers, setHeaders] = useState<KeyValue[]>(request?.headers || []);
+  const [params, setParams] = useState<KeyValue[]>(request?.params || []);
   const [body, setBody] = useState(request?.body?.content || "");
   const [script, setScript] = useState(request?.script || "");
+  const [hasChanges, setHasChanges] = useState(false);
+  const queryClient = useQueryClient();
+
+  const updateRequestMutation = useMutation({
+    mutationFn: async (data: Partial<Request>) => {
+      if (!request?.id) return;
+      const response = await fetch(`/api/requests/${request.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update request");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+      setHasChanges(false);
+    },
+  });
 
   // Update form when request changes
   useEffect(() => {
     if (request) {
       setMethod(request.method);
       setUrl(request.url);
+      setHeaders(request.headers || []);
+      setParams(request.params || []);
       setBody(request.body?.content || "");
       setScript(request.script || "");
+      setHasChanges(false);
     }
   }, [request]);
+
+  // Track changes
+  useEffect(() => {
+    if (!request) return;
+    const changed =
+      method !== request.method ||
+      url !== request.url ||
+      JSON.stringify(headers) !== JSON.stringify(request.headers || []) ||
+      JSON.stringify(params) !== JSON.stringify(request.params || []) ||
+      body !== (request.body?.content || "") ||
+      script !== (request.script || "");
+    setHasChanges(changed);
+  }, [method, url, headers, params, body, script, request]);
+
+  const handleSave = () => {
+    if (!request?.id || !hasChanges) return;
+    updateRequestMutation.mutate({
+      method,
+      url,
+      headers,
+      params,
+      body: body ? { type: "json", content: body } : undefined,
+      script,
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -52,6 +102,15 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
           className="flex-1 font-mono text-sm"
           data-testid="input-url"
         />
+        <Button
+          onClick={handleSave}
+          disabled={!hasChanges || updateRequestMutation.isPending}
+          variant="outline"
+          data-testid="button-save"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          {updateRequestMutation.isPending ? "Saving..." : "Save"}
+        </Button>
         <Button onClick={onSend} data-testid="button-send">
           <Send className="h-4 w-4 mr-2" />
           Send
@@ -70,14 +129,18 @@ export function RequestBuilder({ request, onSend }: RequestBuilderProps) {
         <TabsContent value="params" className="flex-1 p-4 overflow-auto">
           <KeyValueTable
             title="Query Parameters"
-            onAdd={() => console.log("Add param")}
+            items={params}
+            onChange={setParams}
+            onAdd={() => setParams([...params, { key: "", value: "", enabled: true }])}
           />
         </TabsContent>
-        
+
         <TabsContent value="headers" className="flex-1 p-4 overflow-auto">
           <KeyValueTable
             title="Headers"
-            onAdd={() => console.log("Add header")}
+            items={headers}
+            onChange={setHeaders}
+            onAdd={() => setHeaders([...headers, { key: "", value: "", enabled: true }])}
           />
         </TabsContent>
         

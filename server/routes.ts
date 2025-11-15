@@ -14,6 +14,7 @@ import {
 } from "@shared/schema";
 import { executeScript } from "./script-executor";
 import { substituteVariables } from "./environment-resolver";
+import { executeHttpRequest } from "./http-executor";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Workspaces
@@ -138,6 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const collection = await storage.createCollection({
         name: "Imported API Collection",
         description: `Imported from ${data.url || "OpenAPI spec"}`,
+        workspaceId: data.workspaceId,
       });
 
       // Create a sample folder
@@ -247,6 +249,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/requests/:id/history", async (req, res) => {
+    try {
+      const results = await storage.getExecutionResults(req.params.id);
+      res.json({ results });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch execution history" });
+    }
+  });
+
   app.post("/api/requests/:id/execute", async (req, res) => {
     try {
       const request = await storage.getRequest(req.params.id);
@@ -280,96 +291,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resolvedBody = await substituteVariables(resolvedBody, context, environment);
       }
 
-      // Mock execution - generate realistic response
-      const startTime = Date.now();
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 300));
-      
-      const endTime = Date.now();
-      const time = endTime - startTime;
+      // Execute real HTTP request
+      const httpResult = await executeHttpRequest(
+        request,
+        resolvedUrl,
+        resolvedHeaders,
+        resolvedParams,
+        resolvedBody
+      );
 
-      // Generate mock response based on method
-      let mockBody: any;
-      let status: number;
-      
-      if (request.method === "GET") {
-        status = 200;
-        if (request.name.toLowerCase().includes("list") || request.name.toLowerCase().includes("users")) {
-          mockBody = {
-            data: [
-              { id: 1, name: "John Doe", email: "john@example.com", role: "admin" },
-              { id: 2, name: "Jane Smith", email: "jane@example.com", role: "user" },
-              { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "user" },
-            ],
-            total: 3,
-            page: 1,
-            limit: 10,
-          };
-        } else {
-          mockBody = {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            role: "admin",
-            createdAt: new Date().toISOString(),
-          };
-        }
-      } else if (request.method === "POST") {
-        status = 201;
-        if (request.name.toLowerCase().includes("login") || request.name.toLowerCase().includes("auth")) {
-          mockBody = {
-            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-            user: {
-              id: 1,
-              name: "John Doe",
-              email: "john@example.com",
-            },
-          };
-        } else {
-          mockBody = {
-            id: randomUUID(),
-            ...JSON.parse(resolvedBody || "{}"),
-            createdAt: new Date().toISOString(),
-          };
-        }
-      } else if (request.method === "PUT" || request.method === "PATCH") {
-        status = 200;
-        mockBody = {
-          id: randomUUID(),
-          ...JSON.parse(resolvedBody || "{}"),
-          updatedAt: new Date().toISOString(),
-        };
-      } else if (request.method === "DELETE") {
-        status = 204;
-        mockBody = null;
-      } else {
-        status = 200;
-        mockBody = { success: true };
-      }
-
-      // Calculate response body size
-      const bodyStr = mockBody ? JSON.stringify(mockBody) : "";
-      const size = Buffer.byteLength(bodyStr, "utf8");
-
-      // Convert headers array to record for result
-      const responseHeaders: Record<string, string> = { 
-        "Content-Type": "application/json",
-        "X-Resolved-Url": resolvedUrl,
-        "X-Resolved-Headers": JSON.stringify(resolvedHeaders.filter(h => h.enabled).map(h => ({ [h.key]: h.value }))),
-        "X-Resolved-Params": JSON.stringify(resolvedParams.filter(p => p.enabled).map(p => ({ [p.key]: p.value }))),
-      };
-
-      // Create execution result with resolved values
+      // Create execution result
       const result: ExecutionResult = {
         id: randomUUID(),
         requestId: request.id,
-        status,
-        statusText: status === 200 ? "OK" : status === 201 ? "Created" : status === 204 ? "No Content" : "Error",
-        headers: responseHeaders,
-        body: bodyStr,
-        time,
-        size,
+        status: httpResult.status,
+        statusText: httpResult.statusText,
+        headers: httpResult.headers,
+        body: httpResult.body,
+        time: httpResult.time,
+        size: httpResult.size,
         timestamp: new Date().toISOString(),
       };
 
@@ -379,10 +319,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Execute post-request script if present
       if (request.script && environment) {
         const scriptResult = await executeScript(request.script, result, environment);
-        environment = scriptResult.environment;
-        
-        // Save updated environment
-        if (scriptResult.modified && environmentId) {
+
+        // Save updated environment if it was modified
+        if (scriptResult.updatedEnvironment && environmentId) {
+          environment = scriptResult.updatedEnvironment;
           await storage.updateEnvironment(environmentId, {
             variables: environment.variables,
           });

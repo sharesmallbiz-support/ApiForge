@@ -87,15 +87,15 @@ export function executeScript(
           const existingIndex = updatedEnvironment.variables.findIndex(v => v.key === key);
           if (existingIndex >= 0) {
             updatedEnvironment.variables[existingIndex] = {
-              key,
+              ...updatedEnvironment.variables[existingIndex],
               value: String(value),
-              enabled: true,
             };
           } else {
             updatedEnvironment.variables.push({
               key,
               value: String(value),
               enabled: true,
+              scope: "global",
             });
           }
           

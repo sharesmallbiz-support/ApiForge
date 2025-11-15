@@ -21,6 +21,10 @@ import {
 import { CollectionItem } from "./CollectionItem";
 import { EnvironmentItem } from "./EnvironmentItem";
 import { ImportDialog } from "./ImportDialog";
+import { CreateCollectionDialog } from "./CreateCollectionDialog";
+import { CreateEnvironmentDialog } from "./CreateEnvironmentDialog";
+import { CreateFolderDialog } from "./CreateFolderDialog";
+import { CreateRequestDialog } from "./CreateRequestDialog";
 import type { Workspace, Collection, Environment } from "@shared/schema";
 
 interface AppSidebarProps {
@@ -32,15 +36,18 @@ interface AppSidebarProps {
 
 type ViewMode = "collections" | "environments";
 
-export function AppSidebar({ 
-  onRequestSelect, 
+export function AppSidebar({
+  onRequestSelect,
   selectedRequestId,
   onEnvironmentSelect,
   selectedEnvironmentId,
 }: AppSidebarProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("collections");
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
-  
+  const [createFolderCollectionId, setCreateFolderCollectionId] = useState<string | null>(null);
+  const [createRequestParentId, setCreateRequestParentId] = useState<string | null>(null);
+  const [createRequestParentType, setCreateRequestParentType] = useState<"collection" | "folder" | null>(null);
+
   const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
     queryKey: ["/api/workspaces"],
   });
@@ -51,14 +58,23 @@ export function AppSidebar({
 
   const workspaces = workspacesData?.workspaces || [];
   const environments = environmentsData?.environments || [];
-  
+
   // Auto-select first workspace if none selected
-  const currentWorkspace = selectedWorkspaceId 
-    ? workspaces.find(w => w.id === selectedWorkspaceId) 
+  const currentWorkspace = selectedWorkspaceId
+    ? workspaces.find(w => w.id === selectedWorkspaceId)
     : workspaces[0];
-  
+
   // Get collections for the current workspace
   const collections = currentWorkspace?.collections || [];
+
+  const handleAddFolder = (collectionId: string) => {
+    setCreateFolderCollectionId(collectionId);
+  };
+
+  const handleAddRequest = (parentId: string, parentType: "collection" | "folder") => {
+    setCreateRequestParentId(parentId);
+    setCreateRequestParentType(parentType);
+  };
 
   return (
     <Sidebar>
@@ -134,9 +150,13 @@ export function AppSidebar({
               <div className="flex items-center justify-between w-full">
                 <span>Collections</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                  {currentWorkspace && (
+                    <CreateCollectionDialog workspaceId={currentWorkspace.id}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-add-collection">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </CreateCollectionDialog>
+                  )}
                   <ImportDialog>
                     <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-import">
                       <FolderPlus className="h-3 w-3" />
@@ -149,20 +169,25 @@ export function AppSidebar({
               {collections.map((collection) => (
                 <CollectionItem
                   key={collection.id}
+                  id={collection.id}
                   name={collection.name}
                   type="collection"
                   hasChildren={collection.folders.length > 0}
+                  onAddFolder={() => handleAddFolder(collection.id)}
                 >
                   {collection.folders.map((folder) => (
                     <CollectionItem
                       key={folder.id}
+                      id={folder.id}
                       name={folder.name}
                       type="folder"
                       hasChildren={folder.requests.length > 0}
+                      onAddRequest={() => handleAddRequest(folder.id, "folder")}
                     >
                       {folder.requests.map((request) => (
                         <CollectionItem
                           key={request.id}
+                          id={request.id}
                           name={request.name}
                           type="request"
                           method={request.method}
@@ -181,14 +206,16 @@ export function AppSidebar({
             <SidebarGroupLabel className="mb-2">
               <div className="flex items-center justify-between w-full">
                 <span>My Environments</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6"
-                  data-testid="button-add-environment"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
+                <CreateEnvironmentDialog onEnvironmentCreated={onEnvironmentSelect}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    data-testid="button-add-environment"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </CreateEnvironmentDialog>
               </div>
             </SidebarGroupLabel>
             <SidebarGroupContent className="space-y-1">
@@ -205,6 +232,31 @@ export function AppSidebar({
           </SidebarGroup>
         )}
       </SidebarContent>
+
+      {/* Dialogs */}
+      <CreateFolderDialog
+        collectionId={createFolderCollectionId || ""}
+        open={!!createFolderCollectionId}
+        onOpenChange={(open) => !open && setCreateFolderCollectionId(null)}
+      />
+
+      {createRequestParentId && (
+        <CreateRequestDialog
+          folderId={createRequestParentType === "folder" ? createRequestParentId : ""}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              setCreateRequestParentId(null);
+              setCreateRequestParentType(null);
+            }
+          }}
+          onRequestCreated={(id) => {
+            onRequestSelect?.(id);
+            setCreateRequestParentId(null);
+            setCreateRequestParentType(null);
+          }}
+        />
+      )}
     </Sidebar>
   );
 }

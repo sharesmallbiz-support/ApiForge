@@ -11,6 +11,7 @@ export const keyValuePairSchema = z.object({
   enabled: z.boolean(),
 });
 export type KeyValuePair = z.infer<typeof keyValuePairSchema>;
+export type KeyValue = KeyValuePair; // Alias for convenience
 
 // Request Body
 export const requestBodySchema = z.object({
@@ -195,5 +196,6 @@ export type ExecutionResult = z.infer<typeof executionResultSchema>;
 export const openApiImportSchema = z.object({
   url: z.string().optional(),
   spec: z.any().optional(),
+  workspaceId: z.string(),
 });
 export type OpenApiImport = z.infer<typeof openApiImportSchema>;
