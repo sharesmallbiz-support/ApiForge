@@ -33,7 +33,7 @@ export function ResponseViewer({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-3 p-4 border-b">
+      <div className="flex items-center gap-3 p-3 border-b flex-wrap min-h-fit">
         <StatusCodeBadge code={statusCode} />
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Clock className="h-3 w-3" />

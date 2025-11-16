@@ -19,13 +19,12 @@ interface GettingStartedProps {
 
 const steps = [
   {
-    title: "Welcome to ApiForge! 🚀",
-    description: "Your professional REST API testing tool with local-first storage",
+    title: "Welcome to ApiSpark! 🚀",
+    description: "Part of the WebSpark suite by Mark Hazleton - Your professional REST API testing tool with local-first storage",
     content: (
       <div className="space-y-4 text-sm">
         <p>
-          ApiForge helps you test and debug REST APIs with ease. Think of it as Postman,
-          but built for speed, simplicity, and privacy.
+          ApiSpark helps you test and debug REST APIs with ease. Part of the WebSpark suite of applications by <a href="https://markhazleton.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Mark Hazleton</a>, built for speed, simplicity, and privacy.
         </p>
         <div className="border-l-4 border-primary bg-primary/10 rounded-r-lg p-4 space-y-2">
           <h4 className="font-semibold flex items-center gap-2">

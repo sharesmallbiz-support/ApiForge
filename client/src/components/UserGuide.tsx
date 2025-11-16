@@ -19,9 +19,9 @@ export function UserGuide({ open, onOpenChange }: UserGuideProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[80vh]">
         <DialogHeader>
-          <DialogTitle>ApiForge User Guide</DialogTitle>
+          <DialogTitle>ApiSpark User Guide</DialogTitle>
           <DialogDescription>
-            Learn how to test APIs like a pro
+            Learn how to test APIs like a pro - Part of the WebSpark suite by Mark Hazleton
           </DialogDescription>
         </DialogHeader>
 
@@ -117,7 +117,7 @@ export function UserGuide({ open, onOpenChange }: UserGuideProps) {
                   <div>
                     <h4 className="font-semibold mb-1">All Data Stored Locally</h4>
                     <p className="text-muted-foreground">
-                      ApiForge stores all your collections, requests, and environments in your
+                      ApiSpark stores all your collections, requests, and environments in your
                       browser's localStorage. Nothing is sent to external servers except when
                       you click "Send" to test an API.
                     </p>

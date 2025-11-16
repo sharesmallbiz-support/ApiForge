@@ -1,6 +1,8 @@
-# 🚀 ApiForge
+# 🚀 ApiSpark
 
 **A professional REST API testing tool** - Test, debug, and document your APIs with ease.
+
+Part of the **WebSpark** suite of applications developed by [Mark Hazleton](https://markhazleton.com)
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -9,7 +11,7 @@
 
 ## 🔒 Local-First Storage
 
-**Your data stays in YOUR browser.** ApiForge stores all your collections, requests, and environments locally using browser localStorage. This means:
+**Your data stays in YOUR browser.** ApiSpark stores all your collections, requests, and environments locally using browser localStorage. This means:
 
 - ✅ **Complete Privacy** - No data sent to external servers (except when testing APIs)
 - ✅ **Works Offline** - Create and edit requests without internet connection
@@ -60,7 +62,7 @@ The application will open at `http://localhost:5000`
 
 ### First Time User?
 
-When you first open ApiForge, you'll see a **Getting Started** walkthrough that guides you through:
+When you first open ApiSpark, you'll see a **Getting Started** walkthrough that guides you through:
 1. Understanding the layout
 2. Core concepts (Collections, Requests, Environments)
 3. Using variables
@@ -386,7 +388,7 @@ MIT License - feel free to use this in your projects!
 - Always export your data before clearing browser storage
 - Consider exporting regularly for backup
 
-**Q: Can I use ApiForge on multiple computers?**
+**Q: Can I use ApiSpark on multiple computers?**
 - Yes! Export your data from one computer
 - Import it on another computer
 - Each browser maintains its own local copy
@@ -395,7 +397,17 @@ MIT License - feel free to use this in your projects!
 
 ## 🌟 Star History
 
-If you find ApiForge useful, please consider giving it a star! ⭐
+If you find ApiSpark useful, please consider giving it a star! ⭐
+
+---
+
+## 👨‍💻 About the Author
+
+**ApiSpark** is developed by [Mark Hazleton](https://markhazleton.com) as part of the **WebSpark** suite of web applications.
+
+Mark is a solutions architect and developer passionate about creating efficient, user-friendly tools for developers.
+
+Visit [markhazleton.com](https://markhazleton.com) to learn more about Mark and explore other WebSpark applications.
 
 ---
 

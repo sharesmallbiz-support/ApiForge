@@ -16,6 +16,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { createSampleData } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
 import { useDebug } from "@/contexts/DebugContext";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "react-resizable-panels";
 import type { Request, ExecutionResult, Workspace } from "@shared/schema";
 
 export default function Home() {
@@ -32,10 +33,10 @@ export default function Home() {
 
   // Check if this is the first time user is opening the app
   useEffect(() => {
-    const hasSeenWalkthrough = localStorage.getItem("apiforge-seen-walkthrough");
+    const hasSeenWalkthrough = localStorage.getItem("apispark-seen-walkthrough");
     if (!hasSeenWalkthrough) {
       setShowGettingStarted(true);
-      localStorage.setItem("apiforge-seen-walkthrough", "true");
+      localStorage.setItem("apispark-seen-walkthrough", "true");
     }
   }, []);
 
@@ -223,7 +224,7 @@ export default function Home() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
               <div className="flex items-center gap-2">
                 <Play className="h-5 w-5 text-primary" />
-                <h1 className="text-lg font-semibold">ApiForge</h1>
+                <h1 className="text-lg font-semibold">ApiSpark</h1>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -247,32 +248,37 @@ export default function Home() {
             {selectedEnvironmentForEdit ? (
               <EnvironmentEditor environmentId={selectedEnvironmentForEdit} />
             ) : selectedRequestId && requestData ? (
-              <div className="grid grid-cols-2 h-full">
-                <div className="border-r">
-                  <RequestBuilder
-                    request={requestData.request}
-                    onSend={handleSend}
-                    isExecuting={executeMutation.isPending}
-                  />
-                </div>
-                <div className="bg-card">
-                  {executionResult ? (
-                    <ResponseViewer
-                      statusCode={executionResult.status}
-                      responseTime={executionResult.time}
-                      size={executionResult.size}
-                      body={JSON.stringify(executionResult.body, null, 2)}
+              <ResizablePanelGroup direction="horizontal" className="h-full">
+                <ResizablePanel defaultSize={50} minSize={30}>
+                  <div className="h-full border-r">
+                    <RequestBuilder
+                      request={requestData.request}
+                      onSend={handleSend}
+                      isExecuting={executeMutation.isPending}
                     />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <div className="text-center space-y-2">
-                        <Play className="h-12 w-12 mx-auto opacity-50" />
-                        <p className="text-sm">Send a request to see the response</p>
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+                <ResizablePanel defaultSize={50} minSize={30}>
+                  <div className="h-full bg-card">
+                    {executionResult ? (
+                      <ResponseViewer
+                        statusCode={executionResult.status}
+                        responseTime={executionResult.time}
+                        size={executionResult.size}
+                        body={JSON.stringify(executionResult.body, null, 2)}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <div className="text-center space-y-2">
+                          <Play className="h-12 w-12 mx-auto opacity-50" />
+                          <p className="text-sm">Send a request to see the response</p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    )}
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 <div className="text-center space-y-6 max-w-md px-4">
@@ -281,7 +287,7 @@ export default function Home() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xl font-semibold text-foreground">
-                      Welcome to ApiForge!
+                      Welcome to ApiSpark!
                     </p>
                     <p className="text-sm">
                       Select a request from the sidebar to get started, or explore these quick actions:
