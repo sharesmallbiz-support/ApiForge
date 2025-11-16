@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get environment if specified and resolve variables first
       const environmentId = req.body?.environmentId;
-      let environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
+      const environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
 
       // Resolve environment variables in URL, headers, params, and body
       const context = { requestId: req.params.id, environmentId };

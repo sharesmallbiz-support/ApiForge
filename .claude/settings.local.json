@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(npx tsc:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(git diff-tree:*)",
+      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/client/src/components/SettingsDialog.tsx\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

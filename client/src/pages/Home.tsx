@@ -74,7 +74,9 @@ export default function Home() {
         const response = await apiRequest(
           "POST",
           `/api/requests/${selectedRequestId}/execute`,
-          { environmentId: selectedEnvironment || undefined }
+          {
+            environmentId: selectedEnvironment || undefined
+          }
         );
 
         const duration = performance.now() - startTime;
@@ -212,7 +214,7 @@ export default function Home() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <AppSidebar 
+        <AppSidebar
           onRequestSelect={handleRequestSelect}
           selectedRequestId={selectedRequestId || undefined}
           onEnvironmentSelect={handleEnvironmentSelect}

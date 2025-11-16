@@ -25,6 +25,7 @@ import { CreateCollectionDialog } from "./CreateCollectionDialog";
 import { CreateEnvironmentDialog } from "./CreateEnvironmentDialog";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { CreateRequestDialog } from "./CreateRequestDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import type { Workspace, Collection, Environment } from "@shared/schema";
 
 interface AppSidebarProps {
@@ -47,6 +48,7 @@ export function AppSidebar({
   const [createFolderCollectionId, setCreateFolderCollectionId] = useState<string | null>(null);
   const [createRequestParentId, setCreateRequestParentId] = useState<string | null>(null);
   const [createRequestParentType, setCreateRequestParentType] = useState<"collection" | "folder" | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
     queryKey: ["/api/workspaces"],
@@ -107,7 +109,13 @@ export function AppSidebar({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="ghost" size="icon" data-testid="button-settings">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSettings(true)}
+            data-testid="button-settings"
+            title="Settings"
+          >
             <Settings className="h-4 w-4" />
           </Button>
         </div>
@@ -261,6 +269,11 @@ export function AppSidebar({
           }}
         />
       )}
+
+      <SettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
     </Sidebar>
   );
 }
