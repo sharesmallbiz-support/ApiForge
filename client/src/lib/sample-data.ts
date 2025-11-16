@@ -9,186 +9,124 @@ export interface SampleData {
 export function createSampleData(workspaceId: string): SampleData {
   return {
     collection: {
-      name: "🚀 Sample API Collection",
-      description: "Example requests using JSONPlaceholder - a free fake REST API for testing",
+      name: "😂 Jokes API Collection",
+      description: "Example requests using JokeAPI - get random jokes from different categories",
       workspaceId,
     },
     folders: [
       {
-        name: "👥 Users",
+        name: "🎭 Random Jokes",
         collectionId: "", // Will be filled when creating
         requests: [
           {
-            name: "Get All Users",
+            name: "Any Random Joke",
             method: "GET",
-            url: "{{baseUrl}}/users",
+            url: "{{baseUrl}}/joke/Any?safe-mode",
             headers: [],
             params: [],
           },
           {
-            name: "Get User by ID",
+            name: "Programming Joke",
             method: "GET",
-            url: "{{baseUrl}}/users/1",
+            url: "{{baseUrl}}/joke/Programming",
             headers: [],
-            params: [],
-          },
-          {
-            name: "Create User",
-            method: "POST",
-            url: "{{baseUrl}}/users",
-            headers: [
-              { key: "Content-Type", value: "application/json", enabled: true },
+            params: [
+              { key: "safe-mode", value: "", enabled: true },
             ],
-            params: [],
-            body: {
-              type: "json",
-              content: JSON.stringify(
-                {
-                  name: "John Doe",
-                  username: "johndoe",
-                  email: "john.doe@example.com",
-                  phone: "1-770-736-8031",
-                  website: "johndoe.com",
-                },
-                null,
-                2
-              ),
-            },
-            script: `// Extract the created user ID
-const response = pm.response.json();
-if (response.id) {
-  pm.environment.set("userId", response.id.toString());
-  console.log("Created user with ID:", response.id);
-}`,
           },
           {
-            name: "Update User",
-            method: "PUT",
-            url: "{{baseUrl}}/users/{{userId}}",
-            headers: [
-              { key: "Content-Type", value: "application/json", enabled: true },
-            ],
-            params: [],
-            body: {
-              type: "json",
-              content: JSON.stringify(
-                {
-                  name: "Jane Doe",
-                  username: "janedoe",
-                  email: "jane.doe@example.com",
-                },
-                null,
-                2
-              ),
-            },
-          },
-          {
-            name: "Delete User",
-            method: "DELETE",
-            url: "{{baseUrl}}/users/{{userId}}",
+            name: "Pun Joke",
+            method: "GET",
+            url: "{{baseUrl}}/joke/Pun",
             headers: [],
-            params: [],
+            params: [
+              { key: "safe-mode", value: "", enabled: true },
+            ],
+          },
+          {
+            name: "Miscellaneous Joke",
+            method: "GET",
+            url: "{{baseUrl}}/joke/Miscellaneous",
+            headers: [],
+            params: [
+              { key: "safe-mode", value: "", enabled: true },
+            ],
           },
         ],
       },
       {
-        name: "📝 Posts",
+        name: "🔍 Filtered Jokes",
         collectionId: "", // Will be filled when creating
         requests: [
           {
-            name: "Get All Posts",
+            name: "Single-part Joke",
             method: "GET",
-            url: "{{baseUrl}}/posts",
+            url: "{{baseUrl}}/joke/Any",
             headers: [],
             params: [
-              { key: "_limit", value: "10", enabled: true },
+              { key: "type", value: "single", enabled: true },
+              { key: "safe-mode", value: "", enabled: true },
             ],
           },
           {
-            name: "Get Posts by User",
+            name: "Two-part Joke",
             method: "GET",
-            url: "{{baseUrl}}/posts",
+            url: "{{baseUrl}}/joke/Any",
             headers: [],
             params: [
-              { key: "userId", value: "{{userId}}", enabled: true },
+              { key: "type", value: "twopart", enabled: true },
+              { key: "safe-mode", value: "", enabled: true },
             ],
           },
           {
-            name: "Create Post",
-            method: "POST",
-            url: "{{baseUrl}}/posts",
-            headers: [
-              { key: "Content-Type", value: "application/json", enabled: true },
+            name: "Search Jokes",
+            method: "GET",
+            url: "{{baseUrl}}/joke/Any",
+            headers: [],
+            params: [
+              { key: "contains", value: "debugging", enabled: true },
+              { key: "safe-mode", value: "", enabled: true },
             ],
-            params: [],
-            body: {
-              type: "json",
-              content: JSON.stringify(
-                {
-                  title: "My First Post",
-                  body: "This is the content of my amazing post!",
-                  userId: 1,
-                },
-                null,
-                2
-              ),
-            },
-            script: `// Save the post ID for later use
-const response = pm.response.json();
-if (response.id) {
-  pm.environment.set("postId", response.id.toString());
-  console.log("Post created with ID:", response.id);
-}`,
           },
         ],
       },
       {
-        name: "💬 Comments",
+        name: "📊 API Information",
         collectionId: "", // Will be filled when creating
         requests: [
           {
-            name: "Get Comments for Post",
+            name: "Get Categories",
             method: "GET",
-            url: "{{baseUrl}}/posts/{{postId}}/comments",
+            url: "{{baseUrl}}/categories",
             headers: [],
             params: [],
           },
           {
-            name: "Search Comments",
+            name: "Get Language Codes",
             method: "GET",
-            url: "{{baseUrl}}/comments",
+            url: "{{baseUrl}}/languages",
             headers: [],
-            params: [
-              { key: "postId", value: "1", enabled: true },
-              { key: "_limit", value: "5", enabled: false },
-            ],
+            params: [],
+          },
+          {
+            name: "Get API Info",
+            method: "GET",
+            url: "{{baseUrl}}/info",
+            headers: [],
+            params: [],
           },
         ],
       },
     ],
     environment: {
-      name: "JSONPlaceholder Demo",
+      name: "Production",
       variables: [
         {
           key: "baseUrl",
-          value: "https://jsonplaceholder.typicode.com",
+          value: "https://v2.jokeapi.dev",
           enabled: true,
           scope: "collection",
           scopeId: "", // Will be filled when creating
-        },
-        {
-          key: "userId",
-          value: "1",
-          enabled: true,
-          scope: "workspace",
-          scopeId: workspaceId,
-        },
-        {
-          key: "postId",
-          value: "1",
-          enabled: true,
-          scope: "workspace",
-          scopeId: workspaceId,
         },
       ],
       headers: [

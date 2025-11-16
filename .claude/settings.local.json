@@ -7,7 +7,8 @@
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(git diff-tree:*)",
-      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/client/src/components/SettingsDialog.tsx\")"
+      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/client/src/components/SettingsDialog.tsx\")",
+      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/temp-joke-sample.ts\")"
     ],
     "deny": [],
     "ask": []
