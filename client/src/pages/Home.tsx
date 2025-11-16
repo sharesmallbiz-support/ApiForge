@@ -16,7 +16,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { createSampleData } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
 import { useDebug } from "@/contexts/DebugContext";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "react-resizable-panels";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import type { Request, ExecutionResult, Workspace } from "@shared/schema";
 
 export default function Home() {
@@ -248,8 +248,8 @@ export default function Home() {
             {selectedEnvironmentForEdit ? (
               <EnvironmentEditor environmentId={selectedEnvironmentForEdit} />
             ) : selectedRequestId && requestData ? (
-              <ResizablePanelGroup direction="horizontal" className="h-full">
-                <ResizablePanel defaultSize={50} minSize={30}>
+              <PanelGroup direction="horizontal" className="h-full">
+                <Panel defaultSize={50} minSize={30}>
                   <div className="h-full border-r">
                     <RequestBuilder
                       request={requestData.request}
@@ -257,9 +257,9 @@ export default function Home() {
                       isExecuting={executeMutation.isPending}
                     />
                   </div>
-                </ResizablePanel>
-                <ResizableHandle className="w-1 bg-border hover:bg-primary transition-colors" />
-                <ResizablePanel defaultSize={50} minSize={30}>
+                </Panel>
+                <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+                <Panel defaultSize={50} minSize={30}>
                   <div className="h-full bg-card">
                     {executionResult ? (
                       <ResponseViewer
@@ -277,8 +277,8 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                </Panel>
+              </PanelGroup>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 <div className="text-center space-y-6 max-w-md px-4">
