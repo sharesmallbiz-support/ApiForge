@@ -1,8 +1,8 @@
-# 🎯 Why ApiForge Uses Local Storage
+# 🎯 Why ApiSpark Uses Local Storage
 
 ## The Smart Choice for Your Data
 
-Unlike traditional API testing tools that store your data on servers or in databases, **ApiForge stores everything in your browser's localStorage**. Here's why this is better:
+Unlike traditional API testing tools that store your data on servers or in databases, **ApiSpark stores everything in your browser's localStorage**. Here's why this is better:
 
 ---
 
@@ -107,13 +107,13 @@ Export data → Clear browser → Import data back
 ### How to Prevent Data Loss:
 - ✅ Export regularly (one click!)
 - ✅ Use normal browser mode (not incognito)
-- ✅ Don't clear site data for ApiForge
+- ✅ Don't clear site data for ApiSpark
 
 ---
 
 ## 🚀 **vs. Traditional Server Storage**
 
-| Feature | ApiForge (localStorage) | Traditional Tools |
+| Feature | ApiSpark (localStorage) | Traditional Tools |
 |---------|------------------------|-------------------|
 | **Privacy** | ✅ 100% local | ❌ Server-stored |
 | **Speed** | ✅ Instant | ⏱️ Network delay |
@@ -151,13 +151,13 @@ But the core will always be **localStorage-first**!
 ## 📝 **Technical Details**
 
 **What's stored in localStorage:**
-- `apiforge-workspaces` - Your workspaces
-- `apiforge-collections` - Collections and folder structure
-- `apiforge-requests` - All request configurations
-- `apiforge-environments` - Environment variables
-- `apiforge-workflows` - Test workflows
-- `apiforge-execution-results` - Last 50 executions per request
-- `apiforge-preferences` - UI settings (theme, etc.)
+- `apispark-workspaces` - Your workspaces
+- `apispark-collections` - Collections and folder structure
+- `apispark-requests` - All request configurations
+- `apispark-environments` - Environment variables
+- `apispark-workflows` - Test workflows
+- `apispark-execution-results` - Last 50 executions per request
+- `apispark-preferences` - UI settings (theme, etc.)
 
 **What's NOT stored:**
 - Your API responses (kept in memory only)
