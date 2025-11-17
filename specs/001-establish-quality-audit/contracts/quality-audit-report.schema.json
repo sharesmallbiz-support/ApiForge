@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apiforge.dev/schemas/quality-audit-report.schema.json",
+  "title": "Quality Audit Report",
+  "type": "object",
+  "required": [
+    "version",
+    "timestamp",
+    "summary",
+    "steps"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^v\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the audit report structure."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when the audit completed."
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "status",
+        "durationMs",
+        "failedSteps",
+        "skippedSteps"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed"],
+          "description": "Overall audit result."
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total run duration in milliseconds."
+        },
+        "failedSteps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedSteps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "path"],
+            "properties": {
+              "name": { "type": "string" },
+              "path": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["file", "url"],
+                "default": "file"
+              }
+            }
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "status", "durationMs"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Machine identifier for the step (e.g., lint, type, build)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-friendly step label."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["passed", "failed", "skipped"],
+            "description": "Outcome of the step."
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Duration of step in milliseconds."
+          },
+          "details": {
+            "type": "object",
+            "description": "Optional performer-specific metadata.",
+            "additionalProperties": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["message"],
+              "properties": {
+                "message": { "type": "string" },
+                "code": { "type": "string" },
+                "docsUrl": { "type": "string", "format": "uri" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
