@@ -17,8 +17,8 @@ Deliver a one-command quality audit that orchestrates linting, type-checking, pr
 **Testing**: `tsc --noEmit` currently available; the plan introduces Vitest smoke tests executed through the audit command while leaving Playwright optional for E2E follow-up  
 **Target Platform**: Cross-platform Node CLI (macOS, Windows, Linux) plus GitHub Actions hosted runners  
 **Project Type**: React + Express monorepo (client/server/shared)  
-**Performance Goals**: Keep audit runtime <8 minutes on GitHub Standard runners; incremental local runs <3 minutes  
-**Constraints**: Offline-friendly developer workflow; audit must auto-detect missing dependencies and avoid mutating project state beyond reports  
+**Performance Goals**: Keep audit runtime <8 minutes on GitHub Standard runners with CI instrumentation that records duration and fails when thresholds are exceeded; incremental local runs <3 minutes  
+**Constraints**: Offline-friendly developer workflow; audit must auto-detect missing dependencies, retry registry calls before flagging security checks as skipped, and avoid mutating project state beyond reports  
 **Scale/Scope**: Quality gate for all ApiForge pull requests and release branches
 
 ## Constitution Check
@@ -28,7 +28,7 @@ Deliver a one-command quality audit that orchestrates linting, type-checking, pr
 - [ ] **Local-First Persistence**: Ensure audit command optionally runs an offline sample (leveraging existing local storage sample data) and document that the script reads but never mutates persisted workspace files; include Airplane Mode guidance in quickstart.
 - [ ] **Import Interoperability**: Validate that executing the audit leaves OpenAPI/import flows untouched by running the bundled sample import during QA and capturing results in the report appendix.
 - [ ] **Onboarding Simplicity**: Update the quickstart/README so new contributors can run `npm run quality:audit` within two guided steps and interpret failures via a cheatsheet appended to the quickstart.
-- [ ] **Quality & Audit Discipline**: Lock required sub-commands (ESLint, `tsc --noEmit`, `vite build`, Vitest smoke suite, `npm outdated`, `npm audit`), publish the JSON schema (`contracts/quality-audit-report.schema.json`), and wire GitHub Actions to block merges on failed exits.
+- [ ] **Quality & Audit Discipline**: Lock required sub-commands (ESLint, `tsc --noEmit`, `vite build`, Vitest smoke suite, `npm outdated`, `npm audit`), publish the JSON schema (`contracts/quality-audit-report.schema.json`), wire GitHub Actions to block merges on failed exits, and document runtime instrumentation thresholds for SC-002.
 - [ ] **Evergreen Dependencies**: Integrate outdated-package detection into the report, describe the follow-up workflow (issue templates or backlog tags), and ensure the CLI exposes remediation hints.
 
 ## Project Structure

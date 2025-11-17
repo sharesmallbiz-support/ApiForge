@@ -70,7 +70,7 @@ New contributors need concise documentation that explains how to install prerequ
 ### Edge Cases
 
 - When the audit detects missing `node_modules`, it MUST run `npm ci` automatically before executing the checklist and skip the install step when dependencies are already present.
-- What is the expected outcome when `npm audit` or registry calls are blocked by lack of network access (e.g., retry guidance vs. cached advisories)?
+- When `npm audit` or registry calls are blocked by lack of network access, the audit MUST retry up to two times and, if still unreachable, mark the security step as `skipped` with a warning in the report plus remediation guidance instructing operators to re-run with connectivity; CI runs treat this as a failure to enforce follow-up.
 - How is the baseline enforced when the working tree contains generated files or partial commits that would skew lint/build outcomes?
 - What is the escalation path when a vulnerability has no upstream patch yet but blocks the audit (e.g., document approved overrides)?
 

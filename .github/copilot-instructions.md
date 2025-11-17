@@ -17,10 +17,22 @@
 - UI components come from the local shadcn copies under `client/src/components/ui`; keep design tokens in `tailwind.config.ts` aligned with `design_guidelines.md`.
 - Routing uses Wouter (`App.tsx`) and theme toggling is handled in `components/ThemeProvider.tsx`; test dark/light layouts when adjusting layout primitives.
 - Example compositions live under `client/src/components/examples/` for documentation; update them when changing API signatures.
+## Quality Assurance
+- Before committing code changes, run `npm run quality:audit` to validate linting, types, builds, tests, dependency health, and security.
+- The audit command auto-installs dependencies if missing and produces a detailed JSON report in `artifacts/quality-audit-report.json`.
+- Common audit fixes:
+  - Lint issues: `npm run lint:fix`
+  - Type errors: `npm run check` for diagnostics
+  - Test failures: `npm run test` for interactive debugging
+- See `docs/runbooks/quality-audit.md` for comprehensive troubleshooting guidance.
+- CI enforces quality gates via `.github/workflows/quality-audit.yml` on all PRs; failing audits block merges.
 ## Workflows & Tooling
-- Typical commands: `npm run dev` (Express + Vite HMR), `npm run build` (Vite client + `esbuild` server bundle), `npm start` (serve built bundle), `npm run check` (typecheck), `npm run db:push` (apply Drizzle schema).
+- Typical commands: `npm run dev` (Express + Vite HMR), `npm run build` (Vite client + `esbuild` server bundle), `npm start` (serve built bundle), `npm run check` (typecheck), `npm run db:push` (apply Drizzle schema), `npm run quality:audit` (comprehensive quality check).
 - Browser data drives the app; resetting or seeding occurs through `LocalStorageService.clearAll()` or by loading the built-in sample via `createSampleData`.
+- Scripts live in `scripts/` and use TypeScript executed via `tsx`; see `scripts/README.md` for conventions.
 ## Contribution Gotchas
 - Whenever you touch data models, update `shared/schema.ts`, the server storage implementation(s), and the client local-storage adapter in tandem.
 - Keep the localStorage router (`client/src/lib/local-storage-adapter.ts`) mirrored with Express endpoints so queries stay consistent online/offline.
 - Remember to include resolved request data when extending execution responses; the client relies on `resolvedRequest` for DebugPanel output.
+- Run the quality audit before pushing: `npm run quality:audit` catches common issues before CI.
+

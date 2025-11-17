@@ -56,9 +56,22 @@ npm run build
 
 # Start production server
 npm start
+
+# Run quality audit
+npm run quality:audit
 ```
 
 The application will open at `http://localhost:5000`
+
+### Quality Assurance
+
+Before contributing or deploying, run the quality audit to ensure code quality:
+
+```bash
+npm run quality:audit
+```
+
+This validates linting, types, builds, tests, dependency health, and security. See [docs/runbooks/quality-audit.md](docs/runbooks/quality-audit.md) for details.
 
 ### First Time User?
 
