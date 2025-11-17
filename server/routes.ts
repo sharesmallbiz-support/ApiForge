@@ -289,14 +289,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/requests/:id/execute", async (req, res) => {
     try {
-      const request = await storage.getRequest(req.params.id);
+      // Try to get request from storage first, fallback to request body (for localStorage mode)
+      let request = await storage.getRequest(req.params.id);
+      if (!request && req.body.request) {
+        request = req.body.request;
+      }
       if (!request) {
         return res.status(404).json({ error: "Request not found" });
       }
 
-      // Get environment if specified and resolve variables first
+      // Get environment if specified, fallback to environment body (for localStorage mode)
       const environmentId = req.body?.environmentId;
-      const environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
+      let environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
+      if (!environment && req.body.environment) {
+        environment = req.body.environment;
+      }
 
       // Resolve environment variables in URL, headers, params, and body
       const context = { requestId: req.params.id, environmentId };
