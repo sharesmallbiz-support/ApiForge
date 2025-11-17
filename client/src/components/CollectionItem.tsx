@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2, MoreVertical } from "lucide-react";
+import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2, MoreVertical, Edit, Move } from "lucide-react";
 import { HttpMethodBadge } from "./HttpMethodBadge";
 import type { Collection, Folder as FolderType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { RenameItemDialog } from "./RenameItemDialog";
+import { MoveItemDialog } from "./MoveItemDialog";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -41,6 +43,7 @@ interface CollectionItemProps {
   hasChildren?: boolean;
   icon?: React.ReactNode;
   id?: string;
+  parentId?: string; // collectionId for folders, folderId for requests
   onAddFolder?: () => void;
   onAddRequest?: () => void;
 }
@@ -55,12 +58,16 @@ export function CollectionItem({
   hasChildren,
   icon,
   id,
+  parentId,
   onAddFolder,
   onAddRequest,
 }: CollectionItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const queryClient = useQueryClient();
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -88,10 +95,93 @@ export function CollectionItem({
     setShowDeleteDialog(true);
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    if (id && type !== "workspace" && type !== "collection") {
+      e.dataTransfer.setData("itemId", id);
+      e.dataTransfer.setData("itemType", type);
+      e.dataTransfer.setData("parentId", parentId || "");
+      e.dataTransfer.effectAllowed = "move";
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedType = e.dataTransfer.types.includes("itemtype") ?
+      e.dataTransfer.getData("itemType") : null;
+
+    // Allow dropping requests on folders, and folders on collections
+    if ((type === "folder" && draggedType === "request") ||
+        (type === "collection" && draggedType === "folder")) {
+      e.dataTransfer.dropEffect = "move";
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const draggedId = e.dataTransfer.getData("itemId");
+    const draggedType = e.dataTransfer.getData("itemType");
+    const draggedParentId = e.dataTransfer.getData("parentId");
+
+    if (!draggedId || !id) return;
+
+    // Move request to folder
+    if (type === "folder" && draggedType === "request" && draggedParentId !== id) {
+      moveMutation.mutate({
+        itemId: draggedId,
+        itemType: "request",
+        newParentId: id,
+      });
+    }
+    // Move folder to collection
+    else if (type === "collection" && draggedType === "folder" && draggedParentId !== id) {
+      moveMutation.mutate({
+        itemId: draggedId,
+        itemType: "folder",
+        newParentId: id,
+      });
+    }
+  };
+
+  const moveMutation = useMutation({
+    mutationFn: async ({ itemId, itemType, newParentId }: {
+      itemId: string;
+      itemType: string;
+      newParentId: string;
+    }) => {
+      const endpoint = itemType === "folder" ? "folders" : "requests";
+      const parentField = itemType === "folder" ? "collectionId" : "folderId";
+      const response = await fetch(`/api/${endpoint}/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [parentField]: newParentId }),
+      });
+      if (!response.ok) throw new Error(`Failed to move ${itemType}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    },
+  });
+
   const isContainer = type === "workspace" || type === "collection" || type === "folder";
   const canDelete = type !== "workspace" && id;
   const canAddFolder = type === "collection" && id;
   const canAddRequest = type === "folder" && id;
+  const canMove = (type === "folder" || type === "request") && id && parentId;
+  const isDraggable = canMove;
 
   return (
     <>
@@ -99,11 +189,16 @@ export function CollectionItem({
         className="w-full group"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        draggable={isDraggable}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <div
           className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer hover-elevate active-elevate-2 ${
             isActive ? "bg-sidebar-accent" : ""
-          }`}
+          } ${isDragOver ? "bg-primary/10 ring-2 ring-primary" : ""}`}
           onClick={onClick}
           data-testid={`item-${type}-${name.toLowerCase().replace(/\s+/g, "-")}`}
         >
@@ -161,7 +256,20 @@ export function CollectionItem({
                     Add Request
                   </DropdownMenuItem>
                 )}
-                {(canAddFolder || canAddRequest) && canDelete && <DropdownMenuSeparator />}
+                {(canAddFolder || canAddRequest) && <DropdownMenuSeparator />}
+                {type !== "workspace" && id && (
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShowRenameDialog(true); }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Rename
+                  </DropdownMenuItem>
+                )}
+                {canMove && (
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShowMoveDialog(true); }}>
+                    <Move className="h-4 w-4 mr-2" />
+                    Move
+                  </DropdownMenuItem>
+                )}
+                {(type !== "workspace" && id || canMove) && canDelete && <DropdownMenuSeparator />}
                 {canDelete && (
                   <DropdownMenuItem
                     onClick={handleDelete}
@@ -200,6 +308,26 @@ export function CollectionItem({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {id && type !== "workspace" && (
+        <RenameItemDialog
+          itemId={id}
+          itemName={name}
+          itemType={type}
+          open={showRenameDialog}
+          onOpenChange={setShowRenameDialog}
+        />
+      )}
+
+      {canMove && parentId && (
+        <MoveItemDialog
+          itemId={id!}
+          itemType={type as "folder" | "request"}
+          currentParentId={parentId}
+          open={showMoveDialog}
+          onOpenChange={setShowMoveDialog}
+        />
+      )}
     </>
   );
 }
