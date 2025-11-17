@@ -29,7 +29,7 @@ export default function Home() {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { addRequest, addResponse, addError } = useDebug();
+  const { addRequest, addResponse, addError, isEnabled: debugEnabled } = useDebug();
 
   // Check if this is the first time user is opening the app
   useEffect(() => {
@@ -274,7 +274,7 @@ export default function Home() {
           onEnvironmentSelect={handleEnvironmentSelect}
           selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
         />
-        <div className="flex flex-col flex-1">
+        <div className={`flex flex-col flex-1 ${debugEnabled ? 'pr-12' : ''}`}>
           <header className="flex items-center justify-between p-3 border-b">
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
