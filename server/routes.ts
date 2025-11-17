@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           headers: request.headers,
           params: request.params,
           body: request.body ? {
-            type: request.body.type as "json" | "text" | "xml" | "form",
+            type: (request.body.type === 'text' || request.body.type === 'xml') ? 'raw' : request.body.type as "json" | "form" | "raw",
             content: request.body.content,
           } : undefined,
         });

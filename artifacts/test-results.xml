@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="1.273">
+    <testsuite name="tests/quality-audit/checklist.spec.ts" timestamp="2025-11-17T03:49:54.849Z" hostname="MycroftHolmes" tests="8" failures="0" errors="0" skipped="0" time="0.0032162">
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid version" time="0.0006464">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should enable auto-install by default" time="0.0001516">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should define all required baseline categories" time="0.0006929">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have unique step IDs" time="0.0001029">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have required flag on all baseline steps" time="0.0000855">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid commands for each step" time="0.0002511">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should execute steps in correct order" time="0.0003875">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should include helpful descriptions" time="0.0002339">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/quality-audit/report.spec.ts" timestamp="2025-11-17T03:49:54.852Z" hostname="MycroftHolmes" tests="4" failures="0" errors="0" skipped="0" time="0.002853">
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate a complete audit run" time="0.0016007">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should reject invalid status values" time="0.0004058">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate dependency advisories" time="0.0001871">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should require non-null exit code for passed/failed steps" time="0.0000827">
+        </testcase>
+    </testsuite>
+</testsuites>

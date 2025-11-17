@@ -10,7 +10,7 @@ import { EnvironmentEditor } from "@/components/EnvironmentEditor";
 import { GettingStarted } from "@/components/GettingStarted";
 import { UserGuide } from "@/components/UserGuide";
 import { DebugPanel } from "@/components/DebugPanel";
-import { Play, Globe, HelpCircle, Rocket } from "lucide-react";
+import { Play, HelpCircle, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { createSampleData } from "@/lib/sample-data";

@@ -144,6 +144,7 @@ export class MemStorage implements IStorage {
     const testEnv: Environment = {
       id: "env-test",
       name: "Test",
+      headers: [],
       variables: [
         // Global variables
         { key: "apiKey", value: "test-key-67890", enabled: true, scope: "global" },

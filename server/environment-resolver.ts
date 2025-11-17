@@ -1,4 +1,4 @@
-import type { Environment, Request } from "@shared/schema";
+import type { Environment } from "@shared/schema";
 import { storage } from "./storage";
 
 export interface ResolveContext {

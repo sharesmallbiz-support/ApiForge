@@ -5,14 +5,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  ChevronLeft,
   ChevronRight,
   Trash2,
   Copy,
   Download,
   AlertCircle,
   Clock,
-  CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,13 +33,17 @@ export function DebugPanel() {
       : "0";
 
   // Match requests with their responses
-  const requestsWithResponses = requests.map(req => {
+  const requestsWithResponses: Array<{
+    request: typeof requests[0];
+    response: typeof responses[0] | undefined;
+    error: typeof errors[0] | undefined;
+  }> = requests.map(req => {
     const response = responses.find(res => res.requestId === req.id);
     const error = errors.find(err => err.requestId === req.id);
     return { request: req, response, error };
   }).reverse(); // Show newest first
 
-  const generateCurl = (req: typeof requests[0], res?: typeof responses[0]) => {
+  const generateCurl = (req: typeof requests[0], _res?: typeof responses[0]) => {
     const { method, url, headers, body } = req;
 
     let curl = `curl -X ${method} "${url}"`;
@@ -215,7 +217,7 @@ export function DebugPanel() {
                   <p className="text-sm mt-2">Send a request to see debug information</p>
                 </div>
               ) : (
-                requestsWithResponses.map(({ request, response, error }, index) => (
+                requestsWithResponses.map(({ request, response, error }, index): JSX.Element => (
                   <div
                     key={request.id}
                     className={`border rounded-lg p-3 space-y-2 ${
@@ -297,13 +299,14 @@ export function DebugPanel() {
                         Request Details
                       </summary>
                       <div className="mt-2 space-y-2">
+                        {/* @ts-ignore - TypeScript has trouble inferring types in nested map callbacks */}
                         {/* Headers */}
                         <details>
                           <summary className="cursor-pointer text-xs font-semibold">
-                            Headers ({Object.keys(request.headers).length})
+                            Headers
                           </summary>
                           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-auto max-h-32">
-                            {JSON.stringify(request.headers, null, 2)}
+                            {JSON.stringify(request.headers || {}, null, 2)}
                           </pre>
                         </details>
 

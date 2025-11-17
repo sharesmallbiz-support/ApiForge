@@ -82,16 +82,14 @@ export async function runAuditSteps(
       try {
         const [command, ...args] = step.command.split(' ');
         const result = await execa(command, args, {
-          cwd: projectRoot,
-          reject: false,
-          timeout: 300000, // 5 minute timeout
-        });
+        cwd: projectRoot,
+        reject: false,
+        timeout: 300000, // 5 minute timeout
+      });
 
-        exitCode = result.exitCode;
-        stdout = result.stdout.slice(0, 5000); // Truncate to 5KB
-        stderr = result.stderr.slice(0, 5000);
-
-        // Capture dependency outputs for parsing
+      exitCode = result.exitCode ?? null;
+      stdout = result.stdout.slice(0, 5000); // Truncate to 5KB
+      stderr = result.stderr.slice(0, 5000);        // Capture dependency outputs for parsing
         if (step.id === 'outdated') {
           outdatedOutput = result.stdout;
         } else if (step.id === 'audit') {

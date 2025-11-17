@@ -1,5 +1,6 @@
 import type { ExecutionResult, Environment } from "@shared/schema";
 
+// ScriptContext interface defines the shape of the context object passed to pre/post-request scripts
 interface ScriptContext {
   response: {
     body: any;
@@ -23,7 +24,7 @@ export function executeScript(
   environment?: Environment
 ): ScriptResult {
   const logs: string[] = [];
-  let updatedEnvironment = environment ? { ...environment } : undefined;
+  const updatedEnvironment = environment ? { ...environment } : undefined;
 
   // If no environment or no script, return early
   if (!script.trim()) {

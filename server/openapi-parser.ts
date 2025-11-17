@@ -1,4 +1,4 @@
-import type { InsertRequest } from "@shared/schema";
+import type { InsertFolder } from "@shared/schema";
 
 interface OpenAPIPath {
   [key: string]: {

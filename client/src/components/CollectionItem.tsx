@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2, MoreVertical } from "lucide-react";
 import { HttpMethodBadge } from "./HttpMethodBadge";
+import type { Collection, Folder as FolderType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusCodeBadge } from "./StatusCodeBadge";
-import { Badge } from "@/components/ui/badge";
 import { Clock, Database } from "lucide-react";
 import { RequestHistory } from "./RequestHistory";
 import type { ExecutionResult } from "@shared/schema";
