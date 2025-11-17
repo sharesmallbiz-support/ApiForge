@@ -298,6 +298,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Request not found" });
       }
 
+      // Get folder and collection for context (needed for variable resolution)
+      // Try storage first, fallback to request body (for localStorage mode)
+      let folder = await storage.getFolder(request.folderId);
+      if (!folder && req.body.folder) {
+        folder = req.body.folder;
+      }
+
+      let collection = folder ? await storage.getCollection(folder.collectionId) : undefined;
+      if (!collection && req.body.collection) {
+        collection = req.body.collection;
+      }
+
       // Get environment if specified, fallback to environment body (for localStorage mode)
       const environmentId = req.body?.environmentId;
       let environment = environmentId ? await storage.getEnvironment(environmentId) : undefined;
@@ -306,7 +318,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Resolve environment variables in URL, headers, params, and body
-      const context = { requestId: req.params.id, environmentId };
+      // Pass request, folder, and collection in context for localStorage mode
+      const context = {
+        requestId: req.params.id,
+        environmentId,
+        request,
+        folder: folder || undefined,
+        collection: collection || undefined,
+      };
       const resolvedUrl = await substituteVariables(request.url, context, environment);
 
       // Merge environment headers with request headers (request headers take precedence)

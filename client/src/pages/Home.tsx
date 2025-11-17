@@ -75,13 +75,33 @@ export default function Home() {
 
         const req = requestData?.request;
 
+        // Find folder and collection from workspace data (for localStorage mode)
+        let folder, collection;
+        if (req && workspacesData?.workspaces) {
+          for (const workspace of workspacesData.workspaces) {
+            for (const coll of workspace.collections || []) {
+              for (const fol of coll.folders || []) {
+                if (fol.id === req.folderId) {
+                  folder = fol;
+                  collection = coll;
+                  break;
+                }
+              }
+              if (folder) break;
+            }
+            if (folder) break;
+          }
+        }
+
         const response = await apiRequest(
           "POST",
           `/api/requests/${selectedRequestId}/execute`,
           {
             environmentId: selectedEnvironment || undefined,
             request: req, // Send request data for localStorage mode
-            environment: currentEnvironment // Send environment data for localStorage mode
+            environment: currentEnvironment, // Send environment data for localStorage mode
+            folder: folder, // Send folder data for localStorage mode
+            collection: collection, // Send collection data for localStorage mode
           }
         );
 
@@ -90,7 +110,6 @@ export default function Home() {
 
         // Capture request details with resolved values from server
         const resolvedRequest = data.resolvedRequest;
-        console.log('Resolved request from server:', resolvedRequest);
         if (req) {
           // Convert headers array to Record<string, string> for debug panel
           const headersRecord: Record<string, string> = {};
@@ -303,7 +322,20 @@ export default function Home() {
                         statusCode={executionResult.status}
                         responseTime={executionResult.time}
                         size={executionResult.size}
-                        body={JSON.stringify(executionResult.body, null, 2)}
+                        body={(() => {
+                          // Try to parse and pretty-print JSON, otherwise return as-is
+                          try {
+                            const parsed = typeof executionResult.body === 'string'
+                              ? JSON.parse(executionResult.body)
+                              : executionResult.body;
+                            return JSON.stringify(parsed, null, 2);
+                          } catch {
+                            // Not JSON or already formatted, return as-is
+                            return typeof executionResult.body === 'string'
+                              ? executionResult.body
+                              : JSON.stringify(executionResult.body, null, 2);
+                          }
+                        })()}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-muted-foreground">

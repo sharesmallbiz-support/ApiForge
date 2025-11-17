@@ -8,7 +8,9 @@
       "Bash(taskkill:*)",
       "Bash(git diff-tree:*)",
       "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/client/src/components/SettingsDialog.tsx\")",
-      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/temp-joke-sample.ts\")"
+      "Bash(\"c:/GitHub/ShareSmallBiz-support/ApiForge/temp-joke-sample.ts\")",
+      "Bash(cat:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

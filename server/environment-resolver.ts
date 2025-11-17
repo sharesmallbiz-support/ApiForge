@@ -1,9 +1,12 @@
-import type { Environment } from "@shared/schema";
+import type { Environment, Request as AppRequest, Folder, Collection } from "@shared/schema";
 import { storage } from "./storage";
 
 export interface ResolveContext {
   requestId: string;
   environmentId?: string;
+  request?: AppRequest;
+  folder?: Folder;
+  collection?: Collection;
 }
 
 /**
@@ -17,40 +20,62 @@ export async function resolveEnvironmentVariable(
   context: ResolveContext,
   environment?: Environment
 ): Promise<string | undefined> {
-  if (!environment) return undefined;
+  if (!environment) {
+    return undefined;
+  }
 
-  const request = await storage.getRequest(context.requestId);
-  if (!request) return undefined;
+  // Try to get request, folder, and collection from context first (localStorage mode)
+  // Otherwise fetch from storage (DB mode)
+  let request = context.request;
+  let folder = context.folder;
+  let collection = context.collection;
 
-  const folder = await storage.getFolder(request.folderId);
-  if (!folder) return undefined;
+  if (!request) {
+    request = await storage.getRequest(context.requestId);
+    if (!request) {
+      return undefined;
+    }
+  }
 
-  const collection = await storage.getCollection(folder.collectionId);
-  if (!collection) return undefined;
+  if (!folder) {
+    folder = await storage.getFolder(request.folderId);
+    if (!folder) {
+      return undefined;
+    }
+  }
+
+  if (!collection) {
+    collection = await storage.getCollection(folder.collectionId);
+    if (!collection) {
+      return undefined;
+    }
+  }
 
   // Try to find the variable in priority order
   // 1. Collection-scoped variable
   const collectionVar = environment.variables.find(
-    v => v.key === key && 
-         v.enabled && 
-         v.scope === "collection" && 
+    v => v.key === key &&
+         v.enabled &&
+         v.scope === "collection" &&
          v.scopeId === collection.id
   );
-  if (collectionVar) return collectionVar.value;
+  if (collectionVar) {
+    return collectionVar.value;
+  }
 
   // 2. Workspace-scoped variable
   const workspaceVar = environment.variables.find(
-    v => v.key === key && 
-         v.enabled && 
-         v.scope === "workspace" && 
+    v => v.key === key &&
+         v.enabled &&
+         v.scope === "workspace" &&
          v.scopeId === collection.workspaceId
   );
   if (workspaceVar) return workspaceVar.value;
 
   // 3. Global variable
   const globalVar = environment.variables.find(
-    v => v.key === key && 
-         v.enabled && 
+    v => v.key === key &&
+         v.enabled &&
          v.scope === "global"
   );
   if (globalVar) return globalVar.value;

@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusCodeBadge } from "./StatusCodeBadge";
 import { Clock, Database } from "lucide-react";
 import { RequestHistory } from "./RequestHistory";
+import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
+import "react-json-view-lite/dist/index.css";
 import type { ExecutionResult } from "@shared/schema";
 
 interface ResponseViewerProps {
@@ -30,6 +32,17 @@ export function ResponseViewer({
 }: ResponseViewerProps) {
   const [selectedTab, setSelectedTab] = useState("body");
 
+  // Parse JSON if possible, otherwise treat as plain text
+  const parsedBody = useMemo(() => {
+    try {
+      return typeof body === 'string' ? JSON.parse(body) : body;
+    } catch {
+      return null;
+    }
+  }, [body]);
+
+  const isJson = parsedBody !== null;
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 p-3 border-b flex-wrap min-h-fit">
@@ -53,9 +66,32 @@ export function ResponseViewer({
         </TabsList>
 
         <TabsContent value="body" className="flex-1 p-4 overflow-auto">
-          <pre className="text-xs font-mono p-4 rounded-md bg-card border overflow-auto">
-            <code>{body}</code>
-          </pre>
+          {isJson ? (
+            <div className="p-4 rounded-md bg-card border">
+              <JsonView
+                data={parsedBody}
+                shouldExpandNode={(level) => level < 2}
+                style={{
+                  ...defaultStyles,
+                  container: "font-mono text-xs",
+                  basicChildStyle: "padding-left: 1rem",
+                  label: "color: hsl(var(--primary))",
+                  valueLabel: "color: hsl(var(--foreground))",
+                  nullValue: "color: hsl(var(--muted-foreground))",
+                  undefinedValue: "color: hsl(var(--muted-foreground))",
+                  numberValue: "color: hsl(var(--chart-1))",
+                  stringValue: "color: hsl(var(--chart-2))",
+                  booleanValue: "color: hsl(var(--chart-3))",
+                  otherValue: "color: hsl(var(--muted-foreground))",
+                  punctuation: "color: hsl(var(--muted-foreground))",
+                }}
+              />
+            </div>
+          ) : (
+            <pre className="text-xs font-mono p-4 rounded-md bg-card border overflow-auto whitespace-pre-wrap break-words">
+              <code>{body}</code>
+            </pre>
+          )}
         </TabsContent>
 
         <TabsContent value="headers" className="flex-1 p-4 overflow-auto">
