@@ -75,15 +75,15 @@ export function ResponseViewer({
                   ...defaultStyles,
                   container: "font-mono text-xs",
                   basicChildStyle: "padding-left: 1rem",
-                  label: "color: hsl(var(--primary))",
-                  valueLabel: "color: hsl(var(--foreground))",
-                  nullValue: "color: hsl(var(--muted-foreground))",
-                  undefinedValue: "color: hsl(var(--muted-foreground))",
-                  numberValue: "color: hsl(var(--chart-1))",
-                  stringValue: "color: hsl(var(--chart-2))",
-                  booleanValue: "color: hsl(var(--chart-3))",
+                  label: "color: hsl(217 91% 60%); font-weight: 600;", // Bright blue for property names
+                  valueLabel: "color: hsl(217 91% 60%); font-weight: 600;",
+                  nullValue: "color: hsl(var(--muted-foreground)); font-style: italic;",
+                  undefinedValue: "color: hsl(var(--muted-foreground)); font-style: italic;",
+                  numberValue: "color: hsl(38 92% 50%); font-weight: 500;", // Orange/amber for numbers
+                  stringValue: "color: hsl(142 76% 36%); font-weight: 500;", // Green for strings
+                  booleanValue: "color: hsl(271 91% 65%); font-weight: 500;", // Purple for booleans
                   otherValue: "color: hsl(var(--muted-foreground))",
-                  punctuation: "color: hsl(var(--muted-foreground))",
+                  punctuation: "color: hsl(var(--muted-foreground)); opacity: 0.6;",
                 }}
               />
             </div>
