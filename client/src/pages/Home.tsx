@@ -49,6 +49,17 @@ export default function Home() {
     queryKey: ["/api/workspaces"],
   });
 
+  const { data: environmentsData } = useQuery<{ environments: any[] }>({
+    queryKey: ["/api/environments"],
+  });
+
+  // Auto-select the first environment when environments load
+  useEffect(() => {
+    if (environmentsData?.environments && environmentsData.environments.length > 0 && !selectedEnvironment) {
+      setSelectedEnvironment(environmentsData.environments[0].id);
+    }
+  }, [environmentsData, selectedEnvironment]);
+
   const executeMutation = useMutation({
     mutationFn: async () => {
       if (!selectedRequestId) throw new Error("No request selected");
@@ -57,30 +68,54 @@ export default function Home() {
       const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       try {
-        // Capture request details
+        // Get current environment data if one is selected
+        const currentEnvironment = selectedEnvironment
+          ? environmentsData?.environments.find(e => e.id === selectedEnvironment)
+          : undefined;
+
         const req = requestData?.request;
-        if (req) {
-          addRequest({
-            id: requestId,
-            timestamp: new Date(),
-            method: req.method,
-            url: req.url,
-            headers: req.headers || {},
-            body: req.body,
-            environmentId: selectedEnvironment || undefined,
-          });
-        }
 
         const response = await apiRequest(
           "POST",
           `/api/requests/${selectedRequestId}/execute`,
           {
-            environmentId: selectedEnvironment || undefined
+            environmentId: selectedEnvironment || undefined,
+            request: req, // Send request data for localStorage mode
+            environment: currentEnvironment // Send environment data for localStorage mode
           }
         );
 
         const duration = performance.now() - startTime;
         const data = await response.json();
+
+        // Capture request details with resolved values from server
+        const resolvedRequest = data.resolvedRequest;
+        console.log('Resolved request from server:', resolvedRequest);
+        if (req) {
+          // Convert headers array to Record<string, string> for debug panel
+          const headersRecord: Record<string, string> = {};
+          const headersToUse = resolvedRequest?.headers || req.headers || [];
+          if (Array.isArray(headersToUse)) {
+            headersToUse.forEach((h: any) => {
+              if (h.enabled !== false && h.key && h.value) {
+                headersRecord[h.key] = h.value;
+              }
+            });
+          }
+
+          // Use resolved URL if available, otherwise fall back to original
+          const urlToLog = resolvedRequest?.url || req.url;
+
+          addRequest({
+            id: requestId,
+            timestamp: new Date(),
+            method: req.method,
+            url: urlToLog,
+            headers: headersRecord,
+            body: resolvedRequest?.body || req.body,
+            environmentId: selectedEnvironment || undefined,
+          });
+        }
 
         // Capture response
         addResponse({

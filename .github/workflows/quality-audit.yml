@@ -1,0 +1,100 @@
+name: Quality Audit
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  audit:
+    name: Run Quality Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality audit
+        id: audit
+        run: |
+          START_TIME=$(date +%s%3N)
+          npm run quality:audit -- --ci --report artifacts/quality-audit-report.json || EXIT_CODE=$?
+          END_TIME=$(date +%s%3N)
+          DURATION=$((END_TIME - START_TIME))
+          echo "duration-ms=$DURATION" >> $GITHUB_OUTPUT
+          exit ${EXIT_CODE:-0}
+
+      - name: Check runtime threshold
+        if: always()
+        run: |
+          DURATION_MS=${{ steps.audit.outputs.duration-ms }}
+          THRESHOLD_MS=480000  # 8 minutes = 480000 ms
+          if [ "$DURATION_MS" -gt "$THRESHOLD_MS" ]; then
+            echo "::error::Audit runtime ($DURATION_MS ms) exceeded threshold ($THRESHOLD_MS ms)"
+            exit 1
+          fi
+          echo "✓ Audit completed within threshold: $DURATION_MS ms"
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-audit-report
+          path: artifacts/quality-audit-report.json
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            artifacts/test-results.xml
+            artifacts/test-results.json
+          retention-days: 30
+
+      - name: Comment on PR (if failed)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'artifacts/quality-audit-report.json';
+            let comment = '## Quality Audit Failed ❌\n\n';
+            
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              comment += `**Duration:** ${Math.round(report.summary.durationMs / 1000)}s\n`;
+              comment += `**Failed Steps:** ${report.summary.failedSteps}\n`;
+              comment += `**Skipped Steps:** ${report.summary.skippedSteps}\n\n`;
+              comment += '### Failed Steps:\n';
+              
+              for (const step of report.steps) {
+                if (step.status === 'failed') {
+                  comment += `- ❌ **${step.name}** (${Math.round(step.durationMs / 1000)}s)\n`;
+                  if (step.errors && step.errors.length > 0) {
+                    comment += `  \`\`\`\n  ${step.errors[0].message.slice(0, 200)}\n  \`\`\`\n`;
+                  }
+                }
+              }
+            }
+            
+            comment += '\n[View full report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

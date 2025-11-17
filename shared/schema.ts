@@ -200,3 +200,79 @@ export const openApiImportSchema = z.object({
   workspaceId: z.string(),
 });
 export type OpenApiImport = z.infer<typeof openApiImportSchema>;
+
+// Quality Audit - Step Category
+export const auditStepCategorySchema = z.enum(["lint", "type", "build", "test", "dependency", "security"]);
+export type AuditStepCategory = z.infer<typeof auditStepCategorySchema>;
+
+// Quality Audit - Step Status
+export const auditStepStatusSchema = z.enum(["passed", "failed", "skipped"]);
+export type AuditStepStatus = z.infer<typeof auditStepStatusSchema>;
+
+// Quality Audit Step
+export const qualityAuditStepSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  command: z.string(),
+  category: auditStepCategorySchema,
+  required: z.boolean(),
+  description: z.string(),
+});
+export type QualityAuditStep = z.infer<typeof qualityAuditStepSchema>;
+
+// Quality Audit Checklist
+export const qualityAuditChecklistSchema = z.object({
+  version: z.string(),
+  steps: z.array(qualityAuditStepSchema),
+  autoInstall: z.boolean().default(true),
+});
+export type QualityAuditChecklist = z.infer<typeof qualityAuditChecklistSchema>;
+
+// Quality Audit Result
+export const qualityAuditResultSchema = z.object({
+  stepId: z.string(),
+  status: auditStepStatusSchema,
+  startedAt: z.string(),
+  finishedAt: z.string(),
+  exitCode: z.number().nullable(),
+  stdout: z.string().optional(),
+  stderr: z.string().optional(),
+  notes: z.string().optional(),
+});
+export type QualityAuditResult = z.infer<typeof qualityAuditResultSchema>;
+
+// Dependency Advisory Type
+export const dependencyAdvisoryTypeSchema = z.enum(["outdated", "vulnerability"]);
+export type DependencyAdvisoryType = z.infer<typeof dependencyAdvisoryTypeSchema>;
+
+// Dependency Advisory Severity
+export const dependencyAdvisorySeveritySchema = z.enum(["low", "moderate", "high", "critical", "info"]);
+export type DependencyAdvisorySeverity = z.infer<typeof dependencyAdvisorySeveritySchema>;
+
+// Dependency Advisory
+export const dependencyAdvisorySchema = z.object({
+  package: z.string(),
+  currentVersion: z.string(),
+  latestVersion: z.string(),
+  severity: dependencyAdvisorySeveritySchema,
+  type: dependencyAdvisoryTypeSchema,
+  advisoryUrl: z.string().optional(),
+});
+export type DependencyAdvisory = z.infer<typeof dependencyAdvisorySchema>;
+
+// Quality Audit Run Status
+export const auditRunStatusSchema = z.enum(["passed", "failed"]);
+export type AuditRunStatus = z.infer<typeof auditRunStatusSchema>;
+
+// Quality Audit Run
+export const qualityAuditRunSchema = z.object({
+  id: z.string(),
+  startedAt: z.string(),
+  finishedAt: z.string(),
+  runner: z.enum(["local", "ci"]),
+  steps: z.array(qualityAuditResultSchema),
+  status: auditRunStatusSchema,
+  reportPath: z.string(),
+  dependencies: z.array(dependencyAdvisorySchema).optional(),
+});
+export type QualityAuditRun = z.infer<typeof qualityAuditRunSchema>;
