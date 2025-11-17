@@ -26,7 +26,11 @@ import { CreateEnvironmentDialog } from "./CreateEnvironmentDialog";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { CreateRequestDialog } from "./CreateRequestDialog";
 import { SettingsDialog } from "./SettingsDialog";
-import type { Workspace, Collection, Environment } from "@shared/schema";
+import type {
+  Workspace,
+  Request as RequestType,
+  Environment,
+} from "@shared/schema";
 
 interface AppSidebarProps {
   onRequestSelect?: (requestId: string) => void;

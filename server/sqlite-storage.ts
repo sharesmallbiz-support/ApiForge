@@ -518,6 +518,7 @@ if (response.id) {
     return environments.map(env => ({
       ...env,
       variables: JSON.parse(env.variables || "[]"),
+      headers: [],
     }));
   }
 
@@ -529,6 +530,7 @@ if (response.id) {
     return {
       ...environment,
       variables: JSON.parse(environment.variables || "[]"),
+      headers: [],
     };
   }
 

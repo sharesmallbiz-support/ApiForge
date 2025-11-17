@@ -27,7 +27,7 @@ export async function ensureDependencies(projectRoot: string): Promise<boolean> 
   }
 
   const nodeModulesPath = join(projectRoot, 'node_modules');
-  const packageLockPath = join(projectRoot, 'package-lock.json');
+  const _packageLockPath = join(projectRoot, 'package-lock.json');
 
   // Check for node_modules existence
   if (existsSync(nodeModulesPath)) {

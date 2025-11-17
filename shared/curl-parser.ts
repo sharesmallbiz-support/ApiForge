@@ -14,7 +14,7 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
     const urlMatch = cleaned.match(/curl\s+(?:-[^\s]+\s+)*['"]?([^\s'"]+)['"]?/);
     if (!urlMatch) return null;
 
-    let url = urlMatch[1];
+    const url = urlMatch[1];
 
     // Extract method
     const methodMatch = cleaned.match(/-X\s+(\w+)/i);

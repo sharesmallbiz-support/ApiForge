@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, ArrowRight, ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowRight, ArrowLeft, BookOpen } from "lucide-react";
 
 interface GettingStartedProps {
   open: boolean;

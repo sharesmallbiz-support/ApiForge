@@ -42,7 +42,7 @@ function parseArgs(): CliArgs {
   return result;
 }
 
-function printSummary(run: QualityAuditRun, ciMode: boolean) {
+function printSummary(run: QualityAuditRun, _ciMode: boolean): void {
   console.log('\\n========================================');
   console.log('Quality Audit Summary');
   console.log('========================================');
