@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Move, Folder as FolderIcon } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -53,10 +54,8 @@ export function MoveItemDialog({
     mutationFn: async (newParentId: string) => {
       const endpoint = itemType === "folder" ? "folders" : "requests";
       const parentField = itemType === "folder" ? "collectionId" : "folderId";
-      const response = await fetch(`/api/${endpoint}/${itemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [parentField]: newParentId }),
+      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, {
+        [parentField]: newParentId,
       });
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();

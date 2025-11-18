@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -40,10 +41,8 @@ export function RenameItemDialog({
     mutationFn: async (newName: string) => {
       const endpoint = itemType === "collection" ? "collections" :
                       itemType === "folder" ? "folders" : "requests";
-      const response = await fetch(`/api/${endpoint}/${itemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
+      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, {
+        name: newName,
       });
       if (!response.ok) throw new Error(`Failed to rename ${itemType}`);
       return response.json();

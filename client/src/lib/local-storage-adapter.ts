@@ -69,6 +69,7 @@ async function handleWorkspaces(method: string, id?: string, body?: any) {
       const workspace = await localStorageService.createWorkspace(body);
       return { workspace };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateWorkspace(id!, body);
       return { workspace: updated };
     case "DELETE":
@@ -94,6 +95,7 @@ async function handleCollections(method: string, id?: string, body?: any, parts?
       const collection = await localStorageService.createCollection(body);
       return { collection };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateCollection(id!, body);
       return { collection: updated };
     case "DELETE":
@@ -110,6 +112,7 @@ async function handleFolders(method: string, id?: string, body?: any) {
       const folder = await localStorageService.createFolder(body);
       return { folder };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateFolder(id!, body);
       return { folder: updated };
     case "DELETE":
@@ -138,6 +141,7 @@ async function handleRequests(method: string, id?: string, body?: any, parts?: s
       const request = await localStorageService.createRequest(body);
       return { request };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateRequest(id!, body);
       return { request: updated };
     case "DELETE":
@@ -161,6 +165,7 @@ async function handleEnvironments(method: string, id?: string, body?: any) {
       const environment = await localStorageService.createEnvironment(body);
       return { environment };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateEnvironment(id!, body);
       return { environment: updated };
     case "DELETE":
@@ -189,6 +194,7 @@ async function handleWorkflows(method: string, id?: string, body?: any, parts?: 
       const workflow = await localStorageService.createWorkflow(body);
       return { workflow };
     case "PUT":
+    case "PATCH":
       const updated = await localStorageService.updateWorkflow(id!, body);
       return { workflow: updated };
     case "DELETE":
