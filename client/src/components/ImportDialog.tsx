@@ -176,7 +176,14 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
         // Check localStorage directly
         const localStorageCollections = localStorage.getItem('apiforge-collections');
-        console.log('[CURLImport] localStorage collections:', localStorageCollections ? JSON.parse(localStorageCollections) : null);
+        const parsedCollections = localStorageCollections ? JSON.parse(localStorageCollections) : null;
+        console.log('[CURLImport] localStorage collections count:', parsedCollections?.length || 0);
+        console.log('[CURLImport] localStorage collections:', parsedCollections);
+        if (parsedCollections) {
+          parsedCollections.forEach((c: any, idx: number) => {
+            console.log(`[CURLImport] Collection ${idx}:`, c.name, 'workspaceId:', c.workspaceId);
+          });
+        }
 
         const result = await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
         console.log('[CURLImport] Refetch complete, result:', result);
