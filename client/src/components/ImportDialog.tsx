@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUp, Link2, Terminal } from "lucide-react";
 import { parseCurlCommand } from "@shared/curl-parser";
+import { useToast } from "@/hooks/use-toast";
+import type { Workspace } from "@shared/schema";
 
 interface ImportDialogProps {
   workspaceId: string;
@@ -26,6 +28,11 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
   const [curlCommand, setCurlCommand] = useState("");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
+    queryKey: ["/api/workspaces"],
+  });
 
   const importOpenApiMutation = useMutation({
     mutationFn: async (url: string) => {
@@ -34,54 +41,86 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, workspaceId }),
       });
-      if (!response.ok) throw new Error("Failed to import OpenAPI");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to import OpenAPI");
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "Import successful",
+        description: "OpenAPI specification imported successfully.",
+      });
       setOpen(false);
       setOpenApiUrl("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
   const importCurlMutation = useMutation({
     mutationFn: async (curl: string) => {
       const parsed = parseCurlCommand(curl);
-      if (!parsed) throw new Error("Invalid CURL command");
+      if (!parsed) throw new Error("Invalid CURL command. Please check the format and try again.");
 
-      // First, get or create a collection for CURL imports
-      const collectionsResponse = await fetch("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "CURL Imports",
-          description: "Requests imported from CURL commands",
-          workspaceId,
-        }),
-      });
+      // Find or create "CURL Imports" collection
+      const workspace = workspacesData?.workspaces.find(w => w.id === workspaceId);
+      let collection = workspace?.collections.find(c => c.name === "CURL Imports");
 
-      if (!collectionsResponse.ok) throw new Error("Failed to create collection");
-      const { collection } = await collectionsResponse.json();
+      if (!collection) {
+        const collectionsResponse = await fetch("/api/collections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "CURL Imports",
+            description: "Requests imported from CURL commands",
+            workspaceId,
+          }),
+        });
 
-      // Create a folder
-      const folderResponse = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Imported Requests",
-          collectionId: collection.id,
-        }),
-      });
+        if (!collectionsResponse.ok) {
+          const errorData = await collectionsResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to create collection");
+        }
+        const data = await collectionsResponse.json();
+        collection = data.collection;
+      }
 
-      if (!folderResponse.ok) throw new Error("Failed to create folder");
-      const { folder } = await folderResponse.json();
+      // Find or create "Imported Requests" folder
+      let folder = collection.folders?.find(f => f.name === "Imported Requests");
+
+      if (!folder) {
+        const folderResponse = await fetch("/api/folders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Imported Requests",
+            collectionId: collection.id,
+          }),
+        });
+
+        if (!folderResponse.ok) {
+          const errorData = await folderResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to create folder");
+        }
+        const data = await folderResponse.json();
+        folder = data.folder;
+      }
 
       // Create the request
+      const requestName = `${parsed.method} ${new URL(parsed.url).pathname}`;
       const requestResponse = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `${parsed.method} ${new URL(parsed.url).pathname}`,
+          name: requestName,
           method: parsed.method,
           url: parsed.url,
           headers: parsed.headers,
@@ -91,13 +130,27 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         }),
       });
 
-      if (!requestResponse.ok) throw new Error("Failed to create request");
+      if (!requestResponse.ok) {
+        const errorData = await requestResponse.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create request");
+      }
       return requestResponse.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "CURL imported",
+        description: "Request created successfully from CURL command.",
+      });
       setOpen(false);
       setCurlCommand("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

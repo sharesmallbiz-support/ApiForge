@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateCollectionDialogProps {
   workspaceId: string;
@@ -25,6 +26,7 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const createCollectionMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string; workspaceId: string }) => {
@@ -33,14 +35,28 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Failed to create collection");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create collection");
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "Collection created",
+        description: `"${name}" has been created successfully.`,
+      });
       setOpen(false);
       setName("");
       setDescription("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create collection",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
