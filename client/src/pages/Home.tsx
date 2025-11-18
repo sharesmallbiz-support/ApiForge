@@ -249,8 +249,8 @@ export default function Home() {
       await apiRequest("POST", "/api/environments", envData);
 
       // Refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/environments"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
 
       toast({
         title: "Sample collection created! 🎉",

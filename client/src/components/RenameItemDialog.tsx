@@ -48,9 +48,9 @@ export function RenameItemDialog({
       if (!response.ok) throw new Error(`Failed to rename ${itemType}`);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/requests", itemId] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/requests", itemId] });
       onOpenChange(false);
     },
   });

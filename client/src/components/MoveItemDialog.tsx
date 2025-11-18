@@ -61,8 +61,8 @@ export function MoveItemDialog({
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       onOpenChange(false);
     },
   });

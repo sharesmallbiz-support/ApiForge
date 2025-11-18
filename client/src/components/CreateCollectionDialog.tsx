@@ -46,9 +46,9 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
       console.log('[CreateCollection] Success:', result);
       return result;
     },
-    onSuccess: (data) => {
-      console.log('[CreateCollection] onSuccess called, invalidating queries');
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async (data) => {
+      console.log('[CreateCollection] onSuccess called, refetching queries');
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       toast({
         title: "Collection created",
         description: `"${name}" has been created successfully.`,

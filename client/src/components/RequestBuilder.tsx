@@ -39,8 +39,8 @@ export function RequestBuilder({ request, onSend, isExecuting = false }: Request
       if (!response.ok) throw new Error("Failed to update request");
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       setHasChanges(false);
       toast({
         title: "Request saved",

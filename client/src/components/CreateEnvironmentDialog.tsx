@@ -37,8 +37,8 @@ export function CreateEnvironmentDialog({ children, onEnvironmentCreated }: Crea
       if (!response.ok) throw new Error("Failed to create environment");
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/environments"] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
       setOpen(false);
       setName("");
       if (data.environment?.id) {

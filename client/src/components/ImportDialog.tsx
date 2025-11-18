@@ -47,8 +47,8 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       toast({
         title: "Import successful",
         description: "OpenAPI specification imported successfully.",
@@ -155,9 +155,9 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       console.log('[CURLImport] Request created:', result);
       return result;
     },
-    onSuccess: () => {
-      console.log('[CURLImport] Success, invalidating queries');
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      console.log('[CURLImport] Success, refetching queries');
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       toast({
         title: "CURL imported",
         description: "Request created successfully from CURL command.",

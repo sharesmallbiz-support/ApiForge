@@ -84,8 +84,8 @@ export function CollectionItem({
       });
       if (!response.ok) throw new Error(`Failed to delete ${type}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       setShowDeleteDialog(false);
     },
   });
@@ -171,8 +171,8 @@ export function CollectionItem({
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
     },
   });
 
