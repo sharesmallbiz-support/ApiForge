@@ -99,45 +99,38 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
     // Extract headers - support both -H and --header
     const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
 
-    // Multiple patterns to handle various quoting styles
-    const headerPatterns = [
-      /(?:^|\s)(?:-H|--header)\s+'([^']+)'/g,      // Single quotes
-      /(?:^|\s)(?:-H|--header)\s+"([^"]+)"/g,      // Double quotes
-      /(?:^|\s)(?:-H|--header)\s+([^\s-][^\s]*)/g, // No quotes (less common)
-    ];
+    // Single comprehensive pattern that handles all quoting styles without overlap
+    // This pattern captures the entire header value with its quotes
+    const headerRegex = /(?:^|\s)(?:-H|--header)\s+(?:'([^']+)'|"([^"]+)"|(\S+))/g;
 
-    for (const pattern of headerPatterns) {
-      let match;
-      const regex = new RegExp(pattern);
-      const globalRegex = new RegExp(pattern.source, 'g');
+    let headerMatch;
+    while ((headerMatch = headerRegex.exec(cleaned)) !== null) {
+      // Extract the header string from whichever capture group matched
+      const headerStr = headerMatch[1] || headerMatch[2] || headerMatch[3];
+      if (!headerStr) continue;
 
-      while ((match = globalRegex.exec(cleaned)) !== null) {
-        const headerStr = match[1];
-        if (!headerStr) continue;
+      // Parse header into key:value
+      const colonIndex = headerStr.indexOf(':');
+      if (colonIndex === -1) {
+        console.warn(`[CURL Parser] Invalid header format (missing colon): ${headerStr}`);
+        continue;
+      }
 
-        // Parse header into key:value
-        const colonIndex = headerStr.indexOf(':');
-        if (colonIndex === -1) {
-          console.warn(`[CURL Parser] Invalid header format (missing colon): ${headerStr}`);
-          continue;
-        }
+      const key = headerStr.substring(0, colonIndex).trim();
+      const value = headerStr.substring(colonIndex + 1).trim();
 
-        const key = headerStr.substring(0, colonIndex).trim();
-        const value = headerStr.substring(colonIndex + 1).trim();
+      if (!key) {
+        console.warn(`[CURL Parser] Invalid header format (empty key): ${headerStr}`);
+        continue;
+      }
 
-        if (!key) {
-          console.warn(`[CURL Parser] Invalid header format (empty key): ${headerStr}`);
-          continue;
-        }
-
-        // Check for duplicates
-        const existingIndex = headers.findIndex(h => h.key.toLowerCase() === key.toLowerCase());
-        if (existingIndex !== -1) {
-          console.warn(`[CURL Parser] Duplicate header "${key}", using latest value`);
-          headers[existingIndex] = { key, value, enabled: true };
-        } else {
-          headers.push({ key, value, enabled: true });
-        }
+      // Check for duplicates
+      const existingIndex = headers.findIndex(h => h.key.toLowerCase() === key.toLowerCase());
+      if (existingIndex !== -1) {
+        console.warn(`[CURL Parser] Duplicate header "${key}", using latest value`);
+        headers[existingIndex] = { key, value, enabled: true };
+      } else {
+        headers.push({ key, value, enabled: true });
       }
     }
 
