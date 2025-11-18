@@ -83,7 +83,13 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       const parsed = parseCurlCommand(curl);
       if (!parsed) {
         console.error('[CURLImport] Failed to parse CURL command');
-        throw new Error("Invalid CURL command. Please check the format and try again.");
+        throw new Error(
+          "Failed to parse CURL command. Make sure it:\n" +
+          "• Starts with 'curl'\n" +
+          "• Contains a valid URL (http:// or https://)\n" +
+          "• Has proper quoting for headers and data\n\n" +
+          "Check the browser console for detailed error messages."
+        );
       }
       console.log('[CURLImport] Parsed:', parsed);
 
@@ -136,13 +142,38 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       // Create the request
       const requestName = `${parsed.method} ${new URL(parsed.url).pathname}`;
       console.log('[CURLImport] Creating request in folder:', folder.id);
+
+      // Determine body type from Content-Type header or content
+      let bodyType: "json" | "form" | "raw" = "json";
+      if (parsed.body) {
+        const contentTypeHeader = parsed.headers.find(h =>
+          h.key.toLowerCase() === 'content-type'
+        );
+
+        if (contentTypeHeader) {
+          const contentType = contentTypeHeader.value.toLowerCase();
+          if (contentType.includes('application/x-www-form-urlencoded') ||
+              contentType.includes('multipart/form-data')) {
+            bodyType = "form";
+          } else if (!contentType.includes('application/json')) {
+            bodyType = "raw";
+          }
+        } else {
+          // Auto-detect based on content
+          const trimmed = parsed.body.trim();
+          if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+            bodyType = "raw";
+          }
+        }
+      }
+
       const requestResponse = await apiRequest("POST", "/api/requests", {
         name: requestName,
         method: parsed.method,
         url: parsed.url,
         headers: parsed.headers,
-        params: [],
-        body: parsed.body ? { type: "json", content: parsed.body } : undefined,
+        params: parsed.params || [],
+        body: parsed.body ? { type: bodyType, content: parsed.body } : undefined,
         folderId: folder.id,
       });
 
