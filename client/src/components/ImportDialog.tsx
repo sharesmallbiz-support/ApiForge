@@ -48,13 +48,25 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       return response.json();
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
-      toast({
-        title: "Import successful",
-        description: "OpenAPI specification imported successfully.",
-      });
-      setOpen(false);
-      setOpenApiUrl("");
+      try {
+        await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        toast({
+          title: "Import successful",
+          description: "OpenAPI specification imported successfully.",
+        });
+        // Small delay to ensure React has time to re-render before closing dialog
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setOpen(false);
+        setOpenApiUrl("");
+      } catch (error) {
+        console.error('[OpenAPI Import] Refetch error:', error);
+        toast({
+          title: "Import successful",
+          description: "Collection imported but UI may need manual refresh.",
+        });
+        setOpen(false);
+        setOpenApiUrl("");
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -157,13 +169,26 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
     },
     onSuccess: async () => {
       console.log('[CURLImport] Success, refetching queries');
-      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
-      toast({
-        title: "CURL imported",
-        description: "Request created successfully from CURL command.",
-      });
-      setOpen(false);
-      setCurlCommand("");
+      try {
+        const result = await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        console.log('[CURLImport] Refetch complete, result:', result);
+        toast({
+          title: "CURL imported",
+          description: "Request created successfully from CURL command.",
+        });
+        // Small delay to ensure React has time to re-render before closing dialog
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setOpen(false);
+        setCurlCommand("");
+      } catch (error) {
+        console.error('[CURLImport] Refetch error:', error);
+        toast({
+          title: "CURL imported",
+          description: "Request created but UI may need manual refresh.",
+        });
+        setOpen(false);
+        setCurlCommand("");
+      }
     },
     onError: (error: Error) => {
       console.error('[CURLImport] Error:', error);
