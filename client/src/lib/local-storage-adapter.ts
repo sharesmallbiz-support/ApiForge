@@ -80,12 +80,7 @@ async function handleWorkspaces(method: string, id?: string, body?: any) {
 }
 
 async function handleCollections(method: string, id?: string, body?: any, parts?: string[]) {
-  // Handle import endpoint
-  if (parts && parts[2] === "import") {
-    // This is handled separately - just create the collection
-    const collection = await localStorageService.createCollection(body);
-    return { collection };
-  }
+  // Note: /api/collections/import is routed to the server (not handled here)
 
   switch (method) {
     case "GET":

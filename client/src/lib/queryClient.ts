@@ -8,15 +8,16 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Routes that MUST use the server (HTTP execution, etc.)
+// Routes that MUST use the server (HTTP execution, OpenAPI import, etc.)
 const SERVER_ONLY_ROUTES = [
   "/api/requests/",
   "/execute",
   "/history",
+  "/import", // OpenAPI spec parsing requires server
 ];
 
 function shouldUseServer(url: string): boolean {
-  return SERVER_ONLY_ROUTES.some(route => url.includes(route) && (url.includes("/execute") || url.includes("/history")));
+  return SERVER_ONLY_ROUTES.some(route => url.includes(route));
 }
 
 export async function apiRequest(
