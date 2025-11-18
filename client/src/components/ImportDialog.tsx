@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUp, Link2, Terminal } from "lucide-react";
 import { parseCurlCommand } from "@shared/curl-parser";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Workspace } from "@shared/schema";
 
 interface ImportDialogProps {
@@ -36,10 +37,9 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
   const importOpenApiMutation = useMutation({
     mutationFn: async (url: string) => {
-      const response = await fetch("/api/collections/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, workspaceId }),
+      const response = await apiRequest("POST", "/api/collections/import", {
+        url,
+        workspaceId,
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -96,14 +96,10 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
       if (!collection) {
         console.log('[CURLImport] Creating new collection');
-        const collectionsResponse = await fetch("/api/collections", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "CURL Imports",
-            description: "Requests imported from CURL commands",
-            workspaceId,
-          }),
+        const collectionsResponse = await apiRequest("POST", "/api/collections", {
+          name: "CURL Imports",
+          description: "Requests imported from CURL commands",
+          workspaceId,
         });
 
         if (!collectionsResponse.ok) {
@@ -122,13 +118,9 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
       if (!folder) {
         console.log('[CURLImport] Creating new folder in collection:', collection.id);
-        const folderResponse = await fetch("/api/folders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Imported Requests",
-            collectionId: collection.id,
-          }),
+        const folderResponse = await apiRequest("POST", "/api/folders", {
+          name: "Imported Requests",
+          collectionId: collection.id,
         });
 
         if (!folderResponse.ok) {
@@ -144,18 +136,14 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       // Create the request
       const requestName = `${parsed.method} ${new URL(parsed.url).pathname}`;
       console.log('[CURLImport] Creating request in folder:', folder.id);
-      const requestResponse = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: requestName,
-          method: parsed.method,
-          url: parsed.url,
-          headers: parsed.headers,
-          params: [],
-          body: parsed.body ? { type: "json", content: parsed.body } : undefined,
-          folderId: folder.id,
-        }),
+      const requestResponse = await apiRequest("POST", "/api/requests", {
+        name: requestName,
+        method: parsed.method,
+        url: parsed.url,
+        headers: parsed.headers,
+        params: [],
+        body: parsed.body ? { type: "json", content: parsed.body } : undefined,
+        folderId: folder.id,
       });
 
       if (!requestResponse.ok) {

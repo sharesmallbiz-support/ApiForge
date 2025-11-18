@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CreateCollectionDialogProps {
   workspaceId: string;
@@ -31,11 +32,7 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
   const createCollectionMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string; workspaceId: string }) => {
       console.log('[CreateCollection] Sending request:', data);
-      const response = await fetch("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("POST", "/api/collections", data);
       console.log('[CreateCollection] Response status:', response.status);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
