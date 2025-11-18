@@ -170,8 +170,17 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
     onSuccess: async () => {
       console.log('[CURLImport] Success, refetching queries');
       try {
+        // Check cache before refetch
+        const beforeData = queryClient.getQueryData(["/api/workspaces"]);
+        console.log('[CURLImport] Cache before refetch:', beforeData);
+
         const result = await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
         console.log('[CURLImport] Refetch complete, result:', result);
+
+        // Check cache after refetch
+        const afterData = queryClient.getQueryData(["/api/workspaces"]);
+        console.log('[CURLImport] Cache after refetch:', afterData);
+
         toast({
           title: "CURL imported",
           description: "Request created successfully from CURL command.",
