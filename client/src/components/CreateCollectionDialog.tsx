@@ -30,18 +30,24 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
 
   const createCollectionMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string; workspaceId: string }) => {
+      console.log('[CreateCollection] Sending request:', data);
       const response = await fetch("/api/collections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      console.log('[CreateCollection] Response status:', response.status);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('[CreateCollection] Error:', errorData);
         throw new Error(errorData.message || "Failed to create collection");
       }
-      return response.json();
+      const result = await response.json();
+      console.log('[CreateCollection] Success:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('[CreateCollection] onSuccess called, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
       toast({
         title: "Collection created",
@@ -52,6 +58,7 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
       setDescription("");
     },
     onError: (error: Error) => {
+      console.error('[CreateCollection] onError:', error);
       toast({
         title: "Failed to create collection",
         description: error.message,

@@ -67,14 +67,23 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
   const importCurlMutation = useMutation({
     mutationFn: async (curl: string) => {
+      console.log('[CURLImport] Parsing CURL command');
       const parsed = parseCurlCommand(curl);
-      if (!parsed) throw new Error("Invalid CURL command. Please check the format and try again.");
+      if (!parsed) {
+        console.error('[CURLImport] Failed to parse CURL command');
+        throw new Error("Invalid CURL command. Please check the format and try again.");
+      }
+      console.log('[CURLImport] Parsed:', parsed);
 
       // Find or create "CURL Imports" collection
+      console.log('[CURLImport] Finding workspace:', workspaceId);
       const workspace = workspacesData?.workspaces.find(w => w.id === workspaceId);
+      console.log('[CURLImport] Workspace:', workspace);
       let collection = workspace?.collections.find(c => c.name === "CURL Imports");
+      console.log('[CURLImport] Existing collection:', collection);
 
       if (!collection) {
+        console.log('[CURLImport] Creating new collection');
         const collectionsResponse = await fetch("/api/collections", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -87,16 +96,20 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
         if (!collectionsResponse.ok) {
           const errorData = await collectionsResponse.json().catch(() => ({}));
+          console.error('[CURLImport] Failed to create collection:', errorData);
           throw new Error(errorData.message || "Failed to create collection");
         }
         const data = await collectionsResponse.json();
+        console.log('[CURLImport] Collection created:', data);
         collection = data.collection;
       }
 
       // Find or create "Imported Requests" folder
       let folder = collection.folders?.find(f => f.name === "Imported Requests");
+      console.log('[CURLImport] Existing folder:', folder);
 
       if (!folder) {
+        console.log('[CURLImport] Creating new folder in collection:', collection.id);
         const folderResponse = await fetch("/api/folders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -108,14 +121,17 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
         if (!folderResponse.ok) {
           const errorData = await folderResponse.json().catch(() => ({}));
+          console.error('[CURLImport] Failed to create folder:', errorData);
           throw new Error(errorData.message || "Failed to create folder");
         }
         const data = await folderResponse.json();
+        console.log('[CURLImport] Folder created:', data);
         folder = data.folder;
       }
 
       // Create the request
       const requestName = `${parsed.method} ${new URL(parsed.url).pathname}`;
+      console.log('[CURLImport] Creating request in folder:', folder.id);
       const requestResponse = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,11 +148,15 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
 
       if (!requestResponse.ok) {
         const errorData = await requestResponse.json().catch(() => ({}));
+        console.error('[CURLImport] Failed to create request:', errorData);
         throw new Error(errorData.message || "Failed to create request");
       }
-      return requestResponse.json();
+      const result = await requestResponse.json();
+      console.log('[CURLImport] Request created:', result);
+      return result;
     },
     onSuccess: () => {
+      console.log('[CURLImport] Success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
       toast({
         title: "CURL imported",
@@ -146,6 +166,7 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       setCurlCommand("");
     },
     onError: (error: Error) => {
+      console.error('[CURLImport] Error:', error);
       toast({
         title: "Import failed",
         description: error.message,
