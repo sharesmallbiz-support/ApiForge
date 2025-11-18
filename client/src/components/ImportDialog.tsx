@@ -174,12 +174,25 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         const beforeData = queryClient.getQueryData(["/api/workspaces"]);
         console.log('[CURLImport] Cache before refetch:', beforeData);
 
+        // Check localStorage directly
+        const localStorageCollections = localStorage.getItem('apiforge-collections');
+        console.log('[CURLImport] localStorage collections:', localStorageCollections ? JSON.parse(localStorageCollections) : null);
+
         const result = await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
         console.log('[CURLImport] Refetch complete, result:', result);
 
         // Check cache after refetch
         const afterData = queryClient.getQueryData(["/api/workspaces"]);
         console.log('[CURLImport] Cache after refetch:', afterData);
+
+        // Log the workspaces array to see collection count
+        if (afterData && typeof afterData === 'object' && 'workspaces' in afterData) {
+          const workspaces = (afterData as any).workspaces;
+          console.log('[CURLImport] Workspaces count:', workspaces.length);
+          workspaces.forEach((ws: any, idx: number) => {
+            console.log(`[CURLImport] Workspace ${idx}:`, ws.name, 'Collections:', ws.collections?.length || 0);
+          });
+        }
 
         toast({
           title: "CURL imported",
