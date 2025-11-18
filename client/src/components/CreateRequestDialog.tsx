@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -43,14 +44,10 @@ export function CreateRequestDialog({ folderId, children, open: controlledOpen, 
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: { name: string; method: string; url: string; folderId: string }) => {
-      const response = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          headers: [],
-          params: [],
-        }),
+      const response = await apiRequest("POST", "/api/requests", {
+        ...data,
+        headers: [],
+        params: [],
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

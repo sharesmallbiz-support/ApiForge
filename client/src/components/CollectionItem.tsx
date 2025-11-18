@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RenameItemDialog } from "./RenameItemDialog";
 import { MoveItemDialog } from "./MoveItemDialog";
+import { apiRequest } from "@/lib/queryClient";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -79,9 +80,7 @@ export function CollectionItem({
     mutationFn: async () => {
       if (!id) return;
       const endpoint = type === "collection" ? "collections" : type === "folder" ? "folders" : "requests";
-      const response = await fetch(`/api/${endpoint}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/${endpoint}/${id}`);
       if (!response.ok) throw new Error(`Failed to delete ${type}`);
     },
     onSuccess: async () => {
@@ -163,10 +162,8 @@ export function CollectionItem({
     }) => {
       const endpoint = itemType === "folder" ? "folders" : "requests";
       const parentField = itemType === "folder" ? "collectionId" : "folderId";
-      const response = await fetch(`/api/${endpoint}/${itemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [parentField]: newParentId }),
+      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, {
+        [parentField]: newParentId,
       });
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();
