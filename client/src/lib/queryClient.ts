@@ -12,7 +12,8 @@ async function throwIfResNotOk(res: Response) {
 const SERVER_ONLY_ROUTES = [
   "/execute",
   "/history",
-  "/import", // OpenAPI spec parsing requires server
+  "/import", // OpenAPI and Postman import parsing requires server
+  "/import-postman", // Postman collection/environment parsing
 ];
 
 function shouldUseServer(url: string): boolean {

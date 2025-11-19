@@ -201,6 +201,14 @@ export const openApiImportSchema = z.object({
 });
 export type OpenApiImport = z.infer<typeof openApiImportSchema>;
 
+// Postman Import
+export const postmanImportSchema = z.object({
+  collection: z.any().optional(),
+  environment: z.any().optional(),
+  workspaceId: z.string(),
+});
+export type PostmanImport = z.infer<typeof postmanImportSchema>;
+
 // Quality Audit - Step Category
 export const auditStepCategorySchema = z.enum(["lint", "type", "build", "test", "dependency", "security"]);
 export type AuditStepCategory = z.infer<typeof auditStepCategorySchema>;

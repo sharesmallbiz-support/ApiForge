@@ -28,6 +28,7 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
   const [openApiUrl, setOpenApiUrl] = useState("");
   const [curlCommand, setCurlCommand] = useState("");
   const [open, setOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -321,6 +322,191 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
     }
   };
 
+  const importFileMutation = useMutation({
+    mutationFn: async (file: File) => {
+      console.log('[FileImport] Processing file:', file.name);
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Detect file type
+      const isPostmanCollection = data.info && data.item;
+      const isPostmanEnvironment = data.values && data._postman_variable_scope === "environment";
+      const isOpenAPI = data.openapi || data.swagger;
+
+      if (isPostmanCollection || isPostmanEnvironment) {
+        // Postman import
+        const response = await apiRequest("POST", "/api/collections/import-postman", {
+          collection: isPostmanCollection ? data : undefined,
+          environment: isPostmanEnvironment ? data : undefined,
+          workspaceId,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to import Postman data");
+        }
+        return { ...await response.json(), type: isPostmanCollection ? "postman-collection" : "postman-environment" };
+      } else if (isOpenAPI) {
+        // OpenAPI import
+        const response = await apiRequest("POST", "/api/collections/import", {
+          spec: data,
+          workspaceId,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to import OpenAPI");
+        }
+        return { ...await response.json(), type: "openapi" };
+      } else {
+        throw new Error("Unknown file format. Please upload a Postman collection, Postman environment, or OpenAPI specification.");
+      }
+    },
+    onSuccess: async (data) => {
+      try {
+        console.log('[FileImport] Server returned:', data);
+
+        // Handle Postman imports
+        if (data.type === "postman-collection" && data.collection) {
+          const collection = data.collection;
+
+          // Create collection in localStorage
+          const collectionResponse = await apiRequest("POST", "/api/collections", {
+            name: collection.name,
+            description: collection.description,
+            workspaceId: workspaceId,
+          });
+          const localCollection = (await collectionResponse.json()).collection;
+          console.log('[FileImport] Created collection in localStorage:', localCollection);
+
+          // Create folders and requests in localStorage
+          for (const folder of collection.folders || []) {
+            const folderResponse = await apiRequest("POST", "/api/folders", {
+              name: folder.name,
+              collectionId: localCollection.id,
+            });
+            const localFolder = (await folderResponse.json()).folder;
+
+            for (const request of folder.requests || []) {
+              await apiRequest("POST", "/api/requests", {
+                name: request.name,
+                method: request.method,
+                url: request.url,
+                headers: request.headers || [],
+                params: request.params || [],
+                body: request.body,
+                folderId: localFolder.id,
+              });
+            }
+          }
+
+          toast({
+            title: "Import successful",
+            description: "Postman collection imported successfully.",
+          });
+        } else if (data.type === "postman-environment" && data.environment) {
+          // Create environment in localStorage
+          await apiRequest("POST", "/api/environments", {
+            name: data.environment.name,
+            variables: data.environment.variables,
+            headers: [],
+          });
+
+          toast({
+            title: "Import successful",
+            description: "Postman environment imported successfully.",
+          });
+        } else if (data.type === "openapi") {
+          // Handle OpenAPI import (similar to existing OpenAPI import logic)
+          const collection = data.collection;
+
+          if (collection) {
+            const collectionResponse = await apiRequest("POST", "/api/collections", {
+              name: collection.name,
+              description: collection.description,
+              workspaceId: workspaceId,
+            });
+            const localCollection = (await collectionResponse.json()).collection;
+
+            // Create environment if one was created
+            if (data.environment) {
+              const environment = data.environment;
+              const variables = environment.variables.map((v: any) => ({
+                ...v,
+                scopeId: v.scope === "collection" ? localCollection.id : v.scopeId,
+              }));
+
+              await apiRequest("POST", "/api/environments", {
+                name: environment.name,
+                variables,
+                headers: environment.headers || [],
+              });
+            }
+
+            // Create folders and requests
+            for (const folder of collection.folders || []) {
+              const folderResponse = await apiRequest("POST", "/api/folders", {
+                name: folder.name,
+                collectionId: localCollection.id,
+              });
+              const localFolder = (await folderResponse.json()).folder;
+
+              for (const request of folder.requests || []) {
+                await apiRequest("POST", "/api/requests", {
+                  name: request.name,
+                  method: request.method,
+                  url: request.url,
+                  headers: request.headers || [],
+                  params: request.params || [],
+                  body: request.body,
+                  folderId: localFolder.id,
+                });
+              }
+            }
+          }
+
+          toast({
+            title: "Import successful",
+            description: data.environment
+              ? "OpenAPI specification and environment imported successfully."
+              : "OpenAPI specification imported successfully.",
+          });
+        }
+
+        await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
+
+        // Small delay before closing
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setOpen(false);
+        setSelectedFile(null);
+      } catch (error) {
+        console.error('[FileImport] Error saving to localStorage:', error);
+        toast({
+          title: "Import failed",
+          description: error instanceof Error ? error.message : "Failed to save imported data",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: Error) => {
+      console.error('[FileImport] Error:', error);
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      importFileMutation.mutate(file);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -399,20 +585,33 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
           </TabsContent>
 
           <TabsContent value="file" className="space-y-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center hover-elevate cursor-pointer">
-              <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Click to upload or drag and drop
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                OpenAPI JSON files only
-              </p>
-              <input
-                type="file"
-                accept=".json"
-                className="hidden"
-                data-testid="input-file-upload"
-              />
+            <div className="space-y-2">
+              <Label htmlFor="file-upload">Upload File</Label>
+              <div
+                className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => document.getElementById('file-upload')?.click()}
+              >
+                <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {selectedFile ? selectedFile.name : "Click to upload or drag and drop"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Postman Collection, Postman Environment, or OpenAPI JSON
+                </p>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  data-testid="input-file-upload"
+                />
+              </div>
+              {selectedFile && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {importFileMutation.isPending ? "Importing..." : "Ready to import"}
+                </p>
+              )}
             </div>
           </TabsContent>
         </Tabs>
