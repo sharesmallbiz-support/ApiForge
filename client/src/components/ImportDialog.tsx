@@ -50,12 +50,12 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
     onSuccess: async (data) => {
       try {
         console.log('[OpenAPI Import] Server returned:', data);
-        
+
         // The server created the collection in its own storage, but we need to save it to localStorage
         // The collection data includes all folders and requests
         if (data.collection) {
           const collection = data.collection;
-          
+
           // Create collection in localStorage
           const collectionResponse = await apiRequest("POST", "/api/collections", {
             name: collection.name,
@@ -64,7 +64,26 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
           });
           const localCollection = (await collectionResponse.json()).collection;
           console.log('[OpenAPI Import] Created collection in localStorage:', localCollection);
-          
+
+          // Create environment in localStorage if one was created
+          if (data.environment) {
+            const environment = data.environment;
+            console.log('[OpenAPI Import] Creating environment in localStorage:', environment);
+
+            // Update scopeId for collection-scoped variables to use the new collection ID
+            const variables = environment.variables.map((v: any) => ({
+              ...v,
+              scopeId: v.scope === "collection" ? localCollection.id : v.scopeId,
+            }));
+
+            await apiRequest("POST", "/api/environments", {
+              name: environment.name,
+              variables,
+              headers: environment.headers || [],
+            });
+            console.log('[OpenAPI Import] Environment created in localStorage');
+          }
+
           // Create folders and requests in localStorage
           for (const folder of collection.folders || []) {
             const folderResponse = await apiRequest("POST", "/api/folders", {
@@ -73,7 +92,7 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
             });
             const localFolder = (await folderResponse.json()).folder;
             console.log('[OpenAPI Import] Created folder:', localFolder);
-            
+
             // Create requests in this folder
             for (const request of folder.requests || []) {
               await apiRequest("POST", "/api/requests", {
@@ -88,11 +107,14 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
             }
           }
         }
-        
+
         await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
         toast({
           title: "Import successful",
-          description: "OpenAPI specification imported successfully.",
+          description: data.environment
+            ? "OpenAPI specification and environment imported successfully."
+            : "OpenAPI specification imported successfully.",
         });
         // Small delay to ensure React has time to re-render before closing dialog
         await new Promise(resolve => setTimeout(resolve, 100));

@@ -150,6 +150,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workspaceId: data.workspaceId,
       });
 
+      // Create environment for this collection with extracted variables
+      let environment = null;
+      if (parsedApi.environmentVariables.length > 0 || parsedApi.environmentHeaders.length > 0) {
+        // Set scopeId for collection-scoped variables
+        const variables = parsedApi.environmentVariables.map(v => ({
+          ...v,
+          scopeId: v.scope === "collection" ? collection.id : v.scopeId,
+        }));
+
+        environment = await storage.createEnvironment({
+          name: `${parsedApi.title} Environment`,
+          variables,
+          headers: parsedApi.environmentHeaders,
+        });
+      }
+
       // Group requests by path prefix to organize into folders
       const folderMap = new Map<string, string>();
 
@@ -185,7 +201,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedCollection = await storage.getCollection(collection.id);
-      res.status(201).json({ collection: updatedCollection });
+      res.status(201).json({
+        collection: updatedCollection,
+        environment: environment
+      });
     } catch (error) {
       console.error("OpenAPI import error:", error);
       res.status(400).json({
