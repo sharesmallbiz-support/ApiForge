@@ -310,7 +310,9 @@ class LocalStorageService {
   // ========== FOLDERS ==========
 
   async getFolder(id: string): Promise<Folder | undefined> {
-    return this.data.folders.find(f => f.id === id);
+    const folder = this.data.folders.find(f => f.id === id);
+    if (!folder) return undefined;
+    return this.hydrateFolder(folder);
   }
 
   async createFolder(insertFolder: InsertFolder): Promise<Folder> {

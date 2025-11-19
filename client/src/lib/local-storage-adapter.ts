@@ -108,6 +108,12 @@ async function handleCollections(method: string, id?: string, body?: any, parts?
 
 async function handleFolders(method: string, id?: string, body?: any) {
   switch (method) {
+    case "GET":
+      if (id) {
+        const folder = await localStorageService.getFolder(id);
+        return { folder };
+      }
+      throw new Error("List all folders not supported");
     case "POST":
       const folder = await localStorageService.createFolder(body);
       return { folder };

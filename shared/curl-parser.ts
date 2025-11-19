@@ -34,22 +34,26 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
     }
 
     // Extract URL - handle various formats
-    // Pattern: curl [options] 'url' or curl 'url' [options] or curl --location 'url'
-    const urlPatterns = [
-      /curl\s+(?:.*?\s+)?(?:--location\s+)?['"]([^'"]+)['"]/,  // Quoted URL
-      /curl\s+(?:.*?\s+)?(?:--location\s+)?(\S+)/,              // Unquoted URL (fallback)
-    ];
-
+    // Look for any quoted or unquoted string that looks like a URL
     let url: string | null = null;
-    for (const pattern of urlPatterns) {
-      const match = cleaned.match(pattern);
-      if (match && match[1]) {
-        // Validate it looks like a URL
-        const candidate = match[1];
-        if (candidate.match(/^https?:\/\//i) || candidate.includes('://')) {
-          url = candidate;
-          break;
-        }
+
+    // Try to find quoted URLs first (most common)
+    const quotedUrlRegex = /['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = quotedUrlRegex.exec(cleaned)) !== null) {
+      const candidate = match[1];
+      if (candidate.match(/^https?:\/\//i) || candidate.includes('://')) {
+        url = candidate;
+        break;
+      }
+    }
+
+    // If no quoted URL found, try unquoted
+    if (!url) {
+      const unquotedUrlRegex = /\s(https?:\/\/\S+)/i;
+      const unquotedMatch = cleaned.match(unquotedUrlRegex);
+      if (unquotedMatch && unquotedMatch[1]) {
+        url = unquotedMatch[1];
       }
     }
 

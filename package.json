@@ -16,6 +16,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 0",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "test": "vitest",
+    "test:coverage": "vitest --run --coverage",
     "test:ci": "vitest --run --reporter=junit --reporter=json --outputFile.junit=artifacts/test-results.xml --outputFile.json=artifacts/test-results.json",
     "quality:audit": "tsx scripts/quality-audit.ts"
   },
@@ -92,6 +93,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.10",
     "@vitest/ui": "^4.0.9",
     "autoprefixer": "^10.4.22",
     "cross-env": "^10.1.0",
