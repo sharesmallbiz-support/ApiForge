@@ -111,8 +111,8 @@ export function CollectionItem({
     const draggedType = e.dataTransfer.types.includes("itemtype") ?
       e.dataTransfer.getData("itemType") : null;
 
-    // Allow dropping requests on folders, and folders on collections
-    if ((type === "folder" && draggedType === "request") ||
+    // Allow dropping requests on folders, folders on collections, and folders on other folders
+    if ((type === "folder" && (draggedType === "request" || draggedType === "folder")) ||
         (type === "collection" && draggedType === "folder")) {
       e.dataTransfer.dropEffect = "move";
       setIsDragOver(true);
@@ -134,7 +134,7 @@ export function CollectionItem({
     const draggedType = e.dataTransfer.getData("itemType");
     const draggedParentId = e.dataTransfer.getData("parentId");
 
-    if (!draggedId || !id) return;
+    if (!draggedId || !id || draggedId === id) return;
 
     // Move request to folder
     if (type === "folder" && draggedType === "request" && draggedParentId !== id) {
@@ -152,6 +152,14 @@ export function CollectionItem({
         newParentId: id,
       });
     }
+    // Move folder to another folder
+    else if (type === "folder" && draggedType === "folder" && draggedParentId !== id && draggedId !== id) {
+      moveMutation.mutate({
+        itemId: draggedId,
+        itemType: "folder",
+        newParentId: id,
+      });
+    }
   };
 
   const moveMutation = useMutation({
@@ -161,10 +169,23 @@ export function CollectionItem({
       newParentId: string;
     }) => {
       const endpoint = itemType === "folder" ? "folders" : "requests";
-      const parentField = itemType === "folder" ? "collectionId" : "folderId";
-      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, {
-        [parentField]: newParentId,
-      });
+      let updateData: any = {};
+
+      if (itemType === "folder") {
+        // Determine if newParentId is a collection or folder
+        // If type is "collection", update collectionId and clear parentId
+        // If type is "folder", update parentId and clear collectionId
+        if (type === "collection") {
+          updateData = { collectionId: newParentId, parentId: null };
+        } else if (type === "folder") {
+          updateData = { parentId: newParentId, collectionId: null };
+        }
+      } else {
+        // For requests, always use folderId
+        updateData = { folderId: newParentId };
+      }
+
+      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, updateData);
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();
     },
@@ -175,7 +196,7 @@ export function CollectionItem({
 
   const isContainer = type === "workspace" || type === "collection" || type === "folder";
   const canDelete = type !== "workspace" && id;
-  const canAddFolder = type === "collection" && id;
+  const canAddFolder = (type === "collection" || type === "folder") && id;
   const canAddRequest = type === "folder" && id;
   const canMove = (type === "folder" || type === "request") && id && parentId;
   const isDraggable = canMove;

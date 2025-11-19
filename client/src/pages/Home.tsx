@@ -78,16 +78,28 @@ export default function Home() {
         // Find folder and collection from workspace data (for localStorage mode)
         let folder, collection;
         if (req && workspacesData?.workspaces) {
+          const findFolderRecursive = (folders: any[]): any => {
+            for (const fol of folders) {
+              if (fol.id === req.folderId) {
+                return fol;
+              }
+              // Check nested folders
+              if (fol.subfolders && fol.subfolders.length > 0) {
+                const found = findFolderRecursive(fol.subfolders);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+
           for (const workspace of workspacesData.workspaces) {
             for (const coll of workspace.collections || []) {
-              for (const fol of coll.folders || []) {
-                if (fol.id === req.folderId) {
-                  folder = fol;
-                  collection = coll;
-                  break;
-                }
+              const foundFolder = findFolderRecursive(coll.folders || []);
+              if (foundFolder) {
+                folder = foundFolder;
+                collection = coll;
+                break;
               }
-              if (folder) break;
             }
             if (folder) break;
           }
@@ -267,14 +279,18 @@ export default function Home() {
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
-        <AppSidebar
-          onRequestSelect={handleRequestSelect}
-          selectedRequestId={selectedRequestId || undefined}
-          onEnvironmentSelect={handleEnvironmentSelect}
-          selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
-        />
-        <div className={`flex flex-col flex-1 ${debugEnabled ? 'pr-12' : ''}`}>
+      <PanelGroup direction="horizontal" className="h-screen w-full">
+        <Panel defaultSize={20} minSize={15} maxSize={40}>
+          <AppSidebar
+            onRequestSelect={handleRequestSelect}
+            selectedRequestId={selectedRequestId || undefined}
+            onEnvironmentSelect={handleEnvironmentSelect}
+            selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
+          />
+        </Panel>
+        <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+        <Panel defaultSize={80} minSize={60}>
+        <div className={`flex flex-col h-full ${debugEnabled ? 'pr-12' : ''}`}>
           <header className="flex items-center justify-between p-3 border-b">
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
@@ -393,7 +409,8 @@ export default function Home() {
             )}
           </main>
         </div>
-      </div>
+        </Panel>
+      </PanelGroup>
 
       {/* Dialogs */}
       <GettingStarted
