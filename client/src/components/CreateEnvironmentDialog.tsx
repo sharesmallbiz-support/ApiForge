@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -26,19 +27,15 @@ export function CreateEnvironmentDialog({ children, onEnvironmentCreated }: Crea
 
   const createEnvironmentMutation = useMutation({
     mutationFn: async (data: { name: string }) => {
-      const response = await fetch("/api/environments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          variables: [],
-        }),
+      const response = await apiRequest("POST", "/api/environments", {
+        ...data,
+        variables: [],
       });
       if (!response.ok) throw new Error("Failed to create environment");
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/environments"] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
       setOpen(false);
       setName("");
       if (data.environment?.id) {

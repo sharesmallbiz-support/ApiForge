@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUp, Link2, Terminal } from "lucide-react";
 import { parseCurlCommand } from "@shared/curl-parser";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { Workspace } from "@shared/schema";
 
 interface ImportDialogProps {
   workspaceId: string;
@@ -26,78 +29,222 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
   const [curlCommand, setCurlCommand] = useState("");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: workspacesData } = useQuery<{ workspaces: Workspace[] }>({
+    queryKey: ["/api/workspaces"],
+  });
 
   const importOpenApiMutation = useMutation({
     mutationFn: async (url: string) => {
-      const response = await fetch("/api/collections/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, workspaceId }),
+      const response = await apiRequest("POST", "/api/collections/import", {
+        url,
+        workspaceId,
       });
-      if (!response.ok) throw new Error("Failed to import OpenAPI");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to import OpenAPI");
+      }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
-      setOpen(false);
-      setOpenApiUrl("");
+    onSuccess: async () => {
+      try {
+        await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        toast({
+          title: "Import successful",
+          description: "OpenAPI specification imported successfully.",
+        });
+        // Small delay to ensure React has time to re-render before closing dialog
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setOpen(false);
+        setOpenApiUrl("");
+      } catch (error) {
+        console.error('[OpenAPI Import] Refetch error:', error);
+        toast({
+          title: "Import successful",
+          description: "Collection imported but UI may need manual refresh.",
+        });
+        setOpen(false);
+        setOpenApiUrl("");
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
   const importCurlMutation = useMutation({
     mutationFn: async (curl: string) => {
+      console.log('[CURLImport] Parsing CURL command');
       const parsed = parseCurlCommand(curl);
-      if (!parsed) throw new Error("Invalid CURL command");
+      if (!parsed) {
+        console.error('[CURLImport] Failed to parse CURL command');
+        throw new Error(
+          "Failed to parse CURL command. Make sure it:\n" +
+          "• Starts with 'curl'\n" +
+          "• Contains a valid URL (http:// or https://)\n" +
+          "• Has proper quoting for headers and data\n\n" +
+          "Check the browser console for detailed error messages."
+        );
+      }
+      console.log('[CURLImport] Parsed:', parsed);
 
-      // First, get or create a collection for CURL imports
-      const collectionsResponse = await fetch("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // Find or create "CURL Imports" collection
+      console.log('[CURLImport] Finding workspace:', workspaceId);
+      const workspace = workspacesData?.workspaces.find(w => w.id === workspaceId);
+      console.log('[CURLImport] Workspace:', workspace);
+      let collection = workspace?.collections.find(c => c.name === "CURL Imports");
+      console.log('[CURLImport] Existing collection:', collection);
+
+      if (!collection) {
+        console.log('[CURLImport] Creating new collection');
+        const collectionsResponse = await apiRequest("POST", "/api/collections", {
           name: "CURL Imports",
           description: "Requests imported from CURL commands",
           workspaceId,
-        }),
-      });
+        });
 
-      if (!collectionsResponse.ok) throw new Error("Failed to create collection");
-      const { collection } = await collectionsResponse.json();
+        if (!collectionsResponse.ok) {
+          const errorData = await collectionsResponse.json().catch(() => ({}));
+          console.error('[CURLImport] Failed to create collection:', errorData);
+          throw new Error(errorData.message || "Failed to create collection");
+        }
+        const data = await collectionsResponse.json();
+        console.log('[CURLImport] Collection created:', data);
+        collection = data.collection;
+      }
 
-      // Create a folder
-      const folderResponse = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // Find or create "Imported Requests" folder
+      let folder = collection.folders?.find(f => f.name === "Imported Requests");
+      console.log('[CURLImport] Existing folder:', folder);
+
+      if (!folder) {
+        console.log('[CURLImport] Creating new folder in collection:', collection.id);
+        const folderResponse = await apiRequest("POST", "/api/folders", {
           name: "Imported Requests",
           collectionId: collection.id,
-        }),
-      });
+        });
 
-      if (!folderResponse.ok) throw new Error("Failed to create folder");
-      const { folder } = await folderResponse.json();
+        if (!folderResponse.ok) {
+          const errorData = await folderResponse.json().catch(() => ({}));
+          console.error('[CURLImport] Failed to create folder:', errorData);
+          throw new Error(errorData.message || "Failed to create folder");
+        }
+        const data = await folderResponse.json();
+        console.log('[CURLImport] Folder created:', data);
+        folder = data.folder;
+      }
 
       // Create the request
-      const requestResponse = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${parsed.method} ${new URL(parsed.url).pathname}`,
-          method: parsed.method,
-          url: parsed.url,
-          headers: parsed.headers,
-          params: [],
-          body: parsed.body ? { type: "json", content: parsed.body } : undefined,
-          folderId: folder.id,
-        }),
+      const requestName = `${parsed.method} ${new URL(parsed.url).pathname}`;
+      console.log('[CURLImport] Creating request in folder:', folder.id);
+
+      // Determine body type from Content-Type header or content
+      let bodyType: "json" | "form" | "raw" = "json";
+      if (parsed.body) {
+        const contentTypeHeader = parsed.headers.find(h =>
+          h.key.toLowerCase() === 'content-type'
+        );
+
+        if (contentTypeHeader) {
+          const contentType = contentTypeHeader.value.toLowerCase();
+          if (contentType.includes('application/x-www-form-urlencoded') ||
+              contentType.includes('multipart/form-data')) {
+            bodyType = "form";
+          } else if (!contentType.includes('application/json')) {
+            bodyType = "raw";
+          }
+        } else {
+          // Auto-detect based on content
+          const trimmed = parsed.body.trim();
+          if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+            bodyType = "raw";
+          }
+        }
+      }
+
+      const requestResponse = await apiRequest("POST", "/api/requests", {
+        name: requestName,
+        method: parsed.method,
+        url: parsed.url,
+        headers: parsed.headers,
+        params: parsed.params || [],
+        body: parsed.body ? { type: bodyType, content: parsed.body } : undefined,
+        folderId: folder.id,
       });
 
-      if (!requestResponse.ok) throw new Error("Failed to create request");
-      return requestResponse.json();
+      if (!requestResponse.ok) {
+        const errorData = await requestResponse.json().catch(() => ({}));
+        console.error('[CURLImport] Failed to create request:', errorData);
+        throw new Error(errorData.message || "Failed to create request");
+      }
+      const result = await requestResponse.json();
+      console.log('[CURLImport] Request created:', result);
+      return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
-      setOpen(false);
-      setCurlCommand("");
+    onSuccess: async () => {
+      console.log('[CURLImport] Success, refetching queries');
+      try {
+        // Check cache before refetch
+        const beforeData = queryClient.getQueryData(["/api/workspaces"]);
+        console.log('[CURLImport] Cache before refetch:', beforeData);
+
+        // Check localStorage directly
+        const localStorageCollections = localStorage.getItem('apiforge-collections');
+        const parsedCollections = localStorageCollections ? JSON.parse(localStorageCollections) : null;
+        console.log('[CURLImport] localStorage collections count:', parsedCollections?.length || 0);
+        console.log('[CURLImport] localStorage collections:', parsedCollections);
+        if (parsedCollections) {
+          parsedCollections.forEach((c: any, idx: number) => {
+            console.log(`[CURLImport] Collection ${idx}:`, c.name, 'workspaceId:', c.workspaceId);
+          });
+        }
+
+        const result = await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+        console.log('[CURLImport] Refetch complete, result:', result);
+
+        // Check cache after refetch
+        const afterData = queryClient.getQueryData(["/api/workspaces"]);
+        console.log('[CURLImport] Cache after refetch:', afterData);
+
+        // Log the workspaces array to see collection count
+        if (afterData && typeof afterData === 'object' && 'workspaces' in afterData) {
+          const workspaces = (afterData as any).workspaces;
+          console.log('[CURLImport] Workspaces count:', workspaces.length);
+          workspaces.forEach((ws: any, idx: number) => {
+            console.log(`[CURLImport] Workspace ${idx}:`, ws.name, 'Collections:', ws.collections?.length || 0);
+          });
+        }
+
+        toast({
+          title: "CURL imported",
+          description: "Request created successfully from CURL command.",
+        });
+        // Small delay to ensure React has time to re-render before closing dialog
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setOpen(false);
+        setCurlCommand("");
+      } catch (error) {
+        console.error('[CURLImport] Refetch error:', error);
+        toast({
+          title: "CURL imported",
+          description: "Request created but UI may need manual refresh.",
+        });
+        setOpen(false);
+        setCurlCommand("");
+      }
+    },
+    onError: (error: Error) => {
+      console.error('[CURLImport] Error:', error);
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

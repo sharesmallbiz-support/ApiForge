@@ -129,6 +129,7 @@ class LocalStorageService {
   }
 
   private saveCollections() {
+    console.log('[LocalStorageService] saveCollections called, count:', this.data.collections.length);
     this.saveItem(STORAGE_KEYS.COLLECTIONS, this.data.collections);
   }
 
@@ -158,6 +159,7 @@ class LocalStorageService {
   // ========== WORKSPACES ==========
 
   async getWorkspaces(): Promise<Workspace[]> {
+    console.log('[LocalStorageService] getWorkspaces called, total collections in memory:', this.data.collections.length);
     return this.data.workspaces.map(ws => this.hydrateWorkspace(ws));
   }
 
@@ -168,9 +170,17 @@ class LocalStorageService {
   }
 
   private hydrateWorkspace(workspace: Workspace): Workspace {
+    console.log('[LocalStorageService] hydrateWorkspace for:', workspace.name, 'workspaceId:', workspace.id);
+    console.log('[LocalStorageService] Total collections in memory:', this.data.collections.length);
     const collections = this.data.collections
       .filter(c => c.workspaceId === workspace.id)
       .map(collection => this.hydrateCollection(collection));
+    console.log('[LocalStorageService] Filtered collections for workspace:', collections.length);
+    if (this.data.collections.length > 0) {
+      this.data.collections.forEach(c => {
+        console.log('[LocalStorageService] Collection:', c.name, 'workspaceId:', c.workspaceId, 'matches:', c.workspaceId === workspace.id);
+      });
+    }
 
     return {
       ...workspace,
@@ -252,6 +262,7 @@ class LocalStorageService {
   }
 
   async createCollection(insertCollection: InsertCollection): Promise<Collection> {
+    console.log('[LocalStorageService] createCollection called with:', insertCollection);
     const collection: Collection = {
       ...insertCollection,
       id: randomUUID(),
@@ -259,8 +270,12 @@ class LocalStorageService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    console.log('[LocalStorageService] Created collection:', collection);
+    console.log('[LocalStorageService] Collections before push:', this.data.collections.length);
     this.data.collections.push(collection);
+    console.log('[LocalStorageService] Collections after push:', this.data.collections.length);
     this.saveCollections();
+    console.log('[LocalStorageService] Collections saved to localStorage');
     return collection;
   }
 
@@ -295,7 +310,9 @@ class LocalStorageService {
   // ========== FOLDERS ==========
 
   async getFolder(id: string): Promise<Folder | undefined> {
-    return this.data.folders.find(f => f.id === id);
+    const folder = this.data.folders.find(f => f.id === id);
+    if (!folder) return undefined;
+    return this.hydrateFolder(folder);
   }
 
   async createFolder(insertFolder: InsertFolder): Promise<Folder> {

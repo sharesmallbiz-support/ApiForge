@@ -197,6 +197,7 @@ export function AppSidebar({
                       id={folder.id}
                       name={folder.name}
                       type="folder"
+                      parentId={collection.id}
                       hasChildren={folder.requests.length > 0}
                       onAddRequest={() => handleAddRequest(folder.id, "folder")}
                     >
@@ -207,6 +208,7 @@ export function AppSidebar({
                           name={request.name}
                           type="request"
                           method={request.method}
+                          parentId={folder.id}
                           isActive={selectedRequestId === request.id}
                           onClick={() => onRequestSelect?.(request.id)}
                         />

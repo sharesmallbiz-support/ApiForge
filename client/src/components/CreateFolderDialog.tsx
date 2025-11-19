@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FolderPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -25,24 +27,35 @@ export function CreateFolderDialog({ collectionId, children, open: controlledOpe
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
   const createFolderMutation = useMutation({
     mutationFn: async (data: { name: string; collectionId: string }) => {
-      const response = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Failed to create folder");
+      const response = await apiRequest("POST", "/api/folders", data);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create folder");
+      }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "Folder created",
+        description: `"${name}" has been created successfully.`,
+      });
       setOpen(false);
       setName("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create folder",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

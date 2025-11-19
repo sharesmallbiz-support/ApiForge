@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -35,26 +37,30 @@ export function CreateRequestDialog({ folderId, children, open: controlledOpen, 
   const [method, setMethod] = useState<string>("GET");
   const [url, setUrl] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: { name: string; method: string; url: string; folderId: string }) => {
-      const response = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          headers: [],
-          params: [],
-        }),
+      const response = await apiRequest("POST", "/api/requests", {
+        ...data,
+        headers: [],
+        params: [],
       });
-      if (!response.ok) throw new Error("Failed to create request");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create request");
+      }
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "Request created",
+        description: `"${name}" has been created successfully.`,
+      });
       setOpen(false);
       setName("");
       setUrl("");
@@ -62,6 +68,13 @@ export function CreateRequestDialog({ folderId, children, open: controlledOpen, 
       if (data.request?.id) {
         onRequestCreated?.(data.request.id);
       }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create request",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

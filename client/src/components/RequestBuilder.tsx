@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Save } from "lucide-react";
 import { KeyValueTable } from "./KeyValueTable";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Request, KeyValue } from "@shared/schema";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -31,16 +32,12 @@ export function RequestBuilder({ request, onSend, isExecuting = false }: Request
   const updateRequestMutation = useMutation({
     mutationFn: async (data: Partial<Request>) => {
       if (!request?.id) return;
-      const response = await fetch(`/api/requests/${request.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("PUT", `/api/requests/${request.id}`, data);
       if (!response.ok) throw new Error("Failed to update request");
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
       setHasChanges(false);
       toast({
         title: "Request saved",

@@ -56,9 +56,9 @@ export function EnvironmentEditor({ environmentId }: EnvironmentEditorProps) {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/environments", environmentId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/environments"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/environments", environmentId] });
+      await queryClient.refetchQueries({ queryKey: ["/api/environments"] });
       toast({
         title: "Environment saved",
         description: "Your changes have been saved successfully.",

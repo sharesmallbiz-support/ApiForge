@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CreateCollectionDialogProps {
   workspaceId: string;
@@ -25,22 +27,40 @@ export function CreateCollectionDialog({ workspaceId, children }: CreateCollecti
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const createCollectionMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string; workspaceId: string }) => {
-      const response = await fetch("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Failed to create collection");
-      return response.json();
+      console.log('[CreateCollection] Sending request:', data);
+      const response = await apiRequest("POST", "/api/collections", data);
+      console.log('[CreateCollection] Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[CreateCollection] Error:', errorData);
+        throw new Error(errorData.message || "Failed to create collection");
+      }
+      const result = await response.json();
+      console.log('[CreateCollection] Success:', result);
+      return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/workspaces"] });
+    onSuccess: async (data) => {
+      console.log('[CreateCollection] onSuccess called, refetching queries');
+      await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
+      toast({
+        title: "Collection created",
+        description: `"${name}" has been created successfully.`,
+      });
       setOpen(false);
       setName("");
       setDescription("");
+    },
+    onError: (error: Error) => {
+      console.error('[CreateCollection] onError:', error);
+      toast({
+        title: "Failed to create collection",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
