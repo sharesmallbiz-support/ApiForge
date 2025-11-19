@@ -11,11 +11,13 @@ import {
   insertEnvironmentSchema,
   insertWorkflowSchema,
   openApiImportSchema,
+  postmanImportSchema,
 } from "@shared/schema";
 import { executeScript } from "./script-executor";
 import { substituteVariables } from "./environment-resolver";
 import { executeHttpRequest } from "./http-executor";
 import { fetchAndParseOpenAPI } from "./openapi-parser";
+import { parsePostmanCollection, parsePostmanEnvironment } from "./postman-parser";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Workspaces
@@ -150,6 +152,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workspaceId: data.workspaceId,
       });
 
+      // Create environment for this collection with extracted variables
+      let environment = null;
+      if (parsedApi.environmentVariables.length > 0 || parsedApi.environmentHeaders.length > 0) {
+        // Set scopeId for collection-scoped variables
+        const variables = parsedApi.environmentVariables.map(v => ({
+          ...v,
+          scopeId: v.scope === "collection" ? collection.id : v.scopeId,
+        }));
+
+        environment = await storage.createEnvironment({
+          name: `${parsedApi.title} Environment`,
+          variables,
+          headers: parsedApi.environmentHeaders,
+        });
+      }
+
       // Group requests by path prefix to organize into folders
       const folderMap = new Map<string, string>();
 
@@ -185,11 +203,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedCollection = await storage.getCollection(collection.id);
-      res.status(201).json({ collection: updatedCollection });
+      res.status(201).json({
+        collection: updatedCollection,
+        environment: environment
+      });
     } catch (error) {
       console.error("OpenAPI import error:", error);
       res.status(400).json({
         error: error instanceof Error ? error.message : "Failed to import OpenAPI spec"
+      });
+    }
+  });
+
+  app.post("/api/collections/import-postman", async (req, res) => {
+    try {
+      const data = postmanImportSchema.parse(req.body);
+
+      if (!data.collection && !data.environment) {
+        return res.status(400).json({ error: "Either Postman collection or environment data is required" });
+      }
+
+      let collection = null;
+      let environment = null;
+
+      // Parse and import collection if provided
+      if (data.collection) {
+        const parsedCollection = parsePostmanCollection(data.collection);
+
+        // Create collection
+        collection = await storage.createCollection({
+          name: parsedCollection.name,
+          description: parsedCollection.description,
+          workspaceId: data.workspaceId,
+        });
+
+        // Create folders and requests
+        for (const folderData of parsedCollection.folders) {
+          const folder = await storage.createFolder({
+            name: folderData.name,
+            collectionId: collection.id,
+          });
+
+          for (const requestData of folderData.requests) {
+            await storage.createRequest({
+              name: requestData.name,
+              method: requestData.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+              url: requestData.url,
+              folderId: folder.id,
+              headers: requestData.headers,
+              params: requestData.params,
+              body: requestData.body,
+            });
+          }
+        }
+
+        collection = await storage.getCollection(collection.id);
+      }
+
+      // Parse and import environment if provided
+      if (data.environment) {
+        const parsedEnvironment = parsePostmanEnvironment(data.environment);
+
+        environment = await storage.createEnvironment({
+          name: parsedEnvironment.name,
+          variables: parsedEnvironment.variables,
+          headers: [],
+        });
+      }
+
+      res.status(201).json({
+        collection,
+        environment,
+      });
+    } catch (error) {
+      console.error("Postman import error:", error);
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Failed to import Postman data"
       });
     }
   });

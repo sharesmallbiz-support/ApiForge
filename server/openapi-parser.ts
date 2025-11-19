@@ -1,4 +1,4 @@
-import type { InsertFolder } from "@shared/schema";
+import type { InsertFolder, EnvironmentVariable } from "@shared/schema";
 
 interface OpenAPIPath {
   [key: string]: {
@@ -18,6 +18,7 @@ interface OpenAPIPath {
           };
         };
       };
+      security?: Array<Record<string, string[]>>;
     };
   };
 }
@@ -34,6 +35,16 @@ interface OpenAPISpec {
     description?: string;
   }>;
   paths?: OpenAPIPath;
+  components?: {
+    securitySchemes?: Record<string, {
+      type: string;
+      scheme?: string;
+      bearerFormat?: string;
+      in?: string;
+      name?: string;
+    }>;
+  };
+  security?: Array<Record<string, string[]>>;
 }
 
 export interface ParsedOpenAPI {
@@ -48,6 +59,8 @@ export interface ParsedOpenAPI {
     params: Array<{ key: string; value: string; enabled: boolean }>;
     body?: { type: string; content: string };
   }>;
+  environmentVariables: EnvironmentVariable[];
+  environmentHeaders: Array<{ key: string; value: string; enabled: boolean }>;
 }
 
 export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promise<ParsedOpenAPI> {
@@ -73,6 +86,86 @@ export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promis
     const description = spec.info?.description || `Imported from ${url}`;
     const baseUrl = spec.servers?.[0]?.url || "";
 
+    // Extract environment variables and headers
+    const environmentVariables: EnvironmentVariable[] = [];
+    const environmentHeaders: Array<{ key: string; value: string; enabled: boolean }> = [];
+
+    // Add baseUrl as a variable
+    if (baseUrl) {
+      environmentVariables.push({
+        key: "baseUrl",
+        value: baseUrl,
+        enabled: true,
+        scope: "collection",
+      });
+    }
+
+    // Extract security schemes and create environment variables
+    const securitySchemes = spec.components?.securitySchemes || {};
+    for (const [schemeName, scheme] of Object.entries(securitySchemes)) {
+      if (scheme.type === "http" && scheme.scheme === "bearer") {
+        // Bearer token authentication
+        environmentVariables.push({
+          key: "bearerToken",
+          value: "",
+          enabled: true,
+          scope: "collection",
+        });
+        environmentHeaders.push({
+          key: "Authorization",
+          value: "Bearer {{bearerToken}}",
+          enabled: true,
+        });
+      } else if (scheme.type === "apiKey") {
+        // API Key authentication
+        const varName = scheme.name || "apiKey";
+        environmentVariables.push({
+          key: varName,
+          value: "",
+          enabled: true,
+          scope: "collection",
+        });
+
+        if (scheme.in === "header") {
+          environmentHeaders.push({
+            key: scheme.name || "X-API-Key",
+            value: `{{${varName}}}`,
+            enabled: true,
+          });
+        }
+      } else if (scheme.type === "http" && scheme.scheme === "basic") {
+        // Basic authentication
+        environmentVariables.push({
+          key: "username",
+          value: "",
+          enabled: true,
+          scope: "collection",
+        });
+        environmentVariables.push({
+          key: "password",
+          value: "",
+          enabled: true,
+          scope: "collection",
+        });
+      } else if (scheme.type === "oauth2") {
+        // OAuth2 authentication
+        environmentVariables.push({
+          key: "accessToken",
+          value: "",
+          enabled: true,
+          scope: "collection",
+        });
+        environmentHeaders.push({
+          key: "Authorization",
+          value: "Bearer {{accessToken}}",
+          enabled: true,
+        });
+      }
+    }
+
+    // Collect common path and query parameters to suggest as variables
+    const commonParams = new Map<string, { count: number; in: string }>();
+
     // Parse paths
     const requests: ParsedOpenAPI["requests"] = [];
 
@@ -91,6 +184,15 @@ export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promis
 
           if (operation.parameters) {
             for (const param of operation.parameters) {
+              // Track common parameters
+              const paramKey = `${param.in}:${param.name}`;
+              const existing = commonParams.get(paramKey);
+              if (existing) {
+                existing.count++;
+              } else {
+                commonParams.set(paramKey, { count: 1, in: param.in });
+              }
+
               if (param.in === "query") {
                 params.push({
                   key: param.name,
@@ -137,11 +239,29 @@ export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promis
       }
     }
 
+    // Add common parameters as environment variables (if used in 3+ endpoints)
+    for (const [paramKey, info] of commonParams.entries()) {
+      if (info.count >= 3) {
+        const paramName = paramKey.split(":")[1];
+        // Only add if not already in the list
+        if (!environmentVariables.some(v => v.key === paramName)) {
+          environmentVariables.push({
+            key: paramName,
+            value: "",
+            enabled: true,
+            scope: "collection",
+          });
+        }
+      }
+    }
+
     return {
       title,
       description,
       baseUrl,
       requests,
+      environmentVariables,
+      environmentHeaders,
     };
   } catch (error) {
     console.error("Failed to parse OpenAPI spec:", error);
