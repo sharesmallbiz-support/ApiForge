@@ -29,12 +29,12 @@ export function RenameItemDialog({
   open,
   onOpenChange
 }: RenameItemDialogProps) {
-  const [name, setName] = useState(itemName);
+  const [name, setName] = useState(itemName || '');
   const queryClient = useQueryClient();
 
   // Update name when itemName prop changes
   useEffect(() => {
-    setName(itemName);
+    setName(itemName || '');
   }, [itemName]);
 
   const renameMutation = useMutation({
@@ -87,7 +87,7 @@ export function RenameItemDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || name === itemName || renameMutation.isPending}>
+            <Button type="submit" disabled={!name?.trim() || name === itemName || renameMutation.isPending}>
               {renameMutation.isPending ? "Renaming..." : "Rename"}
             </Button>
           </DialogFooter>

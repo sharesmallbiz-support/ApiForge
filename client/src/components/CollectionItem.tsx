@@ -197,7 +197,7 @@ export function CollectionItem({
             isActive ? "bg-sidebar-accent" : ""
           } ${isDragOver ? "bg-primary/10 ring-2 ring-primary" : ""}`}
           onClick={onClick}
-          data-testid={`item-${type}-${name.toLowerCase().replace(/\s+/g, "-")}`}
+          data-testid={`item-${type}-${(name || '').toLowerCase().replace(/\s+/g, "-")}`}
         >
           {isContainer && hasChildren && (
             <Button
@@ -205,7 +205,7 @@ export function CollectionItem({
               size="icon"
               className="h-4 w-4 p-0"
               onClick={handleToggle}
-              data-testid={`button-expand-${name.toLowerCase().replace(/\s+/g, "-")}`}
+              data-testid={`button-expand-${(name || '').toLowerCase().replace(/\s+/g, "-")}`}
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -226,7 +226,7 @@ export function CollectionItem({
           {type === "request" && method && (
             <HttpMethodBadge method={method} className="flex-shrink-0" />
           )}
-          <span className="text-sm truncate flex-1">{name}</span>
+          <span className="text-sm truncate flex-1">{name || 'Unnamed'}</span>
 
           {(canAddFolder || canAddRequest || canDelete) && (
             <DropdownMenu>

@@ -47,8 +47,48 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
       }
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       try {
+        console.log('[OpenAPI Import] Server returned:', data);
+        
+        // The server created the collection in its own storage, but we need to save it to localStorage
+        // The collection data includes all folders and requests
+        if (data.collection) {
+          const collection = data.collection;
+          
+          // Create collection in localStorage
+          const collectionResponse = await apiRequest("POST", "/api/collections", {
+            name: collection.name,
+            description: collection.description,
+            workspaceId: workspaceId,
+          });
+          const localCollection = (await collectionResponse.json()).collection;
+          console.log('[OpenAPI Import] Created collection in localStorage:', localCollection);
+          
+          // Create folders and requests in localStorage
+          for (const folder of collection.folders || []) {
+            const folderResponse = await apiRequest("POST", "/api/folders", {
+              name: folder.name,
+              collectionId: localCollection.id,
+            });
+            const localFolder = (await folderResponse.json()).folder;
+            console.log('[OpenAPI Import] Created folder:', localFolder);
+            
+            // Create requests in this folder
+            for (const request of folder.requests || []) {
+              await apiRequest("POST", "/api/requests", {
+                name: request.name,
+                method: request.method,
+                url: request.url,
+                headers: request.headers || [],
+                params: request.params || [],
+                body: request.body,
+                folderId: localFolder.id,
+              });
+            }
+          }
+        }
+        
         await queryClient.refetchQueries({ queryKey: ["/api/workspaces"] });
         toast({
           title: "Import successful",
@@ -59,13 +99,12 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         setOpen(false);
         setOpenApiUrl("");
       } catch (error) {
-        console.error('[OpenAPI Import] Refetch error:', error);
+        console.error('[OpenAPI Import] Error saving to localStorage:', error);
         toast({
-          title: "Import successful",
-          description: "Collection imported but UI may need manual refresh.",
+          title: "Import failed",
+          description: error instanceof Error ? error.message : "Failed to save imported data",
+          variant: "destructive",
         });
-        setOpen(false);
-        setOpenApiUrl("");
       }
     },
     onError: (error: Error) => {

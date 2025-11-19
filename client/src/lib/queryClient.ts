@@ -10,7 +10,6 @@ async function throwIfResNotOk(res: Response) {
 
 // Routes that MUST use the server (HTTP execution, OpenAPI import, etc.)
 const SERVER_ONLY_ROUTES = [
-  "/api/requests/",
   "/execute",
   "/history",
   "/import", // OpenAPI spec parsing requires server
