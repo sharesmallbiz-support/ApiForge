@@ -703,8 +703,5 @@ if (response.id) {
   }
 }
 
-import { SqliteStorage } from "./sqlite-storage";
-
-// Temporarily use MemStorage for testing
+// Use in-memory storage
 export const storage = new MemStorage();
-// export const storage = new SqliteStorage();
