@@ -1,6 +1,5 @@
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2, MoreVertical, Edit, Move } from "lucide-react";
 import { HttpMethodBadge } from "./HttpMethodBadge";
-import type { Collection, Folder as FolderType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,13 +25,6 @@ import { MoveItemDialog } from "./MoveItemDialog";
 import { apiRequest } from "@/lib/queryClient";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-
-interface Request {
-  id: string;
-  name: string;
-  method: HttpMethod;
-  url: string;
-}
 
 interface CollectionItemProps {
   name: string;
@@ -67,7 +59,6 @@ export function CollectionItem({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const queryClient = useQueryClient();
 
@@ -111,8 +102,8 @@ export function CollectionItem({
     const draggedType = e.dataTransfer.types.includes("itemtype") ?
       e.dataTransfer.getData("itemType") : null;
 
-    // Allow dropping requests on folders, and folders on collections
-    if ((type === "folder" && draggedType === "request") ||
+    // Allow dropping requests on folders, folders on collections, and folders on other folders
+    if ((type === "folder" && (draggedType === "request" || draggedType === "folder")) ||
         (type === "collection" && draggedType === "folder")) {
       e.dataTransfer.dropEffect = "move";
       setIsDragOver(true);
@@ -134,7 +125,7 @@ export function CollectionItem({
     const draggedType = e.dataTransfer.getData("itemType");
     const draggedParentId = e.dataTransfer.getData("parentId");
 
-    if (!draggedId || !id) return;
+    if (!draggedId || !id || draggedId === id) return;
 
     // Move request to folder
     if (type === "folder" && draggedType === "request" && draggedParentId !== id) {
@@ -152,6 +143,14 @@ export function CollectionItem({
         newParentId: id,
       });
     }
+    // Move folder to another folder
+    else if (type === "folder" && draggedType === "folder" && draggedParentId !== id && draggedId !== id) {
+      moveMutation.mutate({
+        itemId: draggedId,
+        itemType: "folder",
+        newParentId: id,
+      });
+    }
   };
 
   const moveMutation = useMutation({
@@ -161,10 +160,23 @@ export function CollectionItem({
       newParentId: string;
     }) => {
       const endpoint = itemType === "folder" ? "folders" : "requests";
-      const parentField = itemType === "folder" ? "collectionId" : "folderId";
-      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, {
-        [parentField]: newParentId,
-      });
+      let updateData: Record<string, string | null> = {};
+
+      if (itemType === "folder") {
+        // Determine if newParentId is a collection or folder
+        // If type is "collection", update collectionId and clear parentId
+        // If type is "folder", update parentId and clear collectionId
+        if (type === "collection") {
+          updateData = { collectionId: newParentId, parentId: null };
+        } else if (type === "folder") {
+          updateData = { parentId: newParentId, collectionId: null };
+        }
+      } else {
+        // For requests, always use folderId
+        updateData = { folderId: newParentId };
+      }
+
+      const response = await apiRequest("PATCH", `/api/${endpoint}/${itemId}`, updateData);
       if (!response.ok) throw new Error(`Failed to move ${itemType}`);
       return response.json();
     },
@@ -175,7 +187,7 @@ export function CollectionItem({
 
   const isContainer = type === "workspace" || type === "collection" || type === "folder";
   const canDelete = type !== "workspace" && id;
-  const canAddFolder = type === "collection" && id;
+  const canAddFolder = (type === "collection" || type === "folder") && id;
   const canAddRequest = type === "folder" && id;
   const canMove = (type === "folder" || type === "request") && id && parentId;
   const isDraggable = canMove;
@@ -184,8 +196,6 @@ export function CollectionItem({
     <>
       <div
         className="w-full group"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         draggable={isDraggable}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
@@ -197,6 +207,14 @@ export function CollectionItem({
             isActive ? "bg-sidebar-accent" : ""
           } ${isDragOver ? "bg-primary/10 ring-2 ring-primary" : ""}`}
           onClick={onClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick?.();
+            }
+          }}
+          role="button"
+          tabIndex={0}
           data-testid={`item-${type}-${(name || '').toLowerCase().replace(/\s+/g, "-")}`}
         >
           {isContainer && hasChildren && (
@@ -290,7 +308,7 @@ export function CollectionItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {type}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{name}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{name}&rdquo;? This action cannot be undone.
               {type !== "request" && " All nested items will also be deleted."}
             </AlertDialogDescription>
           </AlertDialogHeader>

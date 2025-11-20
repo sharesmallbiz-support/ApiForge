@@ -42,7 +42,7 @@ interface PostmanItem {
   name: string;
   request?: PostmanRequest;
   item?: PostmanItem[];
-  response?: any[];
+  response?: unknown[];
 }
 
 interface PostmanCollection {
@@ -71,20 +71,23 @@ interface PostmanEnvironment {
   _postman_exported_at?: string;
 }
 
+export interface ParsedPostmanFolder {
+  name: string;
+  folders: ParsedPostmanFolder[];
+  requests: Array<{
+    name: string;
+    method: string;
+    url: string;
+    headers: Array<{ key: string; value: string; enabled: boolean }>;
+    params: Array<{ key: string; value: string; enabled: boolean }>;
+    body?: { type: string; content: string };
+  }>;
+}
+
 export interface ParsedPostmanCollection {
   name: string;
   description: string;
-  folders: Array<{
-    name: string;
-    requests: Array<{
-      name: string;
-      method: string;
-      url: string;
-      headers: Array<{ key: string; value: string; enabled: boolean }>;
-      params: Array<{ key: string; value: string; enabled: boolean }>;
-      body?: { type: string; content: string };
-    }>;
-  }>;
+  folders: ParsedPostmanFolder[];
 }
 
 export interface ParsedPostmanEnvironment {
@@ -95,7 +98,7 @@ export interface ParsedPostmanEnvironment {
 /**
  * Parse Postman Collection v2.1 format
  */
-export function parsePostmanCollection(collectionData: any): ParsedPostmanCollection {
+export function parsePostmanCollection(collectionData: unknown): ParsedPostmanCollection {
   try {
     const collection: PostmanCollection = collectionData;
 
@@ -106,7 +109,7 @@ export function parsePostmanCollection(collectionData: any): ParsedPostmanCollec
     const name = collection.info.name || "Imported Postman Collection";
     const description = collection.info.description || `Imported from Postman`;
 
-    const folders: ParsedPostmanCollection["folders"] = [];
+    const folders: ParsedPostmanFolder[] = [];
 
     // Process top-level items (folders and requests)
     for (const item of collection.item) {
@@ -118,7 +121,7 @@ export function parsePostmanCollection(collectionData: any): ParsedPostmanCollec
         // It's a standalone request - put in "General" folder
         let generalFolder = folders.find(f => f.name === "General");
         if (!generalFolder) {
-          generalFolder = { name: "General", requests: [] };
+          generalFolder = { name: "General", folders: [], requests: [] };
           folders.push(generalFolder);
         }
         const request = processRequest(item);
@@ -139,21 +142,19 @@ export function parsePostmanCollection(collectionData: any): ParsedPostmanCollec
   }
 }
 
-function processFolder(folderItem: PostmanItem): ParsedPostmanCollection["folders"][0] {
-  const folder = {
+function processFolder(folderItem: PostmanItem): ParsedPostmanFolder {
+  const folder: ParsedPostmanFolder = {
     name: folderItem.name,
-    requests: [] as any[],
+    folders: [],
+    requests: [],
   };
 
   if (folderItem.item) {
     for (const item of folderItem.item) {
       if (item.item) {
-        // Nested folder - flatten it by prepending parent name
+        // Nested folder - preserve the structure
         const nestedFolder = processFolder(item);
-        nestedFolder.requests.forEach(req => {
-          req.name = `${item.name} / ${req.name}`;
-          folder.requests.push(req);
-        });
+        folder.folders.push(nestedFolder);
       } else if (item.request) {
         const request = processRequest(item);
         if (request) {
@@ -273,7 +274,7 @@ function processRequest(item: PostmanItem) {
 /**
  * Parse Postman Environment format
  */
-export function parsePostmanEnvironment(environmentData: any): ParsedPostmanEnvironment {
+export function parsePostmanEnvironment(environmentData: unknown): ParsedPostmanEnvironment {
   try {
     const environment: PostmanEnvironment = environmentData;
 

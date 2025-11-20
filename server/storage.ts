@@ -405,24 +405,52 @@ if (response.id) {
   }
 
   private hydrateCollection(collection: Collection): Collection {
-    const folders = Array.from(this.folders.values())
-      .filter(f => f.collectionId === collection.id)
-      .map(folder => this.hydrateFolder(folder));
-    
+    // Get all folders that belong to this collection (both direct and nested)
+    const allFolders = Array.from(this.folders.values())
+      .filter(f => f.collectionId === collection.id || this.belongsToCollection(f, collection.id));
+
+    // Build hierarchy - only return root folders (those without parentId or with collectionId)
+    const rootFolders = allFolders
+      .filter(f => f.collectionId === collection.id && !f.parentId)
+      .map(folder => this.hydrateFolder(folder, allFolders));
+
     return {
       ...collection,
-      folders,
+      folders: rootFolders,
     };
   }
 
-  private hydrateFolder(folder: Folder): Folder {
+  private belongsToCollection(folder: Folder, collectionId: string): boolean {
+    if (folder.collectionId === collectionId) return true;
+    if (!folder.parentId) return false;
+
+    const parent = this.folders.get(folder.parentId);
+    return parent ? this.belongsToCollection(parent, collectionId) : false;
+  }
+
+  private hydrateFolder(folder: Folder, allFolders?: Folder[]): Folder {
     const requests = Array.from(this.requests.values())
       .filter(r => r.folderId === folder.id);
-    
-    return {
+
+    // Find subfolders if we're building a hierarchy
+    const subfolders = allFolders
+      ? allFolders
+          .filter(f => f.parentId === folder.id)
+          .map(subfolder => this.hydrateFolder(subfolder, allFolders))
+      : [];
+
+    // Create a new folder object with requests and potentially subfolders
+    const hydratedFolder: Folder & { subfolders?: Folder[] } = {
       ...folder,
       requests,
     };
+
+    // Only add subfolders property if there are any (to maintain existing structure for non-nested)
+    if (subfolders.length > 0) {
+      hydratedFolder.subfolders = subfolders;
+    }
+
+    return hydratedFolder;
   }
 
   async createCollection(insertCollection: InsertCollection): Promise<Collection> {
@@ -453,25 +481,16 @@ if (response.id) {
   async deleteCollection(id: string): Promise<boolean> {
     const collection = this.collections.get(id);
     if (!collection) return false;
-    
-    // Get all folders in this collection
-    const foldersToDelete = Array.from(this.folders.values())
-      .filter(f => f.collectionId === id);
-    
-    // Delete all requests in those folders
-    for (const folder of foldersToDelete) {
-      const requestsToDelete = Array.from(this.requests.values())
-        .filter(r => r.folderId === folder.id);
-      
-      // Delete execution results for each request
-      for (const request of requestsToDelete) {
-        this.executionResults.delete(request.id);
-        this.requests.delete(request.id);
-      }
-      
-      this.folders.delete(folder.id);
+
+    // Get all root folders in this collection
+    const rootFolders = Array.from(this.folders.values())
+      .filter(f => f.collectionId === id && !f.parentId);
+
+    // Delete all folders (this will cascade to nested folders and requests)
+    for (const folder of rootFolders) {
+      await this.deleteFolder(folder.id);
     }
-    
+
     return this.collections.delete(id);
   }
 
@@ -481,22 +500,36 @@ if (response.id) {
   }
 
   async createFolder(insertFolder: InsertFolder): Promise<Folder> {
-    // Validate collection exists
-    const collection = this.collections.get(insertFolder.collectionId);
-    if (!collection) {
-      throw new Error(`Collection ${insertFolder.collectionId} not found`);
+    // Validate either collection or parent folder exists
+    if (insertFolder.collectionId) {
+      const collection = this.collections.get(insertFolder.collectionId);
+      if (!collection) {
+        throw new Error(`Collection ${insertFolder.collectionId} not found`);
+      }
+    } else if (insertFolder.parentId) {
+      const parentFolder = this.folders.get(insertFolder.parentId);
+      if (!parentFolder) {
+        throw new Error(`Parent folder ${insertFolder.parentId} not found`);
+      }
+    } else {
+      throw new Error("Either collectionId or parentId must be provided");
     }
-    
+
     const folder: Folder = {
       ...insertFolder,
       id: randomUUID(),
       requests: [],
     };
     this.folders.set(folder.id, folder);
-    
-    // Update collection timestamp
-    collection.updatedAt = new Date().toISOString();
-    
+
+    // Update collection timestamp if we have a collectionId
+    if (insertFolder.collectionId) {
+      const collection = this.collections.get(insertFolder.collectionId);
+      if (collection) {
+        collection.updatedAt = new Date().toISOString();
+      }
+    }
+
     return folder;
   }
 
@@ -515,22 +548,32 @@ if (response.id) {
   async deleteFolder(id: string): Promise<boolean> {
     const folder = this.folders.get(id);
     if (!folder) return false;
-    
+
+    // Find and delete all nested folders recursively
+    const nestedFolders = Array.from(this.folders.values())
+      .filter(f => f.parentId === id);
+
+    for (const nestedFolder of nestedFolders) {
+      await this.deleteFolder(nestedFolder.id);
+    }
+
     // Delete all requests in folder and their execution results
     const requestsToDelete = Array.from(this.requests.values())
       .filter(r => r.folderId === id);
-    
+
     for (const request of requestsToDelete) {
       this.executionResults.delete(request.id);
       this.requests.delete(request.id);
     }
-    
-    // Update collection timestamp
-    const collection = this.collections.get(folder.collectionId);
-    if (collection) {
-      collection.updatedAt = new Date().toISOString();
+
+    // Update collection timestamp if we have a collectionId
+    if (folder.collectionId) {
+      const collection = this.collections.get(folder.collectionId);
+      if (collection) {
+        collection.updatedAt = new Date().toISOString();
+      }
     }
-    
+
     return this.folders.delete(id);
   }
 
@@ -660,8 +703,5 @@ if (response.id) {
   }
 }
 
-import { SqliteStorage } from "./sqlite-storage";
-
-// Temporarily use MemStorage for testing
+// Use in-memory storage
 export const storage = new MemStorage();
-// export const storage = new SqliteStorage();

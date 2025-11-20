@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase, ChevronDown } from "lucide-react";
+import { Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
@@ -9,7 +9,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -28,8 +27,8 @@ import { CreateRequestDialog } from "./CreateRequestDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import type {
   Workspace,
-  Request as RequestType,
   Environment,
+  Folder,
 } from "@shared/schema";
 
 interface AppSidebarProps {
@@ -41,6 +40,35 @@ interface AppSidebarProps {
 
 type ViewMode = "collections" | "environments";
 
+// Helper function to build folder hierarchy
+function buildFolderHierarchy(folders: Folder[]): Folder[] {
+  const folderMap = new Map<string, Folder & { subfolders: Folder[] }>();
+  const rootFolders: (Folder & { subfolders: Folder[] })[] = [];
+
+  // Initialize all folders with subfolders array
+  folders.forEach(folder => {
+    folderMap.set(folder.id, { ...folder, subfolders: [] });
+  });
+
+  // Build hierarchy
+  folders.forEach(folder => {
+    const folderWithSubs = folderMap.get(folder.id)!;
+    if (folder.parentId) {
+      const parent = folderMap.get(folder.parentId);
+      if (parent) {
+        parent.subfolders.push(folderWithSubs);
+      } else {
+        // Parent not found, treat as root
+        rootFolders.push(folderWithSubs);
+      }
+    } else {
+      rootFolders.push(folderWithSubs);
+    }
+  });
+
+  return rootFolders;
+}
+
 export function AppSidebar({
   onRequestSelect,
   selectedRequestId,
@@ -49,7 +77,8 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("collections");
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
-  const [createFolderCollectionId, setCreateFolderCollectionId] = useState<string | null>(null);
+  const [createFolderParentId, setCreateFolderParentId] = useState<string | null>(null);
+  const [createFolderParentType, setCreateFolderParentType] = useState<"collection" | "folder" | null>(null);
   const [createRequestParentId, setCreateRequestParentId] = useState<string | null>(null);
   const [createRequestParentType, setCreateRequestParentType] = useState<"collection" | "folder" | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -73,13 +102,50 @@ export function AppSidebar({
   // Get collections for the current workspace
   const collections = currentWorkspace?.collections || [];
 
-  const handleAddFolder = (collectionId: string) => {
-    setCreateFolderCollectionId(collectionId);
+  const handleAddFolder = (parentId: string, parentType: "collection" | "folder") => {
+    setCreateFolderParentId(parentId);
+    setCreateFolderParentType(parentType);
   };
 
   const handleAddRequest = (parentId: string, parentType: "collection" | "folder") => {
     setCreateRequestParentId(parentId);
     setCreateRequestParentType(parentType);
+  };
+
+  // Recursive function to render folders
+  const renderFolder = (folder: Folder & { subfolders?: Folder[] }, collectionId: string) => {
+    const subfolders = folder.subfolders || [];
+    const hasChildren = subfolders.length > 0 || folder.requests.length > 0;
+
+    return (
+      <CollectionItem
+        key={folder.id}
+        id={folder.id}
+        name={folder.name}
+        type="folder"
+        parentId={folder.parentId || collectionId}
+        hasChildren={hasChildren}
+        onAddFolder={() => handleAddFolder(folder.id, "folder")}
+        onAddRequest={() => handleAddRequest(folder.id, "folder")}
+      >
+        {/* Render nested folders first */}
+        {subfolders.map((subfolder) => renderFolder(subfolder, collectionId))}
+
+        {/* Then render requests */}
+        {folder.requests.map((request) => (
+          <CollectionItem
+            key={request.id}
+            id={request.id}
+            name={request.name}
+            type="request"
+            method={request.method}
+            parentId={folder.id}
+            isActive={selectedRequestId === request.id}
+            onClick={() => onRequestSelect?.(request.id)}
+          />
+        ))}
+      </CollectionItem>
+    );
   };
 
   return (
@@ -182,41 +248,23 @@ export function AppSidebar({
               </div>
             </SidebarGroupLabel>
             <SidebarGroupContent className="space-y-1">
-              {collections.map((collection) => (
-                <CollectionItem
-                  key={collection.id}
-                  id={collection.id}
-                  name={collection.name}
-                  type="collection"
-                  hasChildren={collection.folders.length > 0}
-                  onAddFolder={() => handleAddFolder(collection.id)}
-                >
-                  {collection.folders.map((folder) => (
-                    <CollectionItem
-                      key={folder.id}
-                      id={folder.id}
-                      name={folder.name}
-                      type="folder"
-                      parentId={collection.id}
-                      hasChildren={folder.requests.length > 0}
-                      onAddRequest={() => handleAddRequest(folder.id, "folder")}
-                    >
-                      {folder.requests.map((request) => (
-                        <CollectionItem
-                          key={request.id}
-                          id={request.id}
-                          name={request.name}
-                          type="request"
-                          method={request.method}
-                          parentId={folder.id}
-                          isActive={selectedRequestId === request.id}
-                          onClick={() => onRequestSelect?.(request.id)}
-                        />
-                      ))}
-                    </CollectionItem>
-                  ))}
-                </CollectionItem>
-              ))}
+              {collections.map((collection) => {
+                // Build folder hierarchy for this collection
+                const rootFolders = buildFolderHierarchy(collection.folders);
+
+                return (
+                  <CollectionItem
+                    key={collection.id}
+                    id={collection.id}
+                    name={collection.name}
+                    type="collection"
+                    hasChildren={rootFolders.length > 0}
+                    onAddFolder={() => handleAddFolder(collection.id, "collection")}
+                  >
+                    {rootFolders.map((folder) => renderFolder(folder, collection.id))}
+                  </CollectionItem>
+                );
+              })}
             </SidebarGroupContent>
           </SidebarGroup>
         ) : (
@@ -253,9 +301,15 @@ export function AppSidebar({
 
       {/* Dialogs */}
       <CreateFolderDialog
-        collectionId={createFolderCollectionId || ""}
-        open={!!createFolderCollectionId}
-        onOpenChange={(open) => !open && setCreateFolderCollectionId(null)}
+        collectionId={createFolderParentType === "collection" ? createFolderParentId || "" : ""}
+        parentFolderId={createFolderParentType === "folder" ? createFolderParentId || undefined : undefined}
+        open={!!createFolderParentId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCreateFolderParentId(null);
+            setCreateFolderParentType(null);
+          }
+        }}
       />
 
       {createRequestParentId && (

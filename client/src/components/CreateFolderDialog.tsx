@@ -17,13 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface CreateFolderDialogProps {
-  collectionId: string;
+  collectionId?: string;
+  parentFolderId?: string;
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateFolderDialog({ collectionId, children, open: controlledOpen, onOpenChange }: CreateFolderDialogProps) {
+export function CreateFolderDialog({ collectionId, parentFolderId, children, open: controlledOpen, onOpenChange }: CreateFolderDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
@@ -33,7 +34,7 @@ export function CreateFolderDialog({ collectionId, children, open: controlledOpe
   const setOpen = onOpenChange || setInternalOpen;
 
   const createFolderMutation = useMutation({
-    mutationFn: async (data: { name: string; collectionId: string }) => {
+    mutationFn: async (data: { name: string; collectionId?: string; parentId?: string }) => {
       const response = await apiRequest("POST", "/api/folders", data);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -65,6 +66,7 @@ export function CreateFolderDialog({ collectionId, children, open: controlledOpe
       createFolderMutation.mutate({
         name,
         collectionId,
+        parentId: parentFolderId,
       });
     }
   };
@@ -94,7 +96,6 @@ export function CreateFolderDialog({ collectionId, children, open: controlledOpe
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My Folder"
-                autoFocus
               />
             </div>
           </div>

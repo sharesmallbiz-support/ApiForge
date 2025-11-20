@@ -17,28 +17,26 @@ import { createSampleData } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
 import { useDebug } from "@/contexts/DebugContext";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import type { Request, ExecutionResult, Workspace } from "@shared/schema";
+import type { Request, ExecutionResult, Workspace, Folder, Collection, Environment, KeyValuePair } from "@shared/schema";
 
 export default function Home() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [selectedEnvironmentForEdit, setSelectedEnvironmentForEdit] = useState<string | null>(null);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
-  const [showGettingStarted, setShowGettingStarted] = useState(false);
+  const [showGettingStarted, setShowGettingStarted] = useState(() => {
+    const hasSeenWalkthrough = localStorage.getItem("apispark-seen-walkthrough");
+    if (!hasSeenWalkthrough) {
+      localStorage.setItem("apispark-seen-walkthrough", "true");
+      return true;
+    }
+    return false;
+  });
   const [showUserGuide, setShowUserGuide] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { addRequest, addResponse, addError, isEnabled: debugEnabled } = useDebug();
-
-  // Check if this is the first time user is opening the app
-  useEffect(() => {
-    const hasSeenWalkthrough = localStorage.getItem("apispark-seen-walkthrough");
-    if (!hasSeenWalkthrough) {
-      setShowGettingStarted(true);
-      localStorage.setItem("apispark-seen-walkthrough", "true");
-    }
-  }, []);
 
   const { data: requestData } = useQuery<{ request: Request }>({
     queryKey: ["/api/requests", selectedRequestId],
@@ -49,14 +47,17 @@ export default function Home() {
     queryKey: ["/api/workspaces"],
   });
 
-  const { data: environmentsData } = useQuery<{ environments: any[] }>({
+  const { data: environmentsData } = useQuery<{ environments: Environment[] }>({
     queryKey: ["/api/environments"],
   });
 
   // Auto-select the first environment when environments load
   useEffect(() => {
     if (environmentsData?.environments && environmentsData.environments.length > 0 && !selectedEnvironment) {
-      setSelectedEnvironment(environmentsData.environments[0].id);
+      // Using queueMicrotask to avoid setState during render
+      queueMicrotask(() => {
+        setSelectedEnvironment(environmentsData.environments[0].id);
+      });
     }
   }, [environmentsData, selectedEnvironment]);
 
@@ -76,18 +77,33 @@ export default function Home() {
         const req = requestData?.request;
 
         // Find folder and collection from workspace data (for localStorage mode)
-        let folder, collection;
+        type FolderWithSubfolders = Folder & { subfolders?: FolderWithSubfolders[] };
+        let folder: FolderWithSubfolders | null = null;
+        let collection: Collection | null = null;
+
         if (req && workspacesData?.workspaces) {
+          const findFolderRecursive = (folders: FolderWithSubfolders[]): FolderWithSubfolders | null => {
+            for (const fol of folders) {
+              if (fol.id === req.folderId) {
+                return fol;
+              }
+              // Check nested folders
+              if (fol.subfolders && fol.subfolders.length > 0) {
+                const found = findFolderRecursive(fol.subfolders);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+
           for (const workspace of workspacesData.workspaces) {
             for (const coll of workspace.collections || []) {
-              for (const fol of coll.folders || []) {
-                if (fol.id === req.folderId) {
-                  folder = fol;
-                  collection = coll;
-                  break;
-                }
+              const foundFolder = findFolderRecursive(coll.folders || []);
+              if (foundFolder) {
+                folder = foundFolder;
+                collection = coll;
+                break;
               }
-              if (folder) break;
             }
             if (folder) break;
           }
@@ -115,7 +131,7 @@ export default function Home() {
           const headersRecord: Record<string, string> = {};
           const headersToUse = resolvedRequest?.headers || req.headers || [];
           if (Array.isArray(headersToUse)) {
-            headersToUse.forEach((h: any) => {
+            headersToUse.forEach((h: KeyValuePair) => {
               if (h.enabled !== false && h.key && h.value) {
                 headersRecord[h.key] = h.value;
               }
@@ -267,14 +283,18 @@ export default function Home() {
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
-        <AppSidebar
-          onRequestSelect={handleRequestSelect}
-          selectedRequestId={selectedRequestId || undefined}
-          onEnvironmentSelect={handleEnvironmentSelect}
-          selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
-        />
-        <div className={`flex flex-col flex-1 ${debugEnabled ? 'pr-12' : ''}`}>
+      <PanelGroup direction="horizontal" className="h-screen w-full">
+        <Panel defaultSize={20} minSize={15} maxSize={40}>
+          <AppSidebar
+            onRequestSelect={handleRequestSelect}
+            selectedRequestId={selectedRequestId || undefined}
+            onEnvironmentSelect={handleEnvironmentSelect}
+            selectedEnvironmentId={selectedEnvironmentForEdit || undefined}
+          />
+        </Panel>
+        <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+        <Panel defaultSize={80} minSize={60}>
+        <div className={`flex flex-col h-full ${debugEnabled ? 'pr-12' : ''}`}>
           <header className="flex items-center justify-between p-3 border-b">
             <div className="flex items-center gap-2">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
@@ -393,7 +413,8 @@ export default function Home() {
             )}
           </main>
         </div>
-      </div>
+        </Panel>
+      </PanelGroup>
 
       {/* Dialogs */}
       <GettingStarted
