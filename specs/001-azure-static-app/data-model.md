@@ -74,3 +74,4 @@
 - **Validation Rules**:
   - Hosted metadata must only populate when Azure Functions executes the request; offline runs keep current schema untouched.
   - Clients must gracefully ignore hosted metadata when offline.
+  - Hosted fields are derived telemetry references; local storage remains the sole source of truth for execution history.

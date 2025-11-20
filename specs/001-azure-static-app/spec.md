@@ -46,6 +46,7 @@ Request authors need serverless compute that mirrors the current execution path 
 **Acceptance Scenarios**:
 
 1. **Given** a workspace with stored requests and environments, **When** the user clicks "Send" inside the hosted app, **Then** the Azure Function handles variable resolution, makes the outbound HTTP call, logs execution metadata, and streams results back to the client UI.
+2. **Given** a developer launches the local dev server with no network connectivity, **When** the same request is executed locally, **Then** the offline-first executor produces the same results without requiring Azure endpoints.
 
 ---
 
@@ -76,6 +77,8 @@ Additional user stories may be added for billing integration or custom domains o
 
 - An Azure subscription with permissions to provision Static Web Apps, Storage, and Monitor resources is available before development starts.
 - Existing local-first storage behavior remains core; Azure hosting complements but does not replace client-side persistence.
+- Running ApiForge locally (Vite dev server + Express bridge) must remain fully supported even after SWA deployment ships.
+- All request history continues to live in browser-controlled storage; hosted executions may append telemetry references (e.g., trace URLs) but never become the canonical record.
 - Initial releases ship without hosted authentication; users rely on local storage and shared links while identity integration is deferred.
 - GitHub Actions is the primary CI/CD engine; alternate pipelines can be added later if needed.
 - All third-party services currently configured (OpenAPI imports, outbound HTTP targets) support egress from Azure regions selected for deployment.
@@ -95,7 +98,8 @@ Additional user stories may be added for billing integration or custom domains o
 - **FR-003**: Rehost the existing server execution path inside Azure Functions without changing request/response schemas so local collections, history, and debug tooling remain compatible.
 - **FR-004**: Store environment-specific secrets (API keys, connection strings) in Azure-managed configuration (e.g., SWA secrets, Key Vault references) and ensure deployments fail fast when required secrets are missing.
 - **FR-005**: Emit health metrics and structured logs (execution duration, failures, cold starts) to Azure Monitor and link at least one alert rule per critical KPI (availability, latency, error rate).
-- **FR-006**: Document rollback and environment promotion steps, including how to rehydrate local-first data or seed sample workspaces after a fresh SWA deployment.
+- **FR-006**: Document rollback and environment promotion steps, including how to rehydrate local-first data or seed sample workspaces after a fresh SWA deployment, covering backup/restore scripts for browser storage snapshots.
+- **FR-007**: Preserve a first-class local runtime option: running `npm run dev` with the existing Express bridge must continue to execute requests, even when SWA resources are offline, with documentation outlining how to switch between local and hosted execution.
 
 ### Key Entities *(include if feature involves data)*
 

@@ -10,12 +10,12 @@ Migrate ApiForge to an Azure Static Web App that serves the offline-first Vite c
 ## Technical Context
 
 **Language/Version**: TypeScript 5.6 + React 18 client, shared Zod schemas, Node.js server logic targeting Azure Functions Node 18 LTS (per Research Decision 1)  
-**Primary Dependencies**: React, TanStack Query, shadcn/ui, shared `local-storage-service`, server utilities (`environment-resolver`, `http-executor`, `script-executor`) rehosted as HTTP-triggered Functions (Research Decision 5)  
+**Primary Dependencies**: React, TanStack Query, shadcn/ui, shared `local-storage-service`, server utilities (`environment-resolver`, `http-executor`, `script-executor`) rehosted as HTTP-triggered Functions (Research Decision 5) with Azure metadata treated as read-only telemetry that syncs back to local storage  
 **Hosting/CI**: Azure Static Web Apps Standard plan + two-stage GitHub Actions workflow (build/test → deploy) using `Azure/static-web-apps-deploy@v2` (Research Decision 2)  
 **Storage**: Browser `local-storage-service` remains source of truth; SWA only provides execution + serving; optional cloud persistence deferred  
 **Secrets**: SWA application settings per slot with optional Key Vault references for rotation (Research Decision 3)  
 **Telemetry**: Application Insights auto-instrumentation with Azure Monitor alert rules for latency/error/cold-start KPIs (Research Decision 4)  
-**Testing**: Vitest for shared/server utilities, integration tests for `local-storage-adapter`, add SWA deployment validation + smoke Playwright run hitting hosted Functions  
+**Testing**: Vitest for shared/server utilities, importer fixtures (Postman/OpenAPI/curl) proving schema compatibility, integration tests for `local-storage-adapter`, and SWA deployment validation + smoke Playwright run hitting hosted Functions  
 **Performance Goals**: Preserve sub-200 ms offline interactions; hosted request executions hit <2 s at P95 for <1 MB payloads  
 **Constraints**: Local-first workflows must work without SWA; hosted flows cannot introduce breaking schema changes; no new auth per clarification  
 **Scale/Scope**: Single SWA with preview + production slots, sized for small-team usage but following enterprise-ready governance
@@ -25,7 +25,7 @@ Migrate ApiForge to an Azure Static Web App that serves the offline-first Vite c
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 - [x] **Local-First Persistence**: Feature keeps `local-storage-service` untouched; plan will codify offline regression tests plus hosted smoke tests to ensure Azure hosting augments rather than replaces offline mode.
-- [x] **Import Interoperability**: No schema additions planned; plan will include verification that existing Postman/OpenAPI imports continue to feed execution pipeline identically once routed through Functions.
+- [x] **Import Interoperability**: Import fixtures (Postman/OpenAPI/curl) will be updated and rerun to prove existing assets remain valid even after introducing hosted metadata fields.
 - [x] **Onboarding Simplicity**: Quickstart doc will explain the extra "Deploy to Azure" path without adding required setup for local use; sample data remains unchanged.
 - [x] **Quality & Audit Discipline**: Execution includes `npm run check`, targeted Vitest for server adapters, and Playwright smoke hitting the SWA preview; DebugPanel logging will include hosted execution metadata.
 - [x] **Evergreen Dependencies**: Any Azure SDK / Actions updates will go through changelog review and `npm audit`; plan records the audit + verification steps before merge.
@@ -93,12 +93,14 @@ tests/
 - Implement bindings for `POST /api/requests/{requestId}/execute`, `GET /api/requests/{requestId}/history`, and promotion endpoints defined in `contracts/hosted-execution.openapi.yaml`.
 - Update `client/src/pages/Home.tsx` + `RequestBuilder.tsx` to detect hosted mode, route API calls via SWA proxy, and surface hosted execution metadata in `DebugPanel`.
 - Expand Vitest suites for server utilities and add Playwright smoke test hitting the SWA CLI-proxied backend.
+- Extend importer/exporter fixtures (Postman, OpenAPI, curl) to include hosted metadata fields and ensure backward compatibility.
 
 ### Phase 3 — Operations, Observability, and Docs
 - Capture Application Insights instrumentation plus Azure Monitor alert templates (latency, error rate, cold starts) and link them in runbooks.
 - Finalize secret provisioning workflow using SWA application settings + optional Key Vault references per Research Decision 3; document mapping in `quickstart.md` and repo README.
 - Publish deployment + rollback SOPs, update onboarding assets, and add evidence to `docs/runbooks/quality-audit.md`.
 - Prepare `/speckit.tasks` with granular engineering tasks (Phase 2 of workflow) after this plan is approved.
+- Establish measurement hooks for SC-001 through SC-004 (deployment timer, hosted latency load test, beta feedback log, incident tracking worksheet) and link outputs to `artifacts/quality-audit-report.json`.
 
 ## Testing Strategy
 
