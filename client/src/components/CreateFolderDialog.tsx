@@ -96,7 +96,6 @@ export function CreateFolderDialog({ collectionId, parentFolderId, children, ope
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My Folder"
-                autoFocus
               />
             </div>
           </div>

@@ -17,28 +17,26 @@ import { createSampleData } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
 import { useDebug } from "@/contexts/DebugContext";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import type { Request, ExecutionResult, Workspace } from "@shared/schema";
+import type { Request, ExecutionResult, Workspace, Folder, Collection, Environment, KeyValuePair } from "@shared/schema";
 
 export default function Home() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [selectedEnvironmentForEdit, setSelectedEnvironmentForEdit] = useState<string | null>(null);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
-  const [showGettingStarted, setShowGettingStarted] = useState(false);
+  const [showGettingStarted, setShowGettingStarted] = useState(() => {
+    const hasSeenWalkthrough = localStorage.getItem("apispark-seen-walkthrough");
+    if (!hasSeenWalkthrough) {
+      localStorage.setItem("apispark-seen-walkthrough", "true");
+      return true;
+    }
+    return false;
+  });
   const [showUserGuide, setShowUserGuide] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { addRequest, addResponse, addError, isEnabled: debugEnabled } = useDebug();
-
-  // Check if this is the first time user is opening the app
-  useEffect(() => {
-    const hasSeenWalkthrough = localStorage.getItem("apispark-seen-walkthrough");
-    if (!hasSeenWalkthrough) {
-      setShowGettingStarted(true);
-      localStorage.setItem("apispark-seen-walkthrough", "true");
-    }
-  }, []);
 
   const { data: requestData } = useQuery<{ request: Request }>({
     queryKey: ["/api/requests", selectedRequestId],
@@ -49,14 +47,17 @@ export default function Home() {
     queryKey: ["/api/workspaces"],
   });
 
-  const { data: environmentsData } = useQuery<{ environments: any[] }>({
+  const { data: environmentsData } = useQuery<{ environments: Environment[] }>({
     queryKey: ["/api/environments"],
   });
 
   // Auto-select the first environment when environments load
   useEffect(() => {
     if (environmentsData?.environments && environmentsData.environments.length > 0 && !selectedEnvironment) {
-      setSelectedEnvironment(environmentsData.environments[0].id);
+      // Using queueMicrotask to avoid setState during render
+      queueMicrotask(() => {
+        setSelectedEnvironment(environmentsData.environments[0].id);
+      });
     }
   }, [environmentsData, selectedEnvironment]);
 
@@ -76,9 +77,12 @@ export default function Home() {
         const req = requestData?.request;
 
         // Find folder and collection from workspace data (for localStorage mode)
-        let folder, collection;
+        type FolderWithSubfolders = Folder & { subfolders?: FolderWithSubfolders[] };
+        let folder: FolderWithSubfolders | null = null;
+        let collection: Collection | null = null;
+
         if (req && workspacesData?.workspaces) {
-          const findFolderRecursive = (folders: any[]): any => {
+          const findFolderRecursive = (folders: FolderWithSubfolders[]): FolderWithSubfolders | null => {
             for (const fol of folders) {
               if (fol.id === req.folderId) {
                 return fol;
@@ -127,7 +131,7 @@ export default function Home() {
           const headersRecord: Record<string, string> = {};
           const headersToUse = resolvedRequest?.headers || req.headers || [];
           if (Array.isArray(headersToUse)) {
-            headersToUse.forEach((h: any) => {
+            headersToUse.forEach((h: KeyValuePair) => {
               if (h.enabled !== false && h.key && h.value) {
                 headersRecord[h.key] = h.value;
               }

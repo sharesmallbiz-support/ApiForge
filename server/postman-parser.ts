@@ -42,7 +42,7 @@ interface PostmanItem {
   name: string;
   request?: PostmanRequest;
   item?: PostmanItem[];
-  response?: any[];
+  response?: unknown[];
 }
 
 interface PostmanCollection {
@@ -98,7 +98,7 @@ export interface ParsedPostmanEnvironment {
 /**
  * Parse Postman Collection v2.1 format
  */
-export function parsePostmanCollection(collectionData: any): ParsedPostmanCollection {
+export function parsePostmanCollection(collectionData: unknown): ParsedPostmanCollection {
   try {
     const collection: PostmanCollection = collectionData;
 
@@ -274,7 +274,7 @@ function processRequest(item: PostmanItem) {
 /**
  * Parse Postman Environment format
  */
-export function parsePostmanEnvironment(environmentData: any): ParsedPostmanEnvironment {
+export function parsePostmanEnvironment(environmentData: unknown): ParsedPostmanEnvironment {
   try {
     const environment: PostmanEnvironment = environmentData;
 
