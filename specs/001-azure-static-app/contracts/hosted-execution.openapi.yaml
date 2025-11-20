@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: ApiForge Hosted Execution API
+  version: 1.0.0
+  description: >-
+    HTTP-triggered Azure Functions that back the Azure Static Web App deployment.
+servers:
+  - url: https://{environment}.azurestaticapps.net
+    variables:
+      environment:
+        default: preview
+        enum:
+          - preview
+          - production
+paths:
+  /api/requests/{requestId}/execute:
+    post:
+      summary: Execute a saved request via Azure Functions
+      operationId: executeRequest
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: environmentId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Overrides the environment scope (defaults to workspace selection).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRequestPayload'
+      responses:
+        '200':
+          description: Request executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Upstream call failed or script threw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/requests/{requestId}/history:
+    get:
+      summary: Fetch hosted execution history for a request
+      operationId: getExecutionHistory
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: History entries ordered by most recent first
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExecutionResult'
+  /api/deployments/promote:
+    post:
+      summary: Promote preview deployment artifacts to production slot
+      operationId: promoteDeployment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sourceSha
+              properties:
+                sourceSha:
+                  type: string
+                  description: Git commit that produced the preview artifact
+                approvals:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional reviewer identifiers recorded for auditing
+      responses:
+        '202':
+          description: Promotion accepted; GitHub Actions workflow will update production
+        '409':
+          description: Promotion rejected because preview artifact is stale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ExecuteRequestPayload:
+      type: object
+      required:
+        - workspaceId
+        - resolvedRequest
+      properties:
+        workspaceId:
+          type: string
+        resolvedRequest:
+          type: object
+          description: Snapshot produced by RequestBuilder including URL, method, headers, body
+        environmentSnapshot:
+          type: object
+          description: Key/value pairs after `environment-resolver` runs
+        scripts:
+          type: object
+          properties:
+            preRequest:
+              type: string
+            postRequest:
+              type: string
+    ExecutionResult:
+      type: object
+      required:
+        - requestId
+        - status
+        - startedAt
+        - durationMs
+      properties:
+        requestId:
+          type: string
+        status:
+          type: string
+          enum: [Success, Failure, Timeout]
+        statusCode:
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        bodyPreview:
+          type: string
+        durationMs:
+          type: number
+        startedAt:
+          type: string
+          format: date-time
+        hostedTraceUrl:
+          type: string
+          format: uri
+        logs:
+          type: array
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
