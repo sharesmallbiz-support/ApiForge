@@ -150,28 +150,37 @@ function processFolder(folderItem: PostmanItem): ParsedPostmanFolder {
   };
 
   if (folderItem.item) {
-    for (const item of folderItem.item) {
-      if (item.item) {
-        // Nested folder - preserve the structure
-        const nestedFolder = processFolder(item);
-        folder.folders.push(nestedFolder);
-      } else if (item.request) {
-        const request = processRequest(item);
-        if (request) {
-          folder.requests.push(request);
-        }
-      }
-    }
+    folder.requests = collectFolderRequests(folderItem.item);
   }
 
   return folder;
 }
 
-function processRequest(item: PostmanItem) {
+function collectFolderRequests(
+  items: PostmanItem[],
+  pathSegments: string[] = []
+): ParsedPostmanFolder["requests"] {
+  const requests: ParsedPostmanFolder["requests"] = [];
+
+  for (const item of items) {
+    if (item.item) {
+      requests.push(...collectFolderRequests(item.item, [...pathSegments, item.name]));
+    } else if (item.request) {
+      const request = processRequest(item, pathSegments);
+      if (request) {
+        requests.push(request);
+      }
+    }
+  }
+
+  return requests;
+}
+
+function processRequest(item: PostmanItem, pathSegments: string[] = []) {
   if (!item.request) return null;
 
   const request = item.request;
-  const name = item.name;
+  const name = pathSegments.length ? `${pathSegments.join(" / ")} / ${item.name}` : item.name;
   const method = request.method.toUpperCase();
 
   // Parse URL
