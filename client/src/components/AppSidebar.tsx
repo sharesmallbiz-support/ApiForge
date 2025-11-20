@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase, ChevronDown } from "lucide-react";
+import { Plus, FolderPlus, Settings, FolderOpen, Globe, Briefcase, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
@@ -9,7 +9,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -28,7 +27,6 @@ import { CreateRequestDialog } from "./CreateRequestDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import type {
   Workspace,
-  Request as RequestType,
   Environment,
   Folder,
 } from "@shared/schema";

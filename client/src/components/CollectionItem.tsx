@@ -1,6 +1,5 @@
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2, MoreVertical, Edit, Move } from "lucide-react";
 import { HttpMethodBadge } from "./HttpMethodBadge";
-import type { Collection, Folder as FolderType } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,13 +25,6 @@ import { MoveItemDialog } from "./MoveItemDialog";
 import { apiRequest } from "@/lib/queryClient";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-
-interface Request {
-  id: string;
-  name: string;
-  method: HttpMethod;
-  url: string;
-}
 
 interface CollectionItemProps {
   name: string;
@@ -67,7 +59,6 @@ export function CollectionItem({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const queryClient = useQueryClient();
 
@@ -169,7 +160,7 @@ export function CollectionItem({
       newParentId: string;
     }) => {
       const endpoint = itemType === "folder" ? "folders" : "requests";
-      let updateData: any = {};
+      let updateData: Record<string, string | null> = {};
 
       if (itemType === "folder") {
         // Determine if newParentId is a collection or folder
@@ -205,8 +196,6 @@ export function CollectionItem({
     <>
       <div
         className="w-full group"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         draggable={isDraggable}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
@@ -218,6 +207,14 @@ export function CollectionItem({
             isActive ? "bg-sidebar-accent" : ""
           } ${isDragOver ? "bg-primary/10 ring-2 ring-primary" : ""}`}
           onClick={onClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick?.();
+            }
+          }}
+          role="button"
+          tabIndex={0}
           data-testid={`item-${type}-${(name || '').toLowerCase().replace(/\s+/g, "-")}`}
         >
           {isContainer && hasChildren && (
@@ -311,7 +308,7 @@ export function CollectionItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {type}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{name}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{name}&rdquo;? This action cannot be undone.
               {type !== "request" && " All nested items will also be deleted."}
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -440,7 +440,7 @@ if (response.id) {
       : [];
 
     // Create a new folder object with requests and potentially subfolders
-    const hydratedFolder: any = {
+    const hydratedFolder: Folder & { subfolders?: Folder[] } = {
       ...folder,
       requests,
     };
