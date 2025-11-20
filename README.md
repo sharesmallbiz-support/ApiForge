@@ -63,6 +63,29 @@ npm run quality:audit
 
 The application will open at `http://localhost:5000`
 
+### Azure Static Web Apps Deployment
+
+ApiForge can be deployed to Azure Static Web Apps for a hosted solution while maintaining local-first capabilities:
+
+```bash
+# Install SWA CLI and Functions Core Tools
+npm install -g @azure/static-web-apps-cli azure-functions-core-tools@4
+
+# Test hosted mode locally
+npm run swa:start
+
+# Build for Azure deployment
+npm run swa:build
+```
+
+**Hosted Features:**
+- Request execution via Azure Functions
+- Preview and production deployment slots
+- Application Insights telemetry
+- Automatic GitHub Actions deployment
+
+See [infrastructure/azure-swa/README.md](infrastructure/azure-swa/README.md) and [specs/001-azure-static-app/quickstart.md](specs/001-azure-static-app/quickstart.md) for complete deployment instructions.
+
 ### Quality Assurance
 
 Before contributing or deploying, run the quality audit to ensure code quality:

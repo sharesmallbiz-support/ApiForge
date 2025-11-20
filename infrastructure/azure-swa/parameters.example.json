@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "name": {
+      "value": "apiforge-prod"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "resourceGroupName": {
+      "value": "apiforge-rg"
+    },
+    "sku": {
+      "value": {
+        "name": "Standard",
+        "tier": "Standard"
+      }
+    },
+    "repositoryUrl": {
+      "value": "https://github.com/sharesmallbiz-support/ApiForge"
+    },
+    "branch": {
+      "value": "main"
+    },
+    "appInsights": {
+      "value": {
+        "name": "apiforge-insights",
+        "resourceGroup": "apiforge-rg",
+        "location": "eastus2"
+      }
+    },
+    "tags": {
+      "value": {
+        "Environment": "Production",
+        "Application": "ApiForge",
+        "ManagedBy": "GitHub Actions"
+      }
+    },
+    "customDomains": {
+      "value": []
+    },
+    "stagingEnvironmentPolicy": {
+      "value": "Enabled"
+    }
+  }
+}

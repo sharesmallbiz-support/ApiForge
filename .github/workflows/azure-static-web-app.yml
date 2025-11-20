@@ -1,0 +1,225 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run check
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Build client
+        run: npm run build
+
+      - name: Build Functions
+        run: |
+          cd api
+          npm ci
+          npm run build
+
+      - name: Upload client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: dist/
+          retention-days: 1
+
+      - name: Upload Functions artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: api/
+          retention-days: 1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/
+          retention-days: 7
+
+  deploy-preview:
+    name: Deploy to Preview
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.static_web_app_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download client artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: dist/
+
+      - name: Download Functions artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: api-dist
+          path: api/
+
+      - name: Record deployment start
+        id: start-time
+        run: echo "START_TIME=$(date -u +%s)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Azure Static Web Apps (Preview)
+        id: deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: "api"
+          output_location: "dist"
+          skip_app_build: true
+          skip_api_build: true
+
+      - name: Record deployment metrics
+        if: always()
+        run: |
+          END_TIME=$(date -u +%s)
+          DURATION=$((END_TIME - ${{ steps.start-time.outputs.START_TIME }}))
+          echo "Deployment duration: ${DURATION}s"
+          echo "DEPLOYMENT_DURATION=${DURATION}" >> $GITHUB_ENV
+          
+          # Record metrics in artifacts
+          mkdir -p artifacts
+          cat > artifacts/deployment-metrics.json <<EOF
+          {
+            "environment": "preview",
+            "duration_seconds": ${DURATION},
+            "commit_sha": "${{ github.sha }}",
+            "pr_number": "${{ github.event.pull_request.number }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Upload deployment metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-metrics-preview
+          path: artifacts/deployment-metrics.json
+          retention-days: 30
+
+  deploy-production:
+    name: Deploy to Production
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.static_web_app_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download client artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: dist/
+
+      - name: Download Functions artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: api-dist
+          path: api/
+
+      - name: Record deployment start
+        id: start-time
+        run: echo "START_TIME=$(date -u +%s)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Azure Static Web Apps (Production)
+        id: deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: "api"
+          output_location: "dist"
+          skip_app_build: true
+          skip_api_build: true
+
+      - name: Record deployment metrics
+        if: always()
+        run: |
+          END_TIME=$(date -u +%s)
+          DURATION=$((END_TIME - ${{ steps.start-time.outputs.START_TIME }}))
+          echo "Deployment duration: ${DURATION}s"
+          echo "DEPLOYMENT_DURATION=${DURATION}" >> $GITHUB_ENV
+          
+          # Record metrics in artifacts
+          mkdir -p artifacts
+          cat > artifacts/deployment-metrics.json <<EOF
+          {
+            "environment": "production",
+            "duration_seconds": ${DURATION},
+            "commit_sha": "${{ github.sha }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Upload deployment metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-metrics-production
+          path: artifacts/deployment-metrics.json
+          retention-days: 90
+
+  close-preview:
+    name: Close Preview Environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"

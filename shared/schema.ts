@@ -43,6 +43,10 @@ export const requestSchema = z.object({
   body: requestBodySchema,
   auth: requestAuthSchema,
   script: z.string().optional(),
+  // Hosted execution metadata (optional)
+  lastHostedRun: z.string().optional(),
+  hostedRunResult: z.enum(["Success", "Failure", "Timeout"]).optional(),
+  hostedRunUrl: z.string().optional(),
 });
 
 export const insertRequestSchema = requestSchema.omit({ id: true });
@@ -190,8 +194,95 @@ export const executionResultSchema = z.object({
   time: z.number(),
   size: z.number(),
   timestamp: z.string(),
+  // Hosted execution metadata (optional)
+  lastHostedRun: z.string().optional(),
+  hostedRunResult: z.enum(["Success", "Failure", "Timeout"]).optional(),
+  hostedRunUrl: z.string().optional(),
 });
 export type ExecutionResult = z.infer<typeof executionResultSchema>;
+
+// Deployment Environment Status
+export const deploymentStatusSchema = z.enum(["Provisioning", "Ready", "Failed", "Degraded"]);
+export type DeploymentStatus = z.infer<typeof deploymentStatusSchema>;
+
+// Deployment Environment
+export const deploymentEnvironmentSchema = z.object({
+  id: z.string(),
+  swaResourceId: z.string(),
+  staticAssetSource: z.string(),
+  functionsPackage: z.string(),
+  customDomains: z.array(z.string()).default([]),
+  status: deploymentStatusSchema,
+  lastDeployedSha: z.string().optional(),
+  lastPromotedAt: z.string().optional(),
+});
+export type DeploymentEnvironment = z.infer<typeof deploymentEnvironmentSchema>;
+
+// Secret Binding Provider
+export const secretProviderSchema = z.enum(["SWASetting", "KeyVaultReference"]);
+export type SecretProvider = z.infer<typeof secretProviderSchema>;
+
+// Secret Binding
+export const secretBindingSchema = z.object({
+  name: z.string(),
+  slot: z.enum(["preview", "production"]),
+  provider: secretProviderSchema,
+  version: z.string().optional(),
+  expiresOn: z.string().optional(),
+  required: z.boolean().default(false),
+});
+export type SecretBinding = z.infer<typeof secretBindingSchema>;
+
+// Function App Runtime
+export const functionRuntimeSchema = z.enum(["node18"]);
+export type FunctionRuntime = z.infer<typeof functionRuntimeSchema>;
+
+// Function App State
+export const functionAppStateSchema = z.enum(["Draft", "Bundled", "Active", "Deprecated"]);
+export type FunctionAppState = z.infer<typeof functionAppStateSchema>;
+
+// Function Binding
+export const functionBindingSchema = z.object({
+  type: z.string(),
+  direction: z.enum(["in", "out"]),
+  name: z.string(),
+  authLevel: z.enum(["anonymous", "function", "admin"]).optional(),
+  methods: z.array(z.string()).optional(),
+  route: z.string().optional(),
+});
+export type FunctionBinding = z.infer<typeof functionBindingSchema>;
+
+// Function App
+export const functionAppSchema = z.object({
+  name: z.string(),
+  runtime: functionRuntimeSchema,
+  entryPoints: z.array(z.string()).default([]),
+  bindings: z.array(functionBindingSchema).default([]),
+  dependenciesHash: z.string().optional(),
+  telemetryKey: z.string().optional(),
+  state: functionAppStateSchema.default("Draft"),
+});
+export type FunctionApp = z.infer<typeof functionAppSchema>;
+
+// Telemetry Signal Source
+export const telemetrySourceSchema = z.enum(["ApplicationInsights", "AzureMonitor"]);
+export type TelemetrySource = z.infer<typeof telemetrySourceSchema>;
+
+// Telemetry Alert State
+export const alertStateSchema = z.enum(["Healthy", "Warning", "Critical"]);
+export type AlertState = z.infer<typeof alertStateSchema>;
+
+// Telemetry Signal
+export const telemetrySignalSchema = z.object({
+  signalId: z.string(),
+  source: telemetrySourceSchema,
+  targetThreshold: z.union([z.number(), z.string()]),
+  currentValue: z.number().optional(),
+  alertState: alertStateSchema.default("Healthy"),
+  lastUpdated: z.string().optional(),
+  notificationHooks: z.array(z.string()).default([]),
+});
+export type TelemetrySignal = z.infer<typeof telemetrySignalSchema>;
 
 // OpenAPI Import
 export const openApiImportSchema = z.object({

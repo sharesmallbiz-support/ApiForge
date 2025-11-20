@@ -145,6 +145,48 @@ npm run quality:audit -- --offline-sample
 
 This checks that sample data can be loaded without network access. The audit itself requires network for security checks but gracefully handles offline scenarios.
 
+### Execution Modes
+
+ApiForge supports two execution modes:
+
+#### Local Execution (Default)
+- All data persists in browser localStorage
+- Request execution proxied through local Express server
+- No Azure dependencies required
+- Works completely offline after initial load
+- Ideal for development and personal use
+
+#### Hosted Execution (Azure Static Web Apps)
+- Client still uses localStorage as source of truth
+- Request execution via Azure Functions (Node 18 runtime)
+- Application Insights telemetry for observability
+- Optional hosted metadata (`lastHostedRun`, `hostedRunResult`, `hostedRunUrl`)
+- Preview and production deployment slots
+- Suitable for team collaboration with centralized execution
+
+**Key Principle**: Hosted mode augments local-first workflows. All existing features work without Azure deployment. Hosted metadata fields are optional and ignored when running locally.
+
+#### Testing Both Modes
+
+```bash
+# Local mode (default)
+npm run dev
+
+# Hosted mode simulation (requires SWA CLI + Functions Core Tools)
+npm run swa:start
+
+# Build for Azure deployment
+npm run swa:build
+```
+
+#### Prerequisites for Hosted Mode
+
+See `infrastructure/azure-swa/README.md` and `specs/001-azure-static-app/quickstart.md` for:
+- Azure subscription requirements
+- SWA CLI installation
+- Application settings configuration
+- GitHub Actions deployment setup
+
 ## Dependency Review Cadence
 
 ### Weekly

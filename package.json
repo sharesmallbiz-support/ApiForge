@@ -9,9 +9,13 @@
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
-    "build": "npm run clean && vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "dev:functions": "cd api && npm run start",
+    "build": "npm run clean && vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && npm run build:functions",
+    "build:functions": "cd api && npm install && npm run build",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
     "start": "cross-env NODE_ENV=production node dist/index.js",
+    "swa:start": "swa start dist --api-location api --run \"npm run dev:functions\"",
+    "swa:build": "npm run build && swa build",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
@@ -81,6 +85,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@azure/static-web-apps-cli": "^1.1.10",
     "@eslint/js": "^9.39.1",
     "@replit/vite-plugin-cartographer": "^0.4.3",
     "@replit/vite-plugin-dev-banner": "^0.1.1",

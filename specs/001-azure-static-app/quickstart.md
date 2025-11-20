@@ -1,5 +1,29 @@
 # Quickstart — Deploy ApiForge to Azure Static Web Apps
 
+# Quickstart — Deploy ApiForge to Azure Static Web Apps
+
+## Overview
+
+This guide walks through deploying ApiForge to Azure Static Web Apps while maintaining the local-first architecture. The hosted deployment augments local workflows with:
+
+- **Centralized execution**: Requests execute via Azure Functions instead of local server
+- **Team collaboration**: Preview and production slots for testing and releases  
+- **Observability**: Application Insights telemetry for monitoring
+- **Optional metadata**: Hosted run metadata without disrupting offline workflows
+
+**Important**: Local-first mode remains fully functional without Azure deployment. All data stays in browser localStorage. Hosted mode only adds execution and telemetry layers.
+
+## Execution Modes Comparison
+
+| Feature | Local Mode | Hosted Mode |
+|---------|-----------|-------------|
+| Data storage | Browser localStorage | Browser localStorage |
+| Request execution | Local Express server | Azure Functions |
+| Offline support | ✅ Full | ✅ Full (reads/edits) |
+| Telemetry | Console logs | Application Insights |
+| Deployment | `npm run dev` | GitHub Actions |
+| Cost | Free | ~$9/month + Functions |
+
 ## 1. Prerequisites
 - Azure subscription with permissions to create Static Web Apps + Application Insights.
 - GitHub repository access with Actions enabled.

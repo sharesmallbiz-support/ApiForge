@@ -384,6 +384,61 @@ describe('LocalStorage Adapter', () => {
       expect(data.success).toBe(true);
     });
 
+    it('should preserve optional hosted metadata fields', async () => {
+      const { localStorageRequest } = await import('../client/src/lib/local-storage-adapter');
+      const { localStorageService } = await import('../client/src/lib/local-storage-service');
+
+      const workspaces = await localStorageService.getWorkspaces();
+      const collection = await localStorageService.createCollection({
+        name: 'Test Collection',
+        workspaceId: workspaces[0].id,
+      });
+      const folder = await localStorageService.createFolder({
+        name: 'Test Folder',
+        collectionId: collection.id,
+      });
+
+      // Create request without hosted metadata
+      const requestResponse = await localStorageRequest('POST', '/api/requests', {
+        name: 'Test Request',
+        method: 'GET',
+        url: 'https://api.example.com',
+        folderId: folder.id,
+        headers: [],
+        params: [],
+      });
+      const requestData = await requestResponse.json();
+
+      // Verify hosted metadata fields are optional (undefined or not present)
+      expect(requestData.request).toBeDefined();
+      expect(requestData.request.name).toBe('Test Request');
+      // These fields should be undefined or not present in offline mode
+      expect(requestData.request.lastHostedRun).toBeUndefined();
+      expect(requestData.request.hostedRunResult).toBeUndefined();
+      expect(requestData.request.hostedRunUrl).toBeUndefined();
+
+      // Update request with hosted metadata (simulating Azure Functions execution)
+      const updateResponse = await localStorageRequest('PATCH', `/api/requests/${requestData.request.id}`, {
+        lastHostedRun: new Date().toISOString(),
+        hostedRunResult: 'Success',
+        hostedRunUrl: 'https://portal.azure.com/#trace/abc123',
+      });
+      const updateData = await updateResponse.json();
+
+      // Verify hosted metadata is preserved
+      expect(updateData.request.lastHostedRun).toBeDefined();
+      expect(updateData.request.hostedRunResult).toBe('Success');
+      expect(updateData.request.hostedRunUrl).toBe('https://portal.azure.com/#trace/abc123');
+
+      // Retrieve and verify persistence
+      const getResponse = await localStorageRequest('GET', `/api/requests/${requestData.request.id}`);
+      const getData = await getResponse.json();
+
+      expect(getData.request.lastHostedRun).toBeDefined();
+      expect(getData.request.hostedRunResult).toBe('Success');
+      expect(getData.request.hostedRunUrl).toBe('https://portal.azure.com/#trace/abc123');
+    });
+
     it('should throw error for execute endpoint', async () => {
       const { localStorageRequest } = await import('../client/src/lib/local-storage-adapter');
 
@@ -575,6 +630,47 @@ describe('LocalStorage Adapter', () => {
   });
 
   describe('Error Handling', () => {
+    it('should verify execution results support optional hosted metadata', async () => {
+      const { localStorageService } = await import('../client/src/lib/local-storage-service');
+
+      // Create execution result without hosted metadata
+      const resultWithoutMeta = await localStorageService.saveExecutionResult({
+        id: 'exec-1',
+        requestId: 'req-1',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        body: { data: 'test' },
+        time: 150,
+        size: 1024,
+        timestamp: new Date().toISOString(),
+      });
+
+      expect(resultWithoutMeta.lastHostedRun).toBeUndefined();
+      expect(resultWithoutMeta.hostedRunResult).toBeUndefined();
+      expect(resultWithoutMeta.hostedRunUrl).toBeUndefined();
+
+      // Create execution result with hosted metadata
+      const resultWithMeta = await localStorageService.saveExecutionResult({
+        id: 'exec-2',
+        requestId: 'req-1',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        body: { data: 'test' },
+        time: 2300,
+        size: 2048,
+        timestamp: new Date().toISOString(),
+        lastHostedRun: new Date().toISOString(),
+        hostedRunResult: 'Success',
+        hostedRunUrl: 'https://portal.azure.com/#trace/xyz789',
+      });
+
+      expect(resultWithMeta.lastHostedRun).toBeDefined();
+      expect(resultWithMeta.hostedRunResult).toBe('Success');
+      expect(resultWithMeta.hostedRunUrl).toBe('https://portal.azure.com/#trace/xyz789');
+    });
+
     it('should handle unknown resource', async () => {
       const { localStorageRequest } = await import('../client/src/lib/local-storage-adapter');
 

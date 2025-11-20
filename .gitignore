@@ -8,3 +8,16 @@ data/
 artifacts/*.json
 artifacts/*.log
 coverage/
+*.log
+.env*
+.vscode/
+.idea/
+*.swp
+*.tmp
+Thumbs.db
+.azure/
+local.settings.json
+__azurite_db*__.json
+__blobstorage__
+__queuestorage__
+.func
