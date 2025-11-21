@@ -250,15 +250,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         // Recursive function to create folders and their contents
-        async function createFolderRecursively(
+        const createFolderRecursively = async (
           folderData: ParsedPostmanFolder,
           collectionId: string,
           parentFolderId?: string
-        ): Promise<void> {
+        ): Promise<void> => {
           // Create the folder
           const folder = await storage.createFolder({
             name: folderData.name,
-            collectionId: parentFolderId ? undefined : collectionId,
+            collectionId: collectionId,
             parentId: parentFolderId,
           });
 
@@ -271,7 +271,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               folderId: folder.id,
               headers: requestData.headers,
               params: requestData.params,
-              body: requestData.body,
+              body: requestData.body ? {
+                type: requestData.body.type as "json" | "form" | "raw",
+                content: requestData.body.content
+              } : undefined,
             });
           }
 
@@ -279,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           for (const nestedFolderData of folderData.folders || []) {
             await createFolderRecursively(nestedFolderData, collectionId, folder.id);
           }
-        }
+        };
 
         // Create all top-level folders and their contents
         for (const folderData of parsedCollection.folders) {

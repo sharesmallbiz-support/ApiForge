@@ -93,6 +93,17 @@ describe('CURL Parser', () => {
       expect(result?.headers).toHaveLength(1);
       expect(result?.headers[0].value).toContain('Mozilla/5.0');
     });
+
+    it('should extract hosted metadata from custom headers', () => {
+      const curl = `curl 'https://api.example.com/users' -H 'X-Hosted-Run-Url: https://portal.azure.com/trace/123' -H 'X-Last-Hosted-Run: 2023-01-01T12:00:00Z'`;
+      const result = parseCurlCommand(curl);
+
+      expect(result).not.toBeNull();
+      expect(result?.hostedRunUrl).toBe('https://portal.azure.com/trace/123');
+      expect(result?.lastHostedRun).toBe('2023-01-01T12:00:00Z');
+      // Should NOT be in regular headers
+      expect(result?.headers).toHaveLength(0);
+    });
   });
 
   describe('Body Parsing', () => {

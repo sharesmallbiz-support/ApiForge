@@ -76,7 +76,6 @@ export function ResponseViewer({
                   container: "font-mono text-xs",
                   basicChildStyle: "padding-left: 1rem",
                   label: "color: hsl(217 91% 60%); font-weight: 600;", // Bright blue for property names
-                  valueLabel: "color: hsl(217 91% 60%); font-weight: 600;",
                   nullValue: "color: hsl(var(--muted-foreground)); font-style: italic;",
                   undefinedValue: "color: hsl(var(--muted-foreground)); font-style: italic;",
                   numberValue: "color: hsl(38 92% 50%); font-weight: 500;", // Orange/amber for numbers

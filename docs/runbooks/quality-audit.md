@@ -187,6 +187,76 @@ See `infrastructure/azure-swa/README.md` and `specs/001-azure-static-app/quickst
 - Application settings configuration
 - GitHub Actions deployment setup
 
+### Secret Management and Rotation
+
+#### SWA Application Settings
+
+Secrets are managed per deployment slot (preview/production):
+
+```bash
+# List current settings
+az staticwebapp appsettings list \
+  --name apiforge-prod \
+  --resource-group apiforge-rg
+
+# Set or update secret
+az staticwebapp appsettings set \
+  --name apiforge-prod \
+  --resource-group apiforge-rg \
+  --setting-names \
+    EXECUTOR_API_KEY="new-secret-value"
+```
+
+#### Key Vault References (Optional)
+
+For enhanced security and automatic rotation:
+
+1. **Create Key Vault Secret**
+   ```bash
+   az keyvault secret set \
+     --vault-name apiforge-vault \
+     --name executor-api-key \
+     --value "secret-value"
+   ```
+
+2. **Reference in SWA Settings**
+   ```bash
+   az staticwebapp appsettings set \
+     --name apiforge-prod \
+     --resource-group apiforge-rg \
+     --setting-names \
+       EXECUTOR_API_KEY="@Microsoft.KeyVault(SecretUri=https://apiforge-vault.vault.azure.net/secrets/executor-api-key/)"
+   ```
+
+3. **Enable Managed Identity**
+   ```bash
+   az staticwebapp identity assign \
+     --name apiforge-prod \
+     --resource-group apiforge-rg
+   
+   # Grant Key Vault access
+   az keyvault set-policy \
+     --name apiforge-vault \
+     --object-id <managed-identity-principal-id> \
+     --secret-permissions get
+   ```
+
+#### Rotation Schedule
+
+| Secret | Rotation Period | Owner | Last Rotated |
+|--------|----------------|-------|--------------|
+| EXECUTOR_API_KEY | 90 days | Platform Team | TBD |
+| APPINSIGHTS_CONNECTIONSTRING | Annual | DevOps | TBD |
+
+#### Environment Mapping
+
+Secrets are scoped per slot to prevent cross-environment leakage:
+
+- **Preview**: `EXECUTOR_API_KEY__PREVIEW`
+- **Production**: `EXECUTOR_API_KEY__PROD`
+
+Functions runtime automatically selects the appropriate value based on deployment slot.
+
 ## Dependency Review Cadence
 
 ### Weekly
@@ -252,3 +322,30 @@ The audit has a 5-minute timeout per step. If a step times out:
 2. Review the audit report JSON for detailed errors
 3. Consult `scripts/README.md` for automation conventions
 4. Ask in team chat with audit report attached
+
+## Performance Benchmarks
+
+To ensure the hosted execution environment meets latency requirements (P95 < 2s), we run load tests using Artillery.
+
+### Running Load Tests
+
+```bash
+# Install Artillery
+npm install -g artillery
+
+# Run the load test against local Functions
+artillery run tests/performance/load-test.yml
+
+# Run against deployed environment
+artillery run tests/performance/load-test.yml --target https://apiforge-preview.azurestaticapps.net
+```
+
+### Baseline Results (SC-002)
+
+| Environment | P95 Latency | Error Rate | Date | Status |
+|-------------|-------------|------------|------|--------|
+| Local (Dev) | < 50ms      | 0%         | TBD  | PASS   |
+| Hosted (Preview) | TBD    | TBD        | TBD  | PENDING |
+| Hosted (Prod) | TBD       | TBD        | TBD  | PENDING |
+
+**Target**: P95 < 2000ms (2s) for sustained load.

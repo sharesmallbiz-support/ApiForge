@@ -4,6 +4,8 @@ export interface ParsedCurlCommand {
   headers: Array<{ key: string; value: string; enabled: boolean }>;
   params: Array<{ key: string; value: string; enabled: boolean }>;
   body?: string;
+  hostedRunUrl?: string;
+  lastHostedRun?: string;
 }
 
 /**
@@ -102,6 +104,8 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
 
     // Extract headers - support both -H and --header
     const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
+    let hostedRunUrl: string | undefined;
+    let lastHostedRun: string | undefined;
 
     // Single comprehensive pattern that handles all quoting styles without overlap
     // This pattern captures the entire header value with its quotes
@@ -125,6 +129,16 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
 
       if (!key) {
         console.warn(`[CURL Parser] Invalid header format (empty key): ${headerStr}`);
+        continue;
+      }
+
+      // Check for hosted metadata headers
+      if (key.toLowerCase() === 'x-hosted-run-url') {
+        hostedRunUrl = value;
+        continue;
+      }
+      if (key.toLowerCase() === 'x-last-hosted-run') {
+        lastHostedRun = value;
         continue;
       }
 
@@ -193,6 +207,8 @@ export function parseCurlCommand(curlCommand: string): ParsedCurlCommand | null 
       headers,
       params,
       body,
+      hostedRunUrl,
+      lastHostedRun,
     };
 
     console.log('[CURL Parser] Successfully parsed command:', {

@@ -1,0 +1,187 @@
+name: 🚀 Beta Feedback - Azure Hosted Mode
+description: Share your experience using ApiForge with Azure Static Web Apps hosted execution
+title: "[Beta Feedback] "
+labels: ["beta-feedback", "azure-swa", "hosted-mode"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for testing ApiForge hosted mode! 🙏
+        
+        Your feedback helps us ensure the Azure deployment maintains parity with local execution while adding value through centralized hosting.
+
+  - type: dropdown
+    id: deployment-environment
+    attributes:
+      label: Deployment Environment
+      description: Which environment did you test?
+      options:
+        - Preview (PR deployment)
+        - Production (main branch)
+        - Local SWA CLI (npm run swa:start)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: overall-experience
+    attributes:
+      label: Overall Experience
+      description: How would you rate the hosted execution experience?
+      options:
+        - ⭐⭐⭐⭐⭐ Excellent - Works perfectly
+        - ⭐⭐⭐⭐ Good - Minor issues
+        - ⭐⭐⭐ Okay - Some problems
+        - ⭐⭐ Poor - Significant issues
+        - ⭐ Critical - Unusable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: local-parity
+    attributes:
+      label: Local vs Hosted Parity
+      description: Did hosted execution produce the same results as local mode?
+      options:
+        - "Yes - Identical behavior"
+        - "Mostly - Minor differences"
+        - "No - Significant differences"
+        - "Not tested - Only used hosted mode"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-worked
+    attributes:
+      label: What Worked Well? ✅
+      description: Tell us what you liked about the hosted deployment
+      placeholder: |
+        - Fast execution times
+        - Easy setup process
+        - Helpful Application Insights traces
+        - etc.
+    validations:
+      required: false
+
+  - type: textarea
+    id: what-broke
+    attributes:
+      label: What Didn't Work? ❌
+      description: Describe any issues, bugs, or unexpected behavior
+      placeholder: |
+        - Request failed with specific error
+        - Slower than local execution
+        - Missing features
+        - etc.
+    validations:
+      required: false
+
+  - type: textarea
+    id: performance
+    attributes:
+      label: Performance Observations
+      description: How did execution speed compare to local mode?
+      placeholder: |
+        - Request latency: [time]
+        - Cold starts: [yes/no, duration]
+        - Overall speed: [faster/same/slower]
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-regression
+    attributes:
+      label: Feature Regression Check
+      description: Did any features that work locally fail in hosted mode?
+      options:
+        - "No regressions - Everything works"
+        - "Minor regressions - Non-critical features affected"
+        - "Major regressions - Core features broken"
+    validations:
+      required: true
+
+  - type: textarea
+    id: regression-details
+    attributes:
+      label: Regression Details
+      description: If you selected regressions above, please describe them
+      placeholder: |
+        Feature: [name]
+        Expected: [what should happen]
+        Actual: [what actually happened]
+        Reproducible: [yes/no]
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: tested-features
+    attributes:
+      label: Features Tested
+      description: Which features did you test in hosted mode?
+      options:
+        - label: Basic HTTP requests (GET, POST, PUT, DELETE)
+        - label: Variable substitution ({{variables}})
+        - label: Environment switching
+        - label: Post-request scripts
+        - label: Request history
+        - label: Collections and folders
+        - label: Import/Export functionality
+        - label: Authentication (Bearer, Basic, API Key)
+
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation Feedback
+      description: Was the deployment documentation clear and helpful?
+      placeholder: |
+        - Clear instructions: [yes/no]
+        - Missing information: [list]
+        - Suggestions: [improvements]
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggestions
+    attributes:
+      label: Suggestions for Improvement
+      description: How can we make the hosted experience better?
+      placeholder: |
+        Your ideas for features, UX improvements, or documentation enhancements
+    validations:
+      required: false
+
+  - type: dropdown
+    id: would-recommend
+    attributes:
+      label: Would you recommend hosted mode to others?
+      description: Based on your experience
+      options:
+        - "Yes - Definitely"
+        - "Yes - With reservations"
+        - "Maybe - Needs improvement"
+        - "No - Not ready"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Anything else we should know?
+      placeholder: |
+        - Browser used: [Chrome/Firefox/Edge/Safari]
+        - Use case: [personal/team/production]
+        - Request volume: [requests per day]
+        - etc.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Feedback Consent
+      description: Your feedback helps us meet SC-003 (90% success rate)
+      options:
+        - label: I consent to this feedback being used for success metrics tracking
+          required: false

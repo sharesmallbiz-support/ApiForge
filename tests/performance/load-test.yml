@@ -1,0 +1,35 @@
+config:
+  target: "http://localhost:7071"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: Warm up
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: Ramp up load
+    - duration: 600
+      arrivalRate: 50
+      name: Sustained load
+  plugins:
+    ensure: {}
+    apdex: {}
+    metrics-by-endpoint: {}
+  ensure:
+    p95: 2000
+    maxErrorRate: 1
+
+scenarios:
+  - name: "Execute Request"
+    flow:
+      - post:
+          url: "/api/execute-request"
+          json:
+            method: "GET"
+            url: "https://httpbin.org/get"
+            headers: {}
+            body: null
+          capture:
+            - json: "$.status"
+              as: "status"
+      - log: "Request status: {{status}}"

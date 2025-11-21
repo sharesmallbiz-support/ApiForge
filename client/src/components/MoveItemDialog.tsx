@@ -74,21 +74,23 @@ export function MoveItemDialog({
   };
 
   // Get available destinations based on item type
-  const destinations = workspacesData?.workspaces.flatMap(workspace =>
-    workspace.collections.flatMap(collection => {
+  type Destination = { id: string; name: string; type: "collection" | "folder" };
+
+  const destinations: Destination[] = workspacesData?.workspaces.flatMap(workspace =>
+    workspace.collections.flatMap((collection): Destination[] => {
       if (itemType === "folder") {
         // For folders, show collections
         return [{
           id: collection.id,
           name: `${collection.name}`,
-          type: "collection" as const,
+          type: "collection",
         }];
       } else {
         // For requests, show folders
         return collection.folders.map(folder => ({
           id: folder.id,
           name: `${collection.name} / ${folder.name}`,
-          type: "folder" as const,
+          type: "folder",
         }));
       }
     })

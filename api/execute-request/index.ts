@@ -52,6 +52,15 @@ export async function executeRequest(request: HttpRequest, context: InvocationCo
         const logs: string[] = [];
         const variables = body.environmentSnapshot || {};
 
+        // Log execution start with telemetry
+        logExecutionStart(
+            context,
+            requestId,
+            body.workspaceId,
+            body.resolvedRequest.method,
+            body.resolvedRequest.url
+        );
+
         logs.push(`Request ${requestId} execution started`);
         logs.push(`Workspace: ${body.workspaceId}`);
         logs.push(`Method: ${body.resolvedRequest.method}`);
@@ -113,15 +122,33 @@ export async function executeRequest(request: HttpRequest, context: InvocationCo
                 scriptError = scriptResult.error;
                 logs.push(`Script execution failed: ${scriptResult.error}`);
             }
+
+            // Log script execution telemetry
+            logScriptExecution(
+                context,
+                requestId,
+                'post',
+                !scriptResult.error,
+                scriptResult.logs
+            );
         }
 
         const totalDuration = Date.now() - startTime;
+        const success = httpResult.status > 0 && httpResult.status < 400;
+
+        // Log completion telemetry
+        logExecutionComplete(
+            context,
+            requestId,
+            totalDuration,
+            httpResult.status,
+            success
+        );
 
         // Build execution result matching the contract
         const executionResult = {
             requestId,
-            status: httpResult.status > 0 && httpResult.status < 400 ? "Success" : 
-                    httpResult.status === 0 ? "Failure" : "Failure",
+            status: success ? "Success" : "Failure",
             statusCode: httpResult.status,
             headers: httpResult.headers,
             bodyPreview: httpResult.body.substring(0, 10000), // Limit body size
@@ -131,15 +158,13 @@ export async function executeRequest(request: HttpRequest, context: InvocationCo
             logs
         };
 
-        context.log(`Request execution completed: ${executionResult.status}`);
-
         return {
             status: 200,
             jsonBody: executionResult
         };
 
     } catch (error) {
-        context.error('Error executing request:', error);
+        logExecutionError(context, requestId, error);
         
         return {
             status: 500,

@@ -20,6 +20,24 @@ function shouldUseServer(url: string): boolean {
   return SERVER_ONLY_ROUTES.some(route => url.includes(route));
 }
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3, backoff = 1000): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    // Retry on 503 (Service Unavailable) or 504 (Gateway Timeout) which might happen during cold start
+    if ((res.status === 503 || res.status === 504) && retries > 0) {
+      await new Promise(r => setTimeout(r, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    return res;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    throw err;
+  }
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -27,7 +45,7 @@ export async function apiRequest(
 ): Promise<Response> {
   // Use localStorage for CRUD operations, server for HTTP execution
   if (shouldUseServer(url)) {
-    const res = await fetch(url, {
+    const res = await fetchWithRetry(url, {
       method,
       headers: data ? { "Content-Type": "application/json" } : {},
       body: data ? JSON.stringify(data) : undefined,
@@ -54,7 +72,7 @@ export const getQueryFn: <T>(options: {
     // Use localStorage for data queries, server for execution/history
     let res: Response;
     if (shouldUseServer(url)) {
-      res = await fetch(url, {
+      res = await fetchWithRetry(url, {
         credentials: "include",
       });
     } else {

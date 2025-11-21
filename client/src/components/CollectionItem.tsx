@@ -190,7 +190,7 @@ export function CollectionItem({
   const canAddFolder = (type === "collection" || type === "folder") && id;
   const canAddRequest = type === "folder" && id;
   const canMove = (type === "folder" || type === "request") && id && parentId;
-  const isDraggable = canMove;
+  const isDraggable = !!canMove;
 
   return (
     <>
@@ -272,7 +272,7 @@ export function CollectionItem({
                   </DropdownMenuItem>
                 )}
                 {(canAddFolder || canAddRequest) && <DropdownMenuSeparator />}
-                {type !== "workspace" && id && (
+                {id && (
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShowRenameDialog(true); }}>
                     <Edit className="h-4 w-4 mr-2" />
                     Rename
@@ -284,7 +284,7 @@ export function CollectionItem({
                     Move
                   </DropdownMenuItem>
                 )}
-                {(type !== "workspace" && id || canMove) && canDelete && <DropdownMenuSeparator />}
+                {canDelete && <DropdownMenuSeparator />}
                 {canDelete && (
                   <DropdownMenuItem
                     onClick={handleDelete}

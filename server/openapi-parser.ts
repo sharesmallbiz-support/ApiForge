@@ -58,6 +58,8 @@ export interface ParsedOpenAPI {
     headers: Array<{ key: string; value: string; enabled: boolean }>;
     params: Array<{ key: string; value: string; enabled: boolean }>;
     body?: { type: string; content: string };
+    hostedRunUrl?: string;
+    lastHostedRun?: string;
   }>;
   environmentVariables: EnvironmentVariable[];
   environmentHeaders: Array<{ key: string; value: string; enabled: boolean }>;
@@ -227,6 +229,10 @@ export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promis
             }
           }
 
+          // Check for x-hosted-run-url extension
+          const hostedRunUrl = (operation as any)["x-hosted-run-url"];
+          const lastHostedRun = (operation as any)["x-last-hosted-run"];
+
           requests.push({
             name: requestName,
             method: method.toUpperCase(),
@@ -234,13 +240,15 @@ export async function fetchAndParseOpenAPI(url?: string, specData?: any): Promis
             headers,
             params,
             body,
+            hostedRunUrl,
+            lastHostedRun,
           });
         }
       }
     }
 
     // Add common parameters as environment variables (if used in 3+ endpoints)
-    for (const [paramKey, info] of commonParams.entries()) {
+    for (const [paramKey, info] of Array.from(commonParams.entries())) {
       if (info.count >= 3) {
         const paramName = paramKey.split(":")[1];
         // Only add if not already in the list
@@ -274,6 +282,21 @@ function generateExampleFromSchema(schema: any): any {
 
   // If there's an example, use it
   if (schema.example) return schema.example;
+
+  // Handle oneOf/anyOf/allOf
+  if (schema.oneOf && schema.oneOf.length > 0) {
+    return generateExampleFromSchema(schema.oneOf[0]);
+  }
+  if (schema.anyOf && schema.anyOf.length > 0) {
+    return generateExampleFromSchema(schema.anyOf[0]);
+  }
+  if (schema.allOf && schema.allOf.length > 0) {
+    let result = {};
+    for (const subSchema of schema.allOf) {
+      result = { ...result, ...generateExampleFromSchema(subSchema) };
+    }
+    return result;
+  }
 
   // Handle different schema types
   if (schema.type === "object") {

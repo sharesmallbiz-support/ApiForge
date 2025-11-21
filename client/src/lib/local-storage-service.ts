@@ -85,6 +85,45 @@ class LocalStorageService {
 
     this.data.workspaces = [workspace];
     this.saveWorkspaces();
+
+    // Create sample collection
+    const collection: Collection = {
+      id: randomUUID(),
+      name: "Sample Collection",
+      description: "A sample collection to get you started",
+      workspaceId: workspace.id,
+      folders: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.data.collections = [collection];
+    this.saveCollections();
+
+    // Create sample folder
+    const folder: Folder = {
+      id: randomUUID(),
+      name: "General",
+      collectionId: collection.id,
+      requests: [],
+    };
+    this.data.folders = [folder];
+    this.saveFolders();
+
+    // Create sample request
+    const request: Request = {
+      id: randomUUID(),
+      name: "Get Example",
+      method: "GET",
+      url: "https://jsonplaceholder.typicode.com/posts/1",
+      folderId: folder.id,
+      headers: [],
+      params: [],
+      hostedRunUrl: "https://portal.azure.com/#@example.com/resource/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-rg/providers/Microsoft.Web/staticSites/example-swa/appInsights",
+      lastHostedRun: new Date().toISOString(),
+      hostedRunResult: "Success",
+    };
+    this.data.requests = [request];
+    this.saveRequests();
   }
 
   // ========== LOAD & SAVE ==========
@@ -566,12 +605,14 @@ class LocalStorageService {
     }
   }
 
-  clearAll(): void {
+  clearAll(seed: boolean = true): void {
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
     });
     this.data = this.loadAll();
-    this.initializeWithMockData();
+    if (seed) {
+      this.initializeWithMockData();
+    }
   }
 }
 

@@ -79,4 +79,28 @@ describe('Quality Audit Report Schema', () => {
     // Schema allows null exitCode, but logic should prevent it for non-skipped steps
     expect(stepWithNullExit.exitCode).toBe(null);
   });
+
+  it('should validate SWA deployment evidence', () => {
+    const runWithDeployments: QualityAuditRun = {
+      id: 'test-run-789',
+      startedAt: '2025-11-16T10:00:00Z',
+      finishedAt: '2025-11-16T10:05:00Z',
+      runner: 'ci',
+      status: 'passed',
+      reportPath: 'artifacts/quality-audit-report.json',
+      steps: [],
+      swaDeployments: [
+        {
+          environment: 'preview',
+          durationSeconds: 120,
+          commitSha: 'abc1234',
+          prNumber: '42',
+          timestamp: '2025-11-16T10:05:00Z',
+        },
+      ],
+    };
+
+    const result = qualityAuditRunSchema.safeParse(runWithDeployments);
+    expect(result.success).toBe(true);
+  });
 });

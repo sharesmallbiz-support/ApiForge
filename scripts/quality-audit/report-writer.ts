@@ -27,6 +27,18 @@ interface ReportOutput {
     details?: Record<string, unknown>;
     errors?: Array<{ message: string; code?: string }>;
   }>;
+  swaDeployments?: Array<{
+    environment: 'preview' | 'production';
+    durationSeconds: number;
+    commitSha: string;
+    prNumber?: string;
+    timestamp: string;
+  }>;
+  observability?: {
+    dashboardUrl: string;
+    alertTestTimestamp: string;
+    screenshotPaths?: string[];
+  };
 }
 
 export function generateReport(
@@ -71,6 +83,8 @@ export function generateReport(
       artifacts: [{ name: 'audit-report', path: auditRun.reportPath, type: 'file' }],
     },
     steps,
+    swaDeployments: auditRun.swaDeployments,
+    observability: auditRun.observability,
   };
 }
 

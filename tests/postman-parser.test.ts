@@ -315,6 +315,69 @@ describe("Postman Parser", () => {
       expect(generalFolder!.requests).toHaveLength(1);
       expect(generalFolder!.requests[0].name).toBe("Standalone Request");
     });
+
+    it("should parse request auth", () => {
+      const collection = {
+        info: {
+          name: "Auth Test",
+        },
+        item: [
+          {
+            name: "Bearer Auth Request",
+            request: {
+              method: "GET",
+              url: "https://api.example.com",
+              auth: {
+                type: "bearer",
+                bearer: [
+                  {
+                    key: "token",
+                    value: "my-token",
+                    type: "string",
+                  },
+                ],
+              },
+            },
+          },
+          {
+            name: "Basic Auth Request",
+            request: {
+              method: "GET",
+              url: "https://api.example.com",
+              auth: {
+                type: "basic",
+                basic: [
+                  {
+                    key: "username",
+                    value: "user",
+                    type: "string",
+                  },
+                  {
+                    key: "password",
+                    value: "pass",
+                    type: "string",
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      };
+
+      const parsed = parsePostmanCollection(collection);
+      const bearerReq = parsed.folders[0].requests[0];
+      const basicReq = parsed.folders[0].requests[1];
+
+      // Check Bearer Auth
+      const authHeader = bearerReq.headers.find((h) => h.key === "Authorization");
+      expect(authHeader).toBeDefined();
+      expect(authHeader?.value).toBe("Bearer my-token");
+
+      // Check Basic Auth
+      const basicHeader = basicReq.headers.find((h) => h.key === "Authorization");
+      expect(basicHeader).toBeDefined();
+      expect(basicHeader?.value).toContain("Basic ");
+    });
   });
 
   describe("Postman Environment Parsing", () => {

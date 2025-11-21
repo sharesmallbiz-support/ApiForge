@@ -31,11 +31,19 @@ interface PostmanBody {
   };
 }
 
+interface PostmanAuth {
+  type: string;
+  bearer?: Array<{ key: string; value: string; type: string }>;
+  basic?: Array<{ key: string; value: string; type: string }>;
+  apikey?: Array<{ key: string; value: string; type: string }>;
+}
+
 interface PostmanRequest {
   method: string;
   header?: PostmanHeader[];
   url?: string | PostmanUrl;
   body?: PostmanBody;
+  auth?: PostmanAuth;
 }
 
 interface PostmanItem {
@@ -100,7 +108,7 @@ export interface ParsedPostmanEnvironment {
  */
 export function parsePostmanCollection(collectionData: unknown): ParsedPostmanCollection {
   try {
-    const collection: PostmanCollection = collectionData;
+    const collection = collectionData as PostmanCollection;
 
     if (!collection.info || !collection.item) {
       throw new Error("Invalid Postman collection format");
@@ -240,6 +248,40 @@ function processRequest(item: PostmanItem, pathSegments: string[] = []) {
     }
   }
 
+  // Parse auth
+  if (request.auth) {
+    if (request.auth.type === "bearer" && request.auth.bearer) {
+      const token = request.auth.bearer.find((b) => b.key === "token")?.value;
+      if (token) {
+        headers.push({
+          key: "Authorization",
+          value: `Bearer ${token}`,
+          enabled: true,
+        });
+      }
+    } else if (request.auth.type === "basic" && request.auth.basic) {
+      const username = request.auth.basic.find((b) => b.key === "username")?.value || "";
+      const password = request.auth.basic.find((b) => b.key === "password")?.value || "";
+      const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
+      headers.push({
+        key: "Authorization",
+        value: `Basic ${basicAuth}`,
+        enabled: true,
+      });
+    } else if (request.auth.type === "apikey" && request.auth.apikey) {
+      const key = request.auth.apikey.find((k) => k.key === "key")?.value || "";
+      const value = request.auth.apikey.find((k) => k.key === "value")?.value || "";
+      const inHeader = request.auth.apikey.find((k) => k.key === "in")?.value === "header";
+      if (inHeader && key && value) {
+        headers.push({
+          key: key,
+          value: value,
+          enabled: true,
+        });
+      }
+    }
+  }
+
   // Parse body
   let body: { type: string; content: string } | undefined;
   if (request.body && request.body.mode) {
@@ -285,7 +327,7 @@ function processRequest(item: PostmanItem, pathSegments: string[] = []) {
  */
 export function parsePostmanEnvironment(environmentData: unknown): ParsedPostmanEnvironment {
   try {
-    const environment: PostmanEnvironment = environmentData;
+    const environment = environmentData as PostmanEnvironment;
 
     if (!environment.name || !environment.values) {
       throw new Error("Invalid Postman environment format");

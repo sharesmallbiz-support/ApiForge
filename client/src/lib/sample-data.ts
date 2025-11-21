@@ -24,6 +24,9 @@ export function createSampleData(workspaceId: string): SampleData {
             url: "{{baseUrl}}/joke/Any?safe-mode",
             headers: [],
             params: [],
+            lastHostedRun: new Date().toISOString(),
+            hostedRunResult: "Success",
+            hostedRunUrl: "https://portal.azure.com/#trace/sample-trace-id",
           },
           {
             name: "Programming Joke",

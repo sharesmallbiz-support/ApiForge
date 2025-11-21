@@ -22,10 +22,13 @@ const mockLocalStorage = (() => {
 global.localStorage = mockLocalStorage;
 
 describe('LocalStorage Service', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLocalStorage.clear();
     // Reset the module to get fresh instance
     vi.resetModules();
+    const { localStorageService } = await import('../client/src/lib/local-storage-service');
+    localStorageService.clearAll(false);
+    await localStorageService.createWorkspace({ name: 'My Workspace', description: 'Default workspace' });
   });
 
   describe('Workspaces', () => {
@@ -419,6 +422,7 @@ describe('LocalStorage Service', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'Development',
+        headers: [],
         variables: [
           { key: 'API_URL', value: 'https://dev.api.example.com', enabled: true, scope: 'global' },
         ],
@@ -435,8 +439,8 @@ describe('LocalStorage Service', () => {
     it('should list all environments', async () => {
       const { localStorageService } = await import('../client/src/lib/local-storage-service');
 
-      await localStorageService.createEnvironment({ name: 'Dev', variables: [] });
-      await localStorageService.createEnvironment({ name: 'Staging', variables: [] });
+      await localStorageService.createEnvironment({ name: 'Dev', headers: [], variables: [] });
+      await localStorageService.createEnvironment({ name: 'Staging', headers: [], variables: [] });
 
       const environments = await localStorageService.getEnvironments();
       expect(environments).toHaveLength(2);
@@ -447,6 +451,7 @@ describe('LocalStorage Service', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'Test',
+        headers: [],
         variables: [],
       });
 

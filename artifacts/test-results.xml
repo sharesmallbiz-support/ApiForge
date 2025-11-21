@@ -1,31 +1,1861 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="1.273">
-    <testsuite name="tests/quality-audit/checklist.spec.ts" timestamp="2025-11-17T03:49:54.849Z" hostname="MycroftHolmes" tests="8" failures="0" errors="0" skipped="0" time="0.0032162">
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid version" time="0.0006464">
+<testsuites name="vitest tests" tests="147" failures="0" errors="0" time="0.4597463">
+    <testsuite name="tests/curl-parser.test.ts" timestamp="2025-11-21T02:00:03.632Z" hostname="MycroftHolmes" tests="31" failures="0" errors="0" skipped="0" time="0.0138651">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Basic Parsing &gt; should parse simple GET request" time="0.0029618">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should enable auto-install by default" time="0.0001516">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Basic Parsing &gt; should parse GET request with query parameters" time="0.0013993">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m2[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should define all required baseline categories" time="0.0006929">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Basic Parsing &gt; should handle POST request with -X flag" time="0.0002949">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have unique step IDs" time="0.0001029">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Basic Parsing &gt; should handle POST request with --request flag" time="0.0002666">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have required flag on all baseline steps" time="0.0000855">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should parse single header with -H flag" time="0.000387">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid commands for each step" time="0.0002511">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should parse single header with --header flag" time="0.0004038">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should execute steps in correct order" time="0.0003875">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should parse multiple headers" time="0.0003799">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m3[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should include helpful descriptions" time="0.0002339">
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should handle double-quoted headers" time="0.0003668">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should NOT create duplicate headers" time="0.0005769">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+            <system-err>
+[CURL Parser] Duplicate header &quot;Content-Type&quot;, using latest value
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should parse complex headers with special characters" time="0.0004406">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Header Parsing &gt; should extract hosted metadata from custom headers" time="0.0002831">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should parse body with -d flag" time="0.000212">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should parse body with --data flag" time="0.0001698">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should parse body with --data-raw flag" time="0.0001745">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should format JSON body nicely" time="0.0002109">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should auto-correct GET to POST when body is present" time="0.0002559">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Auto-corrected method to POST due to request body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+            <system-err>
+[CURL Parser] GET request with body detected, you may want to change method to POST
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should NOT auto-correct if method is explicitly set" time="0.0002525">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+            <system-err>
+[CURL Parser] GET request with body detected, you may want to change method to POST
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Body Parsing &gt; should handle non-JSON body" time="0.0001779">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Complex Real-World Examples &gt; should parse the provided sample CURL command" time="0.0004191">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://triage-nonprod.bswhive.com/v1/display_card/ee791791-b133-4c1e-a980-c84d56a53345&apos;[39m,
+  headersCount: [33m7[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Complex Real-World Examples &gt; should handle CURL with POST and JSON body" time="0.0002926">
+            <system-out>
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m2[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mtrue[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should return null for invalid input" time="0.0001246">
+            <system-err>
+[CURL Parser] Invalid input: command must be a non-empty string
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should return null for non-string input" time="0.0001177">
+            <system-err>
+[CURL Parser] Invalid input: command must be a non-empty string
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should return null for command not starting with curl" time="0.0001282">
+            <system-err>
+[CURL Parser] Command must start with &quot;curl&quot;
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should return null for command without URL" time="0.0001719">
+            <system-err>
+[CURL Parser] Could not extract URL from command
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should handle line continuations with backslash-newline" time="0.0002283">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should skip invalid headers without colon" time="0.0002389">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/&apos;[39m,
+  headersCount: [33m1[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+            <system-err>
+[CURL Parser] Invalid header format (missing colon): Invalid Header
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should handle URL-encoded query parameters" time="0.0002466">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/search&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m2[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Edge Cases and Error Handling &gt; should handle various HTTP methods" time="0.0004966">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;PUT&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;DELETE&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;PATCH&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;HEAD&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;OPTIONS&apos;[39m,
+  url: [32m&apos;https://api.example.com/resource&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Performance and Robustness &gt; should handle very long CURL commands" time="0.0004016">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/&apos;[39m,
+  headersCount: [33m50[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Performance and Robustness &gt; should handle CURL with --location flag" time="0.0001797">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/redirect&apos;[39m,
+  headersCount: [33m0[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/curl-parser.test.ts" name="CURL Parser &gt; Performance and Robustness &gt; should preserve header order" time="0.0001827">
+            <system-out>
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/&apos;[39m,
+  headersCount: [33m3[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
         </testcase>
     </testsuite>
-    <testsuite name="tests/quality-audit/report.spec.ts" timestamp="2025-11-17T03:49:54.852Z" hostname="MycroftHolmes" tests="4" failures="0" errors="0" skipped="0" time="0.002853">
-        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate a complete audit run" time="0.0016007">
+    <testsuite name="tests/integration.test.ts" timestamp="2025-11-21T02:00:03.640Z" hostname="MycroftHolmes" tests="15" failures="0" errors="0" skipped="0" time="0.1275587">
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Complete CRUD Workflow &gt; should create workspace → collection → folder → request" time="0.0769631">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 4416d9bb-d4b1-4859-8046-e8bc64599548
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;API Tests&apos;[39m,
+  description: [32m&apos;Integration test collection&apos;[39m,
+  workspaceId: [32m&apos;4416d9bb-d4b1-4859-8046-e8bc64599548&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;API Tests&apos;[39m,
+  description: [32m&apos;Integration test collection&apos;[39m,
+  workspaceId: [32m&apos;4416d9bb-d4b1-4859-8046-e8bc64599548&apos;[39m,
+  id: [32m&apos;e0014730-c415-4399-836f-962f3872884e&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.469Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.469Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 4416d9bb-d4b1-4859-8046-e8bc64599548
+[LocalStorageService] Total collections in memory: [33m1[39m
+[LocalStorageService] Filtered collections for workspace: [33m1[39m
+[LocalStorageService] Collection: API Tests workspaceId: 4416d9bb-d4b1-4859-8046-e8bc64599548 matches: [33mtrue[39m
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should reject invalid status values" time="0.0004058">
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Complete CRUD Workflow &gt; should handle cascade delete: collection → folders → requests" time="0.0065866">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 85af3ec5-a35a-4afe-b1af-7cf6700843c1
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;85af3ec5-a35a-4afe-b1af-7cf6700843c1&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;85af3ec5-a35a-4afe-b1af-7cf6700843c1&apos;[39m,
+  id: [32m&apos;c49eb362-2ed6-4668-b0e6-7ebe07f7b83b&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.477Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.477Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m0[39m
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate dependency advisories" time="0.0001871">
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Complete CRUD Workflow &gt; should handle cascade delete: folder → requests" time="0.0055863">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: d231594a-697c-4ecb-bea8-00a1ef1d8c55
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d231594a-697c-4ecb-bea8-00a1ef1d8c55&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d231594a-697c-4ecb-bea8-00a1ef1d8c55&apos;[39m,
+  id: [32m&apos;39998b02-41cc-40f0-a004-11f0e219aa04&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.483Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.483Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
         </testcase>
-        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should require non-null exit code for passed/failed steps" time="0.0000827">
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; CURL Import Workflow &gt; should parse CURL and create request with all components" time="0.0097153">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[CURL Parser] Successfully parsed and formatted JSON body
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;POST&apos;[39m,
+  url: [32m&apos;https://api.example.com/users&apos;[39m,
+  headersCount: [33m2[39m,
+  paramsCount: [33m1[39m,
+  hasBody: [33mtrue[39m
+}
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 0d249bed-ade3-4778-9e60-7801e2023eb9
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Imported APIs&apos;[39m,
+  workspaceId: [32m&apos;0d249bed-ade3-4778-9e60-7801e2023eb9&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Imported APIs&apos;[39m,
+  workspaceId: [32m&apos;0d249bed-ade3-4778-9e60-7801e2023eb9&apos;[39m,
+  id: [32m&apos;96775214-2327-4142-b1dc-b4a3eaa1856b&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.493Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.493Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; CURL Import Workflow &gt; should handle complex CURL with multiple headers and special characters" time="0.0019215">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[CURL Parser] Successfully parsed command: {
+  method: [32m&apos;GET&apos;[39m,
+  url: [32m&apos;https://api.example.com/endpoint&apos;[39m,
+  headersCount: [33m7[39m,
+  paramsCount: [33m0[39m,
+  hasBody: [33mfalse[39m
+}
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Environment Variables Workflow &gt; should create environment with variables" time="0.0012726">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Environment Variables Workflow &gt; should manage multiple environments" time="0.0013319">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Update Operations &gt; should update request and preserve relationships" time="0.0020862">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 3b8c7fb6-ebeb-49b5-965a-2151aa2527af
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: { name: [32m&apos;Test&apos;[39m, workspaceId: [32m&apos;3b8c7fb6-ebeb-49b5-965a-2151aa2527af&apos;[39m }
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test&apos;[39m,
+  workspaceId: [32m&apos;3b8c7fb6-ebeb-49b5-965a-2151aa2527af&apos;[39m,
+  id: [32m&apos;2fc3eb21-b6b4-40ae-ada7-b438ae1b9ec1&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.499Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.499Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Update Operations &gt; should rename items at all levels" time="0.0015756">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 11920ae1-6d21-4020-b05f-7b9d6e092872
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Original Collection&apos;[39m,
+  workspaceId: [32m&apos;11920ae1-6d21-4020-b05f-7b9d6e092872&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Original Collection&apos;[39m,
+  workspaceId: [32m&apos;11920ae1-6d21-4020-b05f-7b9d6e092872&apos;[39m,
+  id: [32m&apos;55840700-1bc7-4b4e-94cb-d6b0932dc3e1&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.501Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.501Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] hydrateWorkspace for: Renamed Workspace workspaceId: 11920ae1-6d21-4020-b05f-7b9d6e092872
+[LocalStorageService] Total collections in memory: [33m1[39m
+[LocalStorageService] Filtered collections for workspace: [33m1[39m
+[LocalStorageService] Collection: Renamed Collection workspaceId: 11920ae1-6d21-4020-b05f-7b9d6e092872 matches: [33mtrue[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Adapter Integration &gt; should route through adapter for full CRUD cycle" time="0.0057086">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] hydrateWorkspace for: Adapter Test workspaceId: 7481a0fd-19c6-4688-bf6e-0b814f81a7e2
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Adapter Integration &gt; should handle errors gracefully through adapter" time="0.0023637">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Data Persistence &gt; should persist all data to localStorage" time="0.0029979">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: d54de1fe-fce8-49f7-9436-5d71d523ea0f
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Persistent&apos;[39m,
+  workspaceId: [32m&apos;d54de1fe-fce8-49f7-9436-5d71d523ea0f&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Persistent&apos;[39m,
+  workspaceId: [32m&apos;d54de1fe-fce8-49f7-9436-5d71d523ea0f&apos;[39m,
+  id: [32m&apos;d81871d7-778c-454c-a956-4eb82e0f4ec4&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.512Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.512Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Data Persistence &gt; should handle localStorage quota exceeded error" time="0.0058765">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: efa19f80-0a63-4333-9e62-07250fd1267d
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: { name: [32m&apos;Test&apos;[39m, workspaceId: [32m&apos;efa19f80-0a63-4333-9e62-07250fd1267d&apos;[39m }
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test&apos;[39m,
+  workspaceId: [32m&apos;efa19f80-0a63-4333-9e62-07250fd1267d&apos;[39m,
+  id: [32m&apos;aada0ad4-1cc3-491a-9f51-76c8cfdaad5f&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.514Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.514Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+            <system-err>
+Error saving apiforge-collections: Error: QuotaExceededError
+    at Object.mockLocalStorage.setItem (C:/GitHub/ShareSmallBiz-support/ApiForge/tests/integration.test.ts:499:15)
+    at LocalStorageService.saveItem (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:159:20)
+    at LocalStorageService.saveCollections (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:172:10)
+    at LocalStorageService.createCollection (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:316:10)
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/integration.test.ts:505:29
+[90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+    at [90mfile:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:753:20
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Workflow Tests &gt; should create and manage workflows" time="0.0011074">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration.test.ts" name="Integration Tests &gt; Workflow Tests &gt; should list and filter workflows" time="0.0009488">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/local-storage-adapter.test.ts" timestamp="2025-11-21T02:00:03.645Z" hostname="MycroftHolmes" tests="39" failures="0" errors="0" skipped="0" time="0.1585241">
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle GET all workspaces" time="0.0994262">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 063f98c8-ebe7-4fc7-b05f-268defe1261c
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle GET single workspace" time="0.0023831">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] hydrateWorkspace for: Test workspaceId: 0b7a14bd-6b1a-480d-9b6e-9b45ec818e8b
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle POST workspace" time="0.0019126">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle PUT workspace" time="0.0020796">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle PATCH workspace" time="0.0016444">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workspaces &gt; should handle DELETE workspace" time="0.0018326">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Collections &gt; should handle GET all collections" time="0.0023612">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Collections &gt; should handle GET single collection" time="0.0025907">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 0e2c17d9-12ba-4609-a625-5638b0e93973
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;0e2c17d9-12ba-4609-a625-5638b0e93973&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;0e2c17d9-12ba-4609-a625-5638b0e93973&apos;[39m,
+  id: [32m&apos;2d2ba4af-b1f1-4726-8af9-d7359b72d2a4&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.511Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.511Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Collections &gt; should handle POST collection" time="0.0020773">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: fdf8562f-4b89-46f9-a4fa-08d54bb694b9
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;New Collection&apos;[39m,
+  workspaceId: [32m&apos;fdf8562f-4b89-46f9-a4fa-08d54bb694b9&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;New Collection&apos;[39m,
+  workspaceId: [32m&apos;fdf8562f-4b89-46f9-a4fa-08d54bb694b9&apos;[39m,
+  id: [32m&apos;661c3065-3ade-431a-a06a-5f8999588de9&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.513Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.513Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Collections &gt; should handle PATCH collection" time="0.0024759">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 88138071-ae20-45f9-9474-9f4c5ed643d9
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Original&apos;[39m,
+  workspaceId: [32m&apos;88138071-ae20-45f9-9474-9f4c5ed643d9&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Original&apos;[39m,
+  workspaceId: [32m&apos;88138071-ae20-45f9-9474-9f4c5ed643d9&apos;[39m,
+  id: [32m&apos;28165b28-294f-4f7c-a9ad-75d6b01cf1c4&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.515Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.515Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Collections &gt; should handle DELETE collection" time="0.0022625">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 8a2518ee-d137-46cb-82b0-5d1ab5b69d15
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;8a2518ee-d137-46cb-82b0-5d1ab5b69d15&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;8a2518ee-d137-46cb-82b0-5d1ab5b69d15&apos;[39m,
+  id: [32m&apos;5a36f526-acb9-468b-809d-38b497fc5008&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.518Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.518Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Folders &gt; should handle POST folder" time="0.0020092">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: cc8fc5f0-e676-48b4-a9ef-1322cfbc0691
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;cc8fc5f0-e676-48b4-a9ef-1322cfbc0691&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;cc8fc5f0-e676-48b4-a9ef-1322cfbc0691&apos;[39m,
+  id: [32m&apos;9eaf1498-21c4-4185-a8dc-fa08eb69c8f9&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.520Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.520Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Folders &gt; should handle PATCH folder" time="0.0018345">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: f846e552-dc4e-402d-8840-299ec4c46f73
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;f846e552-dc4e-402d-8840-299ec4c46f73&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;f846e552-dc4e-402d-8840-299ec4c46f73&apos;[39m,
+  id: [32m&apos;622a8904-8b49-4094-9c5c-853324467b54&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.522Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.522Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Folders &gt; should handle DELETE folder" time="0.0015478">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: b9e1d13f-0e35-4585-a308-105a15a4e0d2
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;b9e1d13f-0e35-4585-a308-105a15a4e0d2&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;b9e1d13f-0e35-4585-a308-105a15a4e0d2&apos;[39m,
+  id: [32m&apos;6008d0ea-e579-42cf-86a9-8974b295a594&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.524Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.524Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should handle GET single request" time="0.001569">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 3116b047-ea8d-49e5-bf2b-2f8a820abf05
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;3116b047-ea8d-49e5-bf2b-2f8a820abf05&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;3116b047-ea8d-49e5-bf2b-2f8a820abf05&apos;[39m,
+  id: [32m&apos;a7493395-6845-4cea-8e94-cda2eac33d1e&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.525Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.525Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should handle POST request" time="0.0014725">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 95f12f27-3ce4-40c9-944e-d9a2cb7c8675
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;95f12f27-3ce4-40c9-944e-d9a2cb7c8675&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;95f12f27-3ce4-40c9-944e-d9a2cb7c8675&apos;[39m,
+  id: [32m&apos;25ea7964-b5c6-4506-8e26-160ce0bcf5e5&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.527Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.527Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should handle PATCH request" time="0.0016352">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 1782a89e-9a26-4966-82f4-c36569ca570f
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;1782a89e-9a26-4966-82f4-c36569ca570f&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;1782a89e-9a26-4966-82f4-c36569ca570f&apos;[39m,
+  id: [32m&apos;e5d45fdc-36f7-4e39-8ec5-71583d300c93&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.528Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.528Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should handle DELETE request" time="0.0014115">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 9f5a952e-e62d-4c7b-87c0-f05c553333d4
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;9f5a952e-e62d-4c7b-87c0-f05c553333d4&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;9f5a952e-e62d-4c7b-87c0-f05c553333d4&apos;[39m,
+  id: [32m&apos;c76ca6f6-f4ef-4bcd-bf7d-5322d33299b5&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.530Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.530Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should preserve optional hosted metadata fields" time="0.0021029">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: dde74210-36ee-4100-8d0f-b448cc319013
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;dde74210-36ee-4100-8d0f-b448cc319013&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;dde74210-36ee-4100-8d0f-b448cc319013&apos;[39m,
+  id: [32m&apos;916f3a97-c8cb-4926-b0fd-9c0ea2482f8f&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.531Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.531Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should throw error for execute endpoint" time="0.0011923">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Requests &gt; should throw error for history endpoint" time="0.0010018">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Environments &gt; should handle GET all environments" time="0.0009028">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Environments &gt; should handle GET single environment" time="0.0016302">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Environments &gt; should handle POST environment" time="0.0013321">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Environments &gt; should handle PATCH environment" time="0.0011113">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Environments &gt; should handle DELETE environment" time="0.0011043">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should handle GET all workflows" time="0.0009795">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should handle GET single workflow" time="0.0012321">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should handle POST workflow" time="0.0008582">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should handle PATCH workflow" time="0.0012505">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should handle DELETE workflow" time="0.0010789">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Workflows &gt; should throw error for execute endpoint" time="0.0008116">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Error Handling &gt; should verify execution results support optional hosted metadata" time="0.0007409">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Error Handling &gt; should handle unknown resource" time="0.0013395">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Error Handling &gt; should handle unsupported method" time="0.0012407">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Error Handling &gt; should return proper response format" time="0.0010795">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 4dce64e1-6a09-4207-9a71-88bcd8c7f6f3
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Path Parsing &gt; should correctly parse resource from path" time="0.0009974">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 0cb9652d-df21-44d7-8b15-cc90b4d1a540
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Path Parsing &gt; should correctly parse ID from path" time="0.0011144">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] hydrateWorkspace for: Test workspaceId: 7af1b6d8-3f91-4469-a1ed-1321714f660d
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-adapter.test.ts" name="LocalStorage Adapter &gt; Path Parsing &gt; should handle paths with extra segments" time="0.0008359">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/local-storage-service.test.ts" timestamp="2025-11-21T02:00:03.657Z" hostname="MycroftHolmes" tests="21" failures="0" errors="0" skipped="0" time="0.1245198">
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Workspaces &gt; should create default workspace on first load" time="0.0787369">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 7e3b3374-220f-46bb-a9a4-eede8439275b
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Workspaces &gt; should create and retrieve workspace" time="0.0020205">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] hydrateWorkspace for: Test Workspace workspaceId: 53441323-e011-47b7-8151-1128e5c159f8
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Workspaces &gt; should update workspace" time="0.005377">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Workspaces &gt; should delete workspace" time="0.0074962">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Collections &gt; should create and retrieve collection" time="0.0018349">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: f5ba57d1-3700-4a92-8d24-2f809db7b5e6
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  description: [32m&apos;Test description&apos;[39m,
+  workspaceId: [32m&apos;f5ba57d1-3700-4a92-8d24-2f809db7b5e6&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  description: [32m&apos;Test description&apos;[39m,
+  workspaceId: [32m&apos;f5ba57d1-3700-4a92-8d24-2f809db7b5e6&apos;[39m,
+  id: [32m&apos;da12f0f8-f957-4f15-a191-cc430b69b865&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.492Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.492Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Collections &gt; should hydrate workspace with collections" time="0.0021085">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: fe2f06fb-b113-48a2-afb2-dbccb37f36e1
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Collection 1&apos;[39m,
+  workspaceId: [32m&apos;fe2f06fb-b113-48a2-afb2-dbccb37f36e1&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Collection 1&apos;[39m,
+  workspaceId: [32m&apos;fe2f06fb-b113-48a2-afb2-dbccb37f36e1&apos;[39m,
+  id: [32m&apos;0510e7dc-fdbd-425f-980e-229bd925d9aa&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.494Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.494Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Collection 2&apos;[39m,
+  workspaceId: [32m&apos;fe2f06fb-b113-48a2-afb2-dbccb37f36e1&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Collection 2&apos;[39m,
+  workspaceId: [32m&apos;fe2f06fb-b113-48a2-afb2-dbccb37f36e1&apos;[39m,
+  id: [32m&apos;4ae7d1df-add9-45cc-b83c-d233846c4369&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.494Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.494Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m1[39m
+[LocalStorageService] Collections after push: [33m2[39m
+[LocalStorageService] saveCollections called, count: [33m2[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: fe2f06fb-b113-48a2-afb2-dbccb37f36e1
+[LocalStorageService] Total collections in memory: [33m2[39m
+[LocalStorageService] Filtered collections for workspace: [33m2[39m
+[LocalStorageService] Collection: Collection 1 workspaceId: fe2f06fb-b113-48a2-afb2-dbccb37f36e1 matches: [33mtrue[39m
+[LocalStorageService] Collection: Collection 2 workspaceId: fe2f06fb-b113-48a2-afb2-dbccb37f36e1 matches: [33mtrue[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Collections &gt; should update collection" time="0.0012338">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 3f668b68-3655-46e3-8857-18f1087a848f
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Original&apos;[39m,
+  workspaceId: [32m&apos;3f668b68-3655-46e3-8857-18f1087a848f&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Original&apos;[39m,
+  workspaceId: [32m&apos;3f668b68-3655-46e3-8857-18f1087a848f&apos;[39m,
+  id: [32m&apos;cacb3c12-7f76-4af5-85b8-1bad484f68c9&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.495Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.495Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Collections &gt; should delete collection and cascade delete folders/requests" time="0.0020618">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 7c98545d-a32e-4252-a725-0f6fa1f80cd1
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;7c98545d-a32e-4252-a725-0f6fa1f80cd1&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;To Delete&apos;[39m,
+  workspaceId: [32m&apos;7c98545d-a32e-4252-a725-0f6fa1f80cd1&apos;[39m,
+  id: [32m&apos;dfa288c3-2f17-4deb-a3c6-af9d048bd4be&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.497Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.497Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+[LocalStorageService] saveCollections called, count: [33m0[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Folders &gt; should create and retrieve folder" time="0.0023073">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 081fd0f1-ed29-40e3-89ff-e898ff1b95ff
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;081fd0f1-ed29-40e3-89ff-e898ff1b95ff&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;081fd0f1-ed29-40e3-89ff-e898ff1b95ff&apos;[39m,
+  id: [32m&apos;061633cf-d798-4a21-b13b-51f929fc627c&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.500Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.500Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Folders &gt; should hydrate collection with folders" time="0.0013589">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 000c45f4-ead6-4962-90ef-e8dad33754ee
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;000c45f4-ead6-4962-90ef-e8dad33754ee&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;000c45f4-ead6-4962-90ef-e8dad33754ee&apos;[39m,
+  id: [32m&apos;791db142-d3fe-4edb-82ba-3467068d0777&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.501Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.502Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Folders &gt; should update folder" time="0.0012592">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 5bfed588-2f3a-4d39-b9f6-9927622478c5
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;5bfed588-2f3a-4d39-b9f6-9927622478c5&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;5bfed588-2f3a-4d39-b9f6-9927622478c5&apos;[39m,
+  id: [32m&apos;c0348be5-611e-443e-8a61-39aff858d256&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.503Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.503Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Folders &gt; should delete folder and cascade delete requests" time="0.001056">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 06d13846-2b07-4b16-993b-28223e6639e5
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;06d13846-2b07-4b16-993b-28223e6639e5&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;06d13846-2b07-4b16-993b-28223e6639e5&apos;[39m,
+  id: [32m&apos;c361e589-7780-47cd-8f53-0e0cfd55a0e4&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.504Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.504Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Requests &gt; should create and retrieve request" time="0.0017121">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: d550a8bb-d7d0-444e-a34c-ca498b215713
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d550a8bb-d7d0-444e-a34c-ca498b215713&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d550a8bb-d7d0-444e-a34c-ca498b215713&apos;[39m,
+  id: [32m&apos;e07947ff-dbc3-4760-955a-3659c2b307f6&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.505Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.505Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Requests &gt; should update request" time="0.0015853">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 74b651a8-569f-46f8-a3a5-52a0ee52a147
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;74b651a8-569f-46f8-a3a5-52a0ee52a147&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;74b651a8-569f-46f8-a3a5-52a0ee52a147&apos;[39m,
+  id: [32m&apos;ad0f443e-4ab6-41b2-b6b1-2cbb4c1cca50&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.507Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.507Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Requests &gt; should delete request" time="0.0017163">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: 3f16a9a6-9d51-423e-b14d-2f03c531a538
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;3f16a9a6-9d51-423e-b14d-2f03c531a538&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;3f16a9a6-9d51-423e-b14d-2f03c531a538&apos;[39m,
+  id: [32m&apos;36daea76-ce33-457a-a97b-b76cb049ba25&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.509Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.509Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Requests &gt; should hydrate folder with requests" time="0.001006">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: d24d07f8-2f15-4f56-b4a2-afdeb95161d1
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d24d07f8-2f15-4f56-b4a2-afdeb95161d1&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test Collection&apos;[39m,
+  workspaceId: [32m&apos;d24d07f8-2f15-4f56-b4a2-afdeb95161d1&apos;[39m,
+  id: [32m&apos;c13f7041-2577-410e-bd50-54dcca0a5f2e&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.510Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.510Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Environments &gt; should create and retrieve environment" time="0.0009585">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Environments &gt; should list all environments" time="0.0011552">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Environments &gt; should update environment variables" time="0.0009071">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Data Persistence &gt; should persist data to localStorage" time="0.0014219">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: d0caa4a0-5f79-41f2-a372-f4b5e99f05ad
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: {
+  name: [32m&apos;Persistent Collection&apos;[39m,
+  workspaceId: [32m&apos;d0caa4a0-5f79-41f2-a372-f4b5e99f05ad&apos;[39m
+}
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Persistent Collection&apos;[39m,
+  workspaceId: [32m&apos;d0caa4a0-5f79-41f2-a372-f4b5e99f05ad&apos;[39m,
+  id: [32m&apos;d8561137-a03d-48f0-9160-428e8a6c57bc&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.514Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.514Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+[LocalStorageService] Collections saved to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/local-storage-service.test.ts" name="LocalStorage Service &gt; Data Persistence &gt; should handle localStorage errors gracefully" time="0.0054943">
+            <system-out>
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+[LocalStorageService] getWorkspaces called, total collections in memory: [33m0[39m
+[LocalStorageService] hydrateWorkspace for: My Workspace workspaceId: cdfa510c-b3e2-4b0b-b7a4-f3ecb7f72a76
+[LocalStorageService] Total collections in memory: [33m0[39m
+[LocalStorageService] Filtered collections for workspace: [33m0[39m
+
+[LocalStorageService] createCollection called with: { name: [32m&apos;Test&apos;[39m, workspaceId: [32m&apos;cdfa510c-b3e2-4b0b-b7a4-f3ecb7f72a76&apos;[39m }
+[LocalStorageService] Created collection: {
+  name: [32m&apos;Test&apos;[39m,
+  workspaceId: [32m&apos;cdfa510c-b3e2-4b0b-b7a4-f3ecb7f72a76&apos;[39m,
+  id: [32m&apos;1e1610f4-1da0-4569-8e91-d0772f2635e2&apos;[39m,
+  folders: [],
+  createdAt: [32m&apos;2025-11-21T02:00:03.516Z&apos;[39m,
+  updatedAt: [32m&apos;2025-11-21T02:00:03.516Z&apos;[39m
+}
+[LocalStorageService] Collections before push: [33m0[39m
+[LocalStorageService] Collections after push: [33m1[39m
+[LocalStorageService] saveCollections called, count: [33m1[39m
+
+            </system-out>
+            <system-err>
+Error saving apiforge-collections: Error: Quota exceeded
+    at Object.mockLocalStorage.setItem (C:/GitHub/ShareSmallBiz-support/ApiForge/tests/local-storage-service.test.ts:497:17)
+    at LocalStorageService.saveItem (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:159:20)
+    at LocalStorageService.saveCollections (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:172:10)
+    at LocalStorageService.createCollection (C:/GitHub/ShareSmallBiz-support/ApiForge/client/src/lib/local-storage-service.ts:316:10)
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/local-storage-service.test.ts:503:29
+[90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+    at [90mfile:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:753:20
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/openapi-parser.test.ts" timestamp="2025-11-21T02:00:03.663Z" hostname="MycroftHolmes" tests="9" failures="0" errors="0" skipped="0" time="0.0099983">
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should parse basic info correctly" time="0.0014735">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should parse requests correctly" time="0.0011732">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should parse security schemes into environment variables" time="0.0003961">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should fetch spec from URL" time="0.0010102">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should handle fetch errors" time="0.0037004">
+            <system-err>
+Failed to parse OpenAPI spec: Error: Failed to fetch OpenAPI spec: Not Found
+    at fetchAndParseOpenAPI (C:/GitHub/ShareSmallBiz-support/ApiForge/server/openapi-parser.ts:79:15)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should promote common parameters to environment variables" time="0.0002534">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should handle oneOf schema in request body" time="0.0003173">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should handle nested objects in schema" time="0.0003116">
+        </testcase>
+        <testcase classname="tests/openapi-parser.test.ts" name="OpenAPI Parser &gt; should parse x-hosted-run-url and x-last-hosted-run extensions" time="0.0002505">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/postman-parser.test.ts" timestamp="2025-11-21T02:00:03.664Z" hostname="MycroftHolmes" tests="15" failures="0" errors="0" skipped="0" time="0.0114333">
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should parse the provided FCN collection sample" time="0.0023321">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should handle URLs with query parameters" time="0.0003539">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should handle disabled headers" time="0.0002267">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should handle different body types" time="0.0001656">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should flatten nested folders" time="0.0002384">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should put standalone requests in General folder" time="0.0002546">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Collection Parsing &gt; should parse request auth" time="0.0003861">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Environment Parsing &gt; should parse the provided dev environment sample" time="0.0003341">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Environment Parsing &gt; should handle empty variables" time="0.000213">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Environment Parsing &gt; should handle disabled variables" time="0.0001552">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Postman Environment Parsing &gt; should throw error for invalid environment format" time="0.004502">
+            <system-err>
+Failed to parse Postman environment: Error: Invalid Postman environment format
+    at parsePostmanEnvironment (C:/GitHub/ShareSmallBiz-support/ApiForge/server/postman-parser.ts:333:13)
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/postman-parser.test.ts:479:20
+    at Proxy.assertThrows [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:2798:5[90m)[39m
+    at Proxy.methodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1149:12[90m)[39m
+    at Proxy.overwritingMethodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1750:33[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1485:16[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1090:14[90m)[39m
+    at Proxy.methodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/postman-parser.test.ts:479:65
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Edge Cases and Error Handling &gt; should throw error for invalid collection format" time="0.000653">
+            <system-err>
+Failed to parse Postman collection: Error: Invalid Postman collection format
+    at parsePostmanCollection (C:/GitHub/ShareSmallBiz-support/ApiForge/server/postman-parser.ts:114:13)
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/postman-parser.test.ts:491:20
+    at Proxy.assertThrows [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:2798:5[90m)[39m
+    at Proxy.methodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1149:12[90m)[39m
+    at Proxy.overwritingMethodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1750:33[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1485:16[90m)[39m
+    at Proxy.&lt;anonymous&gt; [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1090:14[90m)[39m
+    at Proxy.methodWrapper [90m(file:///C:/GitHub/ShareSmallBiz-support/ApiForge/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at C:/GitHub/ShareSmallBiz-support/ApiForge/tests/postman-parser.test.ts:491:63
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Edge Cases and Error Handling &gt; should handle collection with no items" time="0.0001849">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Edge Cases and Error Handling &gt; should handle URLs as strings" time="0.0000951">
+        </testcase>
+        <testcase classname="tests/postman-parser.test.ts" name="Postman Parser &gt; Edge Cases and Error Handling &gt; should handle complex URL objects with host arrays" time="0.0001301">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/functions/execute-request.test.ts" timestamp="2025-11-21T02:00:03.667Z" hostname="MycroftHolmes" tests="4" failures="0" errors="0" skipped="0" time="0.0045167">
+        <testcase classname="tests/functions/execute-request.test.ts" name="executeRequest &gt; should return 400 if requestId is missing" time="0.0010224">
+        </testcase>
+        <testcase classname="tests/functions/execute-request.test.ts" name="executeRequest &gt; should return 400 if payload is invalid" time="0.0002235">
+        </testcase>
+        <testcase classname="tests/functions/execute-request.test.ts" name="executeRequest &gt; should execute request successfully" time="0.0006186">
+        </testcase>
+        <testcase classname="tests/functions/execute-request.test.ts" name="executeRequest &gt; should handle execution errors" time="0.0019512">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/quality-audit/checklist.spec.ts" timestamp="2025-11-21T02:00:03.668Z" hostname="MycroftHolmes" tests="8" failures="0" errors="0" skipped="0" time="0.0050354">
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid version" time="0.0010981">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should enable auto-install by default" time="0.0002213">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should define all required baseline categories" time="0.0009615">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have unique step IDs" time="0.0001476">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have required flag on all baseline steps" time="0.0001153">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should have valid commands for each step" time="0.0003898">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should execute steps in correct order" time="0.0005947">
+        </testcase>
+        <testcase classname="tests/quality-audit/checklist.spec.ts" name="Quality Audit Checklist &gt; should include helpful descriptions" time="0.0003725">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/quality-audit/report.spec.ts" timestamp="2025-11-21T02:00:03.669Z" hostname="MycroftHolmes" tests="5" failures="0" errors="0" skipped="0" time="0.0042949">
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate a complete audit run" time="0.0020885">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should reject invalid status values" time="0.0004729">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate dependency advisories" time="0.0004119">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should require non-null exit code for passed/failed steps" time="0.0001106">
+        </testcase>
+        <testcase classname="tests/quality-audit/report.spec.ts" name="Quality Audit Report Schema &gt; should validate SWA deployment evidence" time="0.0003408">
         </testcase>
     </testsuite>
 </testsuites>

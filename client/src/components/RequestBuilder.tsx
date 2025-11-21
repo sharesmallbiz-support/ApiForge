@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, Save, Cloud } from "lucide-react";
 import { KeyValueTable } from "./KeyValueTable";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { isHostedMode } from "@/lib/config";
 import type { Request, KeyValue } from "@shared/schema";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -126,6 +128,12 @@ export function RequestBuilder({ request, onSend, isExecuting = false }: Request
           <Send className="h-4 w-4 mr-2" />
           {isExecuting ? "Sending..." : "Send"}
         </Button>
+        {isHostedMode() && (
+          <Badge variant="outline" className="ml-2 gap-1" title="Running in hosted mode via Azure Functions">
+            <Cloud className="h-3 w-3" />
+            Hosted
+          </Badge>
+        )}
       </div>
 
       <Tabs defaultValue="params" className="flex-1 flex flex-col">

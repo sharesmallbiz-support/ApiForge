@@ -19,6 +19,7 @@ export interface DebugResponse {
   headers: Record<string, string>;
   body: unknown;
   duration: number;
+  hostedRunUrl?: string;
 }
 
 export interface DebugError {

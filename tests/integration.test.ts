@@ -22,9 +22,12 @@ const mockLocalStorage = (() => {
 global.localStorage = mockLocalStorage;
 
 describe('Integration Tests', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLocalStorage.clear();
     vi.resetModules();
+    const { localStorageService } = await import('../client/src/lib/local-storage-service');
+    localStorageService.clearAll(false);
+    await localStorageService.createWorkspace({ name: 'My Workspace', description: 'Default workspace' });
   });
 
   describe('Complete CRUD Workflow', () => {
@@ -219,7 +222,7 @@ describe('Integration Tests', () => {
       // Create request from parsed CURL
       const request = await localStorageService.createRequest({
         name: parsed!.url.split('/').pop() || 'Imported Request',
-        method: parsed!.method,
+        method: parsed!.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
         url: parsed!.url,
         folderId: folder.id,
         headers: parsed!.headers,
@@ -269,6 +272,7 @@ describe('Integration Tests', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'Development',
+        headers: [],
         variables: [
           { key: 'API_URL', value: 'https://dev.api.example.com', enabled: true, scope: 'global' },
           { key: 'API_KEY', value: 'dev-key-123', enabled: true, scope: 'global' },
@@ -293,16 +297,19 @@ describe('Integration Tests', () => {
 
       const dev = await localStorageService.createEnvironment({
         name: 'Development',
+        headers: [],
         variables: [{ key: 'ENV', value: 'dev', enabled: true, scope: 'global' }],
       });
 
       const staging = await localStorageService.createEnvironment({
         name: 'Staging',
+        headers: [],
         variables: [{ key: 'ENV', value: 'staging', enabled: true, scope: 'global' }],
       });
 
       const prod = await localStorageService.createEnvironment({
         name: 'Production',
+        headers: [],
         variables: [{ key: 'ENV', value: 'prod', enabled: true, scope: 'global' }],
       });
 
@@ -514,8 +521,8 @@ describe('Integration Tests', () => {
         name: 'User Registration Flow',
         description: 'Test workflow',
         steps: [
-          { requestId: 'req-1', order: 1, extractors: [] },
-          { requestId: 'req-2', order: 2, extractors: [] },
+          { id: 'step-1', requestId: 'req-1', order: 1, extractVariables: [] },
+          { id: 'step-2', requestId: 'req-2', order: 2, extractVariables: [] },
         ],
       });
 
@@ -525,9 +532,9 @@ describe('Integration Tests', () => {
       // Update workflow
       const updated = await localStorageService.updateWorkflow(workflow.id, {
         steps: [
-          { requestId: 'req-1', order: 1, extractors: [] },
-          { requestId: 'req-2', order: 2, extractors: [] },
-          { requestId: 'req-3', order: 3, extractors: [] },
+          { id: 'step-1', requestId: 'req-1', order: 1, extractVariables: [] },
+          { id: 'step-2', requestId: 'req-2', order: 2, extractVariables: [] },
+          { id: 'step-3', requestId: 'req-3', order: 3, extractVariables: [] },
         ],
       });
 

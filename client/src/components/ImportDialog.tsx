@@ -180,6 +180,10 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         collection = data.collection;
       }
 
+      if (!collection) {
+        throw new Error("Failed to ensure collection exists");
+      }
+
       // Find or create "Imported Requests" folder
       let folder = collection.folders?.find(f => f.name === "Imported Requests");
       console.log('[CURLImport] Existing folder:', folder);
@@ -199,6 +203,10 @@ export function ImportDialog({ workspaceId, children }: ImportDialogProps) {
         const data = await folderResponse.json();
         console.log('[CURLImport] Folder created:', data);
         folder = data.folder;
+      }
+
+      if (!folder) {
+        throw new Error("Failed to ensure folder exists");
       }
 
       // Create the request

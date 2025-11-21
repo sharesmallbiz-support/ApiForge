@@ -162,6 +162,7 @@ export default function Home() {
           headers: Object.fromEntries(response.headers.entries()),
           body: data.result,
           duration,
+          hostedRunUrl: data.result?.hostedRunUrl,
         });
 
         return data;
@@ -192,8 +193,23 @@ export default function Home() {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setExecutionResult(data.result);
+
+      // Update request with hosted metadata if present
+      if (selectedRequestId && data.result?.lastHostedRun) {
+        try {
+          await apiRequest("PUT", `/api/requests/${selectedRequestId}`, {
+            lastHostedRun: data.result.lastHostedRun,
+            hostedRunResult: data.result.hostedRunResult,
+            hostedRunUrl: data.result.hostedRunUrl,
+          });
+          // Refetch request to update UI if needed
+          await queryClient.invalidateQueries({ queryKey: ["/api/requests", selectedRequestId] });
+        } catch (err) {
+          console.error("Failed to save hosted run metadata", err);
+        }
+      }
     },
   });
 

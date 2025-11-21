@@ -217,7 +217,7 @@ export function DebugPanel() {
                   <p className="text-sm mt-2">Send a request to see debug information</p>
                 </div>
               ) : (
-                requestsWithResponses.map(({ request, response, error }, index): JSX.Element => (
+                requestsWithResponses.map(({ request, response, error }, index) => (
                   <div
                     key={request.id}
                     className={`border rounded-lg p-3 space-y-2 ${
@@ -343,6 +343,21 @@ export function DebugPanel() {
                           Response - {response.status} {response.statusText} ({response.duration}ms)
                         </summary>
                         <div className="mt-2 space-y-2">
+                          {/* Hosted Run URL */}
+                          {response.hostedRunUrl && (
+                            <div className="text-xs bg-muted p-2 rounded flex items-center gap-2">
+                              <span className="font-semibold">Hosted Run:</span>
+                              <a 
+                                href={response.hostedRunUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline flex items-center gap-1"
+                              >
+                                View Trace <ChevronRight className="h-3 w-3" />
+                              </a>
+                            </div>
+                          )}
+
                           {/* Response Headers */}
                           <details>
                             <summary className="cursor-pointer text-xs font-semibold">

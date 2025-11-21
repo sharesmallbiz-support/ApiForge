@@ -189,7 +189,7 @@ export const executionResultSchema = z.object({
   requestId: z.string(),
   status: z.number(),
   statusText: z.string(),
-  headers: z.record(z.string()),
+  headers: z.record(z.string(), z.string()),
   body: z.any(),
   time: z.number(),
   size: z.number(),
@@ -359,6 +359,24 @@ export const dependencyAdvisorySchema = z.object({
 });
 export type DependencyAdvisory = z.infer<typeof dependencyAdvisorySchema>;
 
+// SWA Deployment Evidence
+export const swaDeploymentEvidenceSchema = z.object({
+  environment: z.enum(["preview", "production"]),
+  durationSeconds: z.number(),
+  commitSha: z.string(),
+  prNumber: z.string().optional(),
+  timestamp: z.string(),
+});
+export type SwaDeploymentEvidence = z.infer<typeof swaDeploymentEvidenceSchema>;
+
+// Observability Evidence
+export const observabilityEvidenceSchema = z.object({
+  dashboardUrl: z.string(),
+  alertTestTimestamp: z.string(),
+  screenshotPaths: z.array(z.string()).optional(),
+});
+export type ObservabilityEvidence = z.infer<typeof observabilityEvidenceSchema>;
+
 // Quality Audit Run Status
 export const auditRunStatusSchema = z.enum(["passed", "failed"]);
 export type AuditRunStatus = z.infer<typeof auditRunStatusSchema>;
@@ -373,5 +391,7 @@ export const qualityAuditRunSchema = z.object({
   status: auditRunStatusSchema,
   reportPath: z.string(),
   dependencies: z.array(dependencyAdvisorySchema).optional(),
+  swaDeployments: z.array(swaDeploymentEvidenceSchema).optional(),
+  observability: observabilityEvidenceSchema.optional(),
 });
 export type QualityAuditRun = z.infer<typeof qualityAuditRunSchema>;

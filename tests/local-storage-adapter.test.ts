@@ -22,9 +22,12 @@ const mockLocalStorage = (() => {
 global.localStorage = mockLocalStorage;
 
 describe('LocalStorage Adapter', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLocalStorage.clear();
     vi.resetModules();
+    const { localStorageService } = await import('../client/src/lib/local-storage-service');
+    localStorageService.clearAll(false);
+    await localStorageService.createWorkspace({ name: 'My Workspace', description: 'Default workspace' });
   });
 
   describe('Workspaces', () => {
@@ -480,6 +483,7 @@ describe('LocalStorage Adapter', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'Test',
+        headers: [],
         variables: [],
       });
 
@@ -511,6 +515,7 @@ describe('LocalStorage Adapter', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'Original',
+        headers: [],
         variables: [],
       });
 
@@ -529,6 +534,7 @@ describe('LocalStorage Adapter', () => {
 
       const environment = await localStorageService.createEnvironment({
         name: 'To Delete',
+        headers: [],
         variables: [],
       });
 
